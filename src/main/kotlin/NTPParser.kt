@@ -1,4 +1,3 @@
-import N3Parser.variableList
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parser
@@ -6,7 +5,7 @@ import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.Parser
 
-object N3Parser : Grammar<String?>() {
+object N3sToFolParser : Grammar<String?>() {
 
     val lpar by literalToken("(")
     val rpar by literalToken(")")
@@ -31,9 +30,19 @@ object N3Parser : Grammar<String?>() {
     val ressource by regexToken("^<(https?|http|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]>")
     val r by ressource use { "'" + this.text + "'" }
 
-    val triple by (v or r) and -simpleSpace and (v or r) and -simpleSpace and (v or r) use { "triple(" + this.t1 + ", " + this.t2 + ", " + this.t3 + ")" }
+//    val triple by (v or r) and -simpleSpace and (v or r) and -simpleSpace and (v or r) use { "triple(" + this.t1 + ", " + this.t2 + ", " + this.t3 + ")" }
+    val triple by (v or r) and -simpleSpace and (v or r) and -simpleSpace and (v or r)
 
-    val aParser: Parser<String> by
+    val tripleComb by triple and zeroOrMore( -optional(space) and -semicolon and -optional(space) and (v or r) and -optional(space) and (v or r)) map { (triple, list) ->
+        if (list.isEmpty()) {
+            "triple(" + triple.t1 + ", " + triple.t2 + ", " + triple.t3 + ")"
+        } else {
+            "(" + createTripleString(str1 = triple.t1, str2 = triple.t2, str3 = triple.t3) + " & "+ list.joinToString(separator = " & ") { (pred, obj) -> createTripleString(triple.t1, pred, obj)  } + ")"
+        }
+    }
+
+
+    val N3sToFolParser: Parser<String> by
     oneOrMore(
         (variableList and
                 -zeroOrMore(v and (0..1 times space)) and
@@ -41,7 +50,7 @@ object N3Parser : Grammar<String?>() {
                 -optional(alspace) and
                 -lparcurl and
                 -optional(alspace) and
-                (parser(this::aParser) or optional(alspace).use {"\$true"}) and
+                (parser(this::N3sToFolParser) or optional(alspace).use {"\$true"}) and
                 -optional(alspace) and
                 -rparcurl) map { (variableList, surface, rest) ->
             val variableListNotNull = variableList.isNotEmpty()
@@ -60,8 +69,10 @@ object N3Parser : Grammar<String?>() {
             outputString += rest
             outputString
         } or
-                triple
+                tripleComb
                 and -optional(dot)) use { this.joinToString(prefix = "(", postfix = ")", separator = " & ") }
 
-    override val rootParser: Parser<String> by aParser use {"fof(test,axiom,$this)." }
+    override val rootParser: Parser<String> by N3sToFolParser use {"fof(test,axiom,$this)." }
+
+    private fun createTripleString(str1: String, str2: String, str3: String): String = "triple($str1,$str2,$str3)"
 }

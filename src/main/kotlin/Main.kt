@@ -1,16 +1,8 @@
-import PrefixParser.prefix
-import PrefixParser.uri
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.prompt
 import com.github.ajalt.clikt.parameters.types.file
-import com.github.h0tk3y.betterParse.combinators.map
 import com.github.h0tk3y.betterParse.grammar.parseToEnd
-import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
-import com.github.h0tk3y.betterParse.parser.parseToEnd
-import com.github.h0tk3y.betterParse.parser.toParsedOrThrow
-import java.io.File
-import javax.swing.text.html.parser.Parser
 
 class Hello : CliktCommand() {
     val path by option(help = "The path to the RDF Surface Graph").file().prompt("The path of your RDF Surface Graph")
@@ -39,7 +31,7 @@ class Hello : CliktCommand() {
 
         println(str)
 
-        var res2 = N3Parser.parseToEnd(str)
+        var res2 = N3sToFolParser.parseToEnd(str)
 
 //    res2 = res2?.replace(regex = Regex("'<(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]>'")) {
 //        it.value.drop(2).dropLast(2).replace(regex = Regex("\\W"), "_")

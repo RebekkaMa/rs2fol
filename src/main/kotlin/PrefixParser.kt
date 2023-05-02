@@ -1,13 +1,5 @@
-import N3Parser.aParser
-import N3Parser.dot
-import N3Parser.lparcurl
-import N3Parser.rparcurl
-import N3Parser.simpleSpace
-import N3Parser.variableList
-import PrefixParser.prefixPars
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
-import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.Parser
