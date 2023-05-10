@@ -3,6 +3,6 @@
 FILES="/home/rebekka/Programs/EyeReasoner/eye/reasoning/blogic/*[^-answer].n3"
 for f in $FILES
 do
-  echo "Processing $f file..."
-  ./bin/untitled1 --path $f
+  # echo "Processing $f file..."
+  ./bin/untitled1 -o --path $f
 done

@@ -34,7 +34,7 @@ object N3sToFolParser : Grammar<String?>() {
         ) { tuple2 -> tuple2.t1 }
     }
 
-    val ressource by regexToken("^<(https?|http|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]>")
+    val ressource by regexToken("^<\\w*:[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*>")
     val r by ressource use { "'" + this.text + "'" }
 
     //    val triple by (v or r) and -simpleSpace and (v or r) and -simpleSpace and (v or r) use { "triple(" + this.t1 + ", " + this.t2 + ", " + this.t3 + ")" }
