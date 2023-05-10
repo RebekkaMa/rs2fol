@@ -22,7 +22,7 @@ object N3sToFolParser : Grammar<String?>() {
     val positiveSurfaceIRI by literalToken("<http://www.w3.org/2000/10/swap/log#onPositiveSurface>")
 
     val variable by regexToken("_:\\w+")
-    val v by variable use { this.text.drop(2) }
+    val v by variable use { this.text.drop(2).replaceFirstChar { it.uppercaseChar() } }
 
     val literal by regexToken("\\w+")
     val l by literal use {this.text}

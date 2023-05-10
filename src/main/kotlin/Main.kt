@@ -9,18 +9,14 @@ import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
 import com.github.h0tk3y.betterParse.parser.ErrorResult
 import com.github.h0tk3y.betterParse.parser.ParseException
 import com.github.h0tk3y.betterParse.parser.Parsed
-import java.io.BufferedReader
 import java.io.File
-import java.io.InputStreamReader
-import java.util.concurrent.TimeUnit
-
 
 class Hello : CliktCommand() {
     val path by option(help = "The path to the RDF Surface Graph").file().prompt("The path of your RDF Surface Graph")
     val answerPath by argument(help = "The path to the solution").file().optional()
     val vampireFilePath by argument(help = "The path to the solution").file()
         .default(File("/home/rebekka/Programs/vampire/bin/"))
-    val short by option("--on", "-o", help = "Short output").flag(default = false)
+    val short by option("--short", "-s", help = "Short output").flag(default = false)
 
     override fun run() {
 
@@ -65,7 +61,6 @@ class Hello : CliktCommand() {
             is Parsed -> {
                 false to "fof(axiom,axiom," + (if (graph.isBlank()) "\$true" else parserResult.value) + ")."
             }
-
             is ErrorResult -> {
                 true to ParseException(parserResult).stackTraceToString()
             }
@@ -77,9 +72,8 @@ class Hello : CliktCommand() {
                 false to "fof(conjecture,conjecture," + (if (answerGraph.isBlank()) "\$true" else answerParserResult.value) + ")."
 
             }
-
             is ErrorResult -> {
-                true to answerParserResult.toString()
+                true to ParseException(answerParserResult).stackTraceToString()
             }
         }
 
@@ -92,12 +86,14 @@ class Hello : CliktCommand() {
             return
         }
 
+        if (!short) println("Transformation was successful!")
+
+
         val file = File(path.nameWithoutExtension + ".p")
         file.writeText("$parseResultValue\n$answerParseResultValue")
         val absolutePath = file.absolutePath
 
         if (!short) {
-            println("Transformation was successful!")
             println("Problem output file: " + file.path)
             println("Starting Vampire...")
         }
@@ -117,7 +113,7 @@ class Hello : CliktCommand() {
             vampireResultString.drop(1).forEach { println(it) }
         }
 
-        println( path.name + "  --->  " + vampireResultString.last { it.isNotBlank() })
+        println( path.name + "  --->  " + vampireResultString.drop(1).dropLastWhile { it.isBlank() } .joinToString(separator = " --- "))
     }
 
 }
