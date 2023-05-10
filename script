@@ -1,0 +1,8 @@
+#!/bin/bash
+# NOTE : Quote it else use array to avoid problems #
+FILES="/home/rebekka/Programs/EyeReasoner/eye/reasoning/blogic/*[^-answer].n3"
+for f in $FILES
+do
+  echo "Processing $f file..."
+  ./bin/untitled1 --path $f
+done
