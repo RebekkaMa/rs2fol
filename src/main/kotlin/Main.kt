@@ -11,6 +11,7 @@ import com.github.h0tk3y.betterParse.parser.ParseException
 import com.github.h0tk3y.betterParse.parser.Parsed
 import java.io.File
 
+
 class Hello : CliktCommand() {
     val path by option(help = "The path to the RDF Surface Graph").file().prompt("The path of your RDF Surface Graph")
     val answerPath by argument(help = "The path to the solution").file().optional()
@@ -29,8 +30,8 @@ class Hello : CliktCommand() {
             sourceFile.bufferedReader().lines().use { lines ->
                 for (it in lines) {
                     when {
-                        it.startsWith("@prefix ") -> prefixMap.putAll(PrefixParser.parseToEnd(it))
-                        it.startsWith("#") -> continue
+                        it.contains("^\\s*@prefix ".toRegex()) -> prefixMap.putAll(PrefixParser.parseToEnd(it))
+                        it.contains("^\\s*#".toRegex()) -> continue
                         it.contains("onQuerySurface") -> break
                         else -> graph = graph + "\n" + it
                     }
@@ -54,31 +55,38 @@ class Hello : CliktCommand() {
         val (prefixMap, graph) = readFile(path)
         val (answerPrefixMap, answerGraph) = readFile(computedAnswerFile)
 
-        val parserResult = N3sToFolParser.tryParseToEnd(replacePrefix(prefixMap, graph))
-        val answerParserResult = N3sToFolParser.tryParseToEnd(replacePrefix(answerPrefixMap, answerGraph))
-
-        val (parseError, parseResultValue) = when (parserResult) {
-            is Parsed -> {
-                false to "fof(axiom,axiom," + (if (graph.isBlank()) "\$true" else parserResult.value) + ")."
-            }
-            is ErrorResult -> {
-                true to ParseException(parserResult).stackTraceToString()
+        val (parseError, parseResultValue) = if (graph.isBlank()) {
+            false to N3sToFolParser.createFofAnnotatedAxiom("\$true")
+        } else {
+            val nonPrefixGraph = replacePrefix(prefixMap, graph)
+            when (val parserResult = N3sToFolParser.tryParseToEnd(nonPrefixGraph)) {
+                is Parsed -> {
+                    false to N3sToFolParser.createFofAnnotatedAxiom(parserResult.value)
+                }
+                is ErrorResult -> {
+                    true to ParseException(parserResult).stackTraceToString()
+                }
             }
         }
 
-        val (answerParseError, answerParseResultValue) = when (answerParserResult) {
-            is Parsed -> {
-                //TODO("beetle7.n3")
-                false to "fof(conjecture,conjecture," + (if (answerGraph.isBlank()) "\$true" else answerParserResult.value) + ")."
 
-            }
-            is ErrorResult -> {
-                true to ParseException(answerParserResult).stackTraceToString()
+        val (answerParseError, answerParseResultValue) = if (answerGraph.isBlank()) {
+            false to N3sToFolParser.createFofAnnotatedConjecture("\$true")
+        } else {
+            val nonPrefixAnswerGraph = replacePrefix(answerPrefixMap, answerGraph)
+            when (val answerParserResult = N3sToFolParser.tryParseToEnd(nonPrefixAnswerGraph)) {
+                is Parsed -> {
+                    //TODO("beetle7.n3")
+                    false to N3sToFolParser.createFofAnnotatedConjecture(answerParserResult.value)
+                }
+                is ErrorResult -> {
+                    true to ParseException(answerParserResult).stackTraceToString()
+                }
             }
         }
 
         val resultString =
-            if (parseError) ("Failed to parse " + path.name + ":\n" + parseResultValue + "\n") else "" + if (answerParseError) ("Failed to parse " + (computedAnswerFile.name) + ":\n" + parseResultValue + "\n") else ""
+            if (parseError) ("Failed to parse " + path.name + ":\n" + parseResultValue + "\n") else "" + if (answerParseError) ("Failed to parse " + (computedAnswerFile.name) + ":\n" + answerParseResultValue + "\n") else ""
 
         if (parseError or answerParseError) {
             if (!short) println(resultString)
@@ -88,8 +96,8 @@ class Hello : CliktCommand() {
 
         if (!short) println("Transformation was successful!")
 
-
-        val file = File(path.nameWithoutExtension + ".p")
+        File("TransformationResults/").mkdir()
+        val file = File("TransformationResults/" + path.nameWithoutExtension + ".p")
         file.writeText("$parseResultValue\n$answerParseResultValue")
         val absolutePath = file.absolutePath
 
@@ -109,16 +117,23 @@ class Hello : CliktCommand() {
             return
         }
 
-        if (!short){
+        if (!short) {
             vampireResultString.drop(1).forEach { println(it) }
         }
 
-        println( path.name + "  --->  " + vampireResultString.drop(1).dropLastWhile { it.isBlank() } .joinToString(separator = " --- "))
+        println(path.name + "  --->  " + vampireResultString.drop(1).dropLastWhile
+        { it.isBlank() }
+            .joinToString(separator = " --- "))
     }
 
 }
 
-fun main(args: Array<String>) = Hello().main(args)
+class test(args: Array<String>) : Runnable {
+    override fun run() {
+        println(N3sToFolParser.parseToEnd(""))
+
+    }
+}
 
 fun String.runCommand(workingDir: File): Process? {
     return ProcessBuilder(*split(" ").toTypedArray())
@@ -126,3 +141,6 @@ fun String.runCommand(workingDir: File): Process? {
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start()
 }
+
+//fun main(args: Array<String>) = test(args).run()
+fun main(args: Array<String>) = Hello().main(args)
