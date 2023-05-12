@@ -7,6 +7,8 @@ import com.github.h0tk3y.betterParse.parser.Parser
 
 object N3sToFolParser : Grammar<String?>() {
 
+    val varSet = mutableSetOf<String>()
+
     val lpar by literalToken("(")
     val rpar by literalToken(")")
     val lparcurl by literalToken("{")
@@ -39,9 +41,9 @@ object N3sToFolParser : Grammar<String?>() {
 
     val literal by rdfLiteral or numericLiteral or booleanLiteral
 
-    val subject by iri or blankNode or literal//TODO("or collection")
-    val predicate by iri or blankNode or literal
-    val rdfObject by iri or blankNode or literal //TODO("or collection or blankNodePropertyList")
+    val subject by iri or blankNode.map { varSet.add(it); it} or literal//TODO("or collection")
+    val predicate by iri or blankNode.map { varSet.add(it); it} or literal
+    val rdfObject by iri or blankNode.map { varSet.add(it); it} or literal //TODO("or collection or blankNodePropertyList")
 
     val objectList by rdfObject and zeroOrMore(-comma and rdfObject) use { listOf(this.t1).plus(this.t2) }
     val predicateObjectList by predicate and objectList and zeroOrMore(
@@ -70,12 +72,8 @@ object N3sToFolParser : Grammar<String?>() {
         }
     }
 
-    val emptyvarList by (lpar and rpar) use { "" }
-    val variableList by emptyvarList or (-lpar and oneOrMore(blankNode and (0..1 times PrefixParser.space)) and -rpar).map {
-        it.joinToString(
-            separator = ","
-        ) { tuple2 -> tuple2.t1 }
-    }
+    val emptyvarList by (lpar and rpar) use { listOf<String>() }
+    val variableList by emptyvarList or (-lpar and oneOrMore(blankNode) and -rpar)
 
     val N3sToFolParser: Parser<String> by
     (oneOrMore(
@@ -85,14 +83,16 @@ object N3sToFolParser : Grammar<String?>() {
                 (parser(this::N3sToFolParser) or optional(space).use { "\$true" }) and
                 -rparcurl) map { (variableList, surface, rest) ->
             val variableListNotNull = variableList.isNotEmpty()
+            val variableListStrings = variableList.joinToString(separator = ",")
+            varSet.removeAll(variableList.toSet())
             buildString {
                 if (surface.type == positiveSurfaceIRI) {
                     if (variableListNotNull) {
-                        this.append("? [$variableList] : ")
+                        this.append("? [$variableListStrings] : ")
                     }
                 } else {
                     if (variableListNotNull) {
-                        this.append("! [$variableList] : ")
+                        this.append("! [$variableListStrings] : ")
                     }
                     this.append("~")
                 }
@@ -101,7 +101,12 @@ object N3sToFolParser : Grammar<String?>() {
         } or triples
                 and -optional(dot)) use { this.joinToString(prefix = "(", postfix = ")", separator = " & ") })
 
-    override val rootParser: Parser<String> by N3sToFolParser use { this }
+    override val rootParser: Parser<String> by N3sToFolParser use {
+        if (varSet.isEmpty()) this else {
+            val varSetString = varSet.joinToString(separator = ",")
+            varSet.clear()
+            " ? [$varSetString] : $this"
+        }}
 
     fun createFofAnnotatedAxiom(formula : String?) = "fof(axiom,axiom,$formula)."
     fun createFofAnnotatedConjecture(formula : String?) = "fof(conjecture,conjecture,$formula)."
