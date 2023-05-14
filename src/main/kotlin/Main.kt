@@ -12,17 +12,17 @@ import com.github.h0tk3y.betterParse.parser.Parsed
 import java.io.File
 
 
-class Hello : CliktCommand() {
-    val path by option(help = "The path to the RDF Surface Graph").file().prompt("The path of your RDF Surface Graph")
-    val answerPath by argument(help = "The path to the solution").file().optional()
-    val vampireFilePath by argument(help = "The path to the solution").file()
+class RdfSurfaceToFol : CliktCommand() {
+    val axiomFile by option(help = "The path to the RDF Surface Graph").file().prompt("The path of your RDF Surface Graph")
+    val conjectureFile by argument(help = "The path to the solution").file().optional()
+    val vampireExecFile by argument(help = "The path to the solution").file()
         .default(File("/home/rebekka/Programs/vampire/bin/"))
     val short by option("--short", "-s", help = "Short output").flag(default = false)
 
     override fun run() {
 
         val computedAnswerFile =
-            answerPath ?: File(path.parentFile.path + "/" + path.nameWithoutExtension + "-answer.n3")
+            conjectureFile ?: File(axiomFile.parentFile.path + "/" + axiomFile.nameWithoutExtension + "-answer.n3")
 
         fun readFile(sourceFile: File): Pair<Map<String, String>, String> {
             val prefixMap = mutableMapOf<String, String>()
@@ -52,7 +52,7 @@ class Hello : CliktCommand() {
             return newGraph
         }
 
-        val (prefixMap, graph) = readFile(path)
+        val (prefixMap, graph) = readFile(axiomFile)
         val (answerPrefixMap, answerGraph) = readFile(computedAnswerFile)
 
         val (parseError, parseResultValue) = if (graph.isBlank()) {
@@ -86,18 +86,18 @@ class Hello : CliktCommand() {
         }
 
         val resultString =
-            if (parseError) ("Failed to parse " + path.name + ":\n" + parseResultValue + "\n") else "" + if (answerParseError) ("Failed to parse " + (computedAnswerFile.name) + ":\n" + answerParseResultValue + "\n") else ""
+            if (parseError) ("Failed to parse " + axiomFile.name + ":\n" + parseResultValue + "\n") else "" + if (answerParseError) ("Failed to parse " + (computedAnswerFile.name) + ":\n" + answerParseResultValue + "\n") else ""
 
         if (parseError or answerParseError) {
             if (!short) println(resultString)
-            println(path.name + "  --->  " + "Transforming Error")
+            println(axiomFile.name + "  --->  " + "Transforming Error")
             return
         }
 
         if (!short) println("Transformation was successful!")
 
         File("TransformationResults/").mkdir()
-        val file = File("TransformationResults/" + path.nameWithoutExtension + ".p")
+        val file = File("TransformationResults/" + axiomFile.nameWithoutExtension + ".p")
         file.writeText("$parseResultValue\n$answerParseResultValue")
         val absolutePath = file.absolutePath
 
@@ -106,14 +106,14 @@ class Hello : CliktCommand() {
             println("Starting Vampire...")
         }
 
-        val vampireProcess = "./vampire --output_mode smtcomp $absolutePath".runCommand(vampireFilePath)
+        val vampireProcess = "./vampire --output_mode smtcomp $absolutePath".runCommand(vampireExecFile)
 
         vampireProcess?.waitFor()
 
         val vampireResultString = vampireProcess?.inputStream?.reader()?.readText()?.lines()
 
         if (vampireResultString == null) {
-            println(path.name + "  --->  " + "Vampire Error")
+            println(axiomFile.name + "  --->  " + "Vampire Error")
             return
         }
 
@@ -121,17 +121,9 @@ class Hello : CliktCommand() {
             vampireResultString.drop(1).forEach { println(it) }
         }
 
-        println(path.name + "  --->  " + vampireResultString.drop(1).dropLastWhile
+        println(axiomFile.name + "  --->  " + vampireResultString.drop(1).dropLastWhile
         { it.isBlank() }
             .joinToString(separator = " --- "))
-    }
-
-}
-
-class test(args: Array<String>) : Runnable {
-    override fun run() {
-        println(N3sToFolParser.parseToEnd(""))
-
     }
 }
 
@@ -142,5 +134,4 @@ fun String.runCommand(workingDir: File): Process? {
         .start()
 }
 
-//fun main(args: Array<String>) = test(args).run()
-fun main(args: Array<String>) = Hello().main(args)
+fun main(args: Array<String>) = RdfSurfaceToFol().main(args)
