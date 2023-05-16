@@ -44,11 +44,11 @@ class RdfSurfaceToFol : CliktCommand() {
             var newGraph = graph
             prefixMap.forEach { (prefix, uri) ->
                 newGraph =
-                    newGraph.replace(regex = Regex("(^\\A|\\s)$prefix([^\\s\\.,;]+)")) { matchResult: MatchResult ->
-                        " " + uri.dropLast(1) + matchResult.groupValues.last() + ">"
+                    newGraph.replace(regex = Regex("(^|[\\[\\s,.;()])$prefix([\\S&&[^.,;\\]()]]*)")) { matchResult: MatchResult ->
+                        val (start,name) = matchResult.destructured
+                        start + uri.dropLast(1) + name + ">"
                     }
             }
-            newGraph = newGraph.replace(" a ", " <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ")
             return newGraph
         }
 
@@ -74,6 +74,8 @@ class RdfSurfaceToFol : CliktCommand() {
             false to N3sToFolParser.createFofAnnotatedConjecture("\$true")
         } else {
             val nonPrefixAnswerGraph = replacePrefix(answerPrefixMap, answerGraph)
+            println(nonPrefixAnswerGraph)
+
             when (val answerParserResult = N3sToFolParser.tryParseToEnd(nonPrefixAnswerGraph)) {
                 is Parsed -> {
                     //TODO("beetle7.n3")

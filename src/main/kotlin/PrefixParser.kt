@@ -9,7 +9,7 @@ object PrefixParser : Grammar<Map<String, String>>() {
     val prefixStart by literalToken("@prefix")
     val prefix by regexToken("\\w*:")
     val space by regexToken("\\s*", ignore = true)
-    val uri by regexToken("^<\\w*:[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*>")
+    val uri by regexToken("^<[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*>")
     val dot by literalToken(".")
 
     val prefixSentence by -prefixStart and -oneOrMore(space) and prefix and -oneOrMore(space) and uri and -dot
