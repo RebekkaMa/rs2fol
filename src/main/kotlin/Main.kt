@@ -44,7 +44,7 @@ class RdfSurfaceToFol : CliktCommand() {
             var newGraph = graph
             prefixMap.forEach { (prefix, uri) ->
                 newGraph =
-                    newGraph.replace(regex = Regex("(^|[\\[\\s,.;()])$prefix([\\S&&[^.,;\\]()]]*)")) { matchResult: MatchResult ->
+                    newGraph.replace(regex = Regex("(^|[\\[\\s,.;()^])$prefix([\\S&&[^.,;\\]()]]*)")) { matchResult: MatchResult ->
                         val (start,name) = matchResult.destructured
                         start + uri.dropLast(1) + name + ">"
                     }
@@ -74,7 +74,6 @@ class RdfSurfaceToFol : CliktCommand() {
             false to N3sToFolParser.createFofAnnotatedConjecture("\$true")
         } else {
             val nonPrefixAnswerGraph = replacePrefix(answerPrefixMap, answerGraph)
-            println(nonPrefixAnswerGraph)
 
             when (val answerParserResult = N3sToFolParser.tryParseToEnd(nonPrefixAnswerGraph)) {
                 is Parsed -> {
