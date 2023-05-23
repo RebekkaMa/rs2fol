@@ -9,6 +9,7 @@ object N3sToFolParser : Grammar<String?>() {
 
     var blankNodeCounter = 0
     var blankNodeTriplesSet = mutableListOf<String>()
+    var prefixMap = mapOf<String, String>()
 
     val varSet = mutableSetOf<String>()
 
@@ -140,6 +141,15 @@ object N3sToFolParser : Grammar<String?>() {
         } or triples
                 and -optional(dot)) use { this.joinToString(prefix = "(", postfix = ")", separator = " & ") })
 
+
+    val parserWithPrefix by PrefixParser.map { prefixMap = it } and N3sToFolParser.use {
+        if (varSet.isEmpty()) this else {
+            val varSetString = varSet.joinToString(separator = ",")
+            varSet.clear()
+            " ? [$varSetString] : $this"
+        }
+    }
+
     override val rootParser: Parser<String> by N3sToFolParser use {
         if (varSet.isEmpty()) this else {
             val varSetString = varSet.joinToString(separator = ",")
@@ -155,7 +165,6 @@ object N3sToFolParser : Grammar<String?>() {
         blankNodeCounter++
         return "BN_$blankNodeCounter"
     }
-
 
     private fun createTripleString(str1: String, str2: String, str3: String): String = "triple($str1,$str2,$str3)"
 }
