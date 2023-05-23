@@ -13,9 +13,9 @@ import java.io.File
 
 
 class RdfSurfaceToFol : CliktCommand() {
-    val axiomFile by option(help = "The path to the RDF Surface Graph").file().prompt("The path of your RDF Surface Graph")
-    val conjectureFile by argument(help = "The path to the solution").file().optional()
-    val vampireExecFile by argument(help = "The path to the solution").file()
+    val axiomFile by option(help = "Path of the file with the RDF Surface graph").file().prompt("Path of the file with the RDF Surface graph")
+    val conjectureFile by argument(help = "Path of the file with the expected solution").file().optional()
+    val vampireExecFile by argument(help = "Path of the vampire execution file").file()
         .default(File("/home/rebekka/Programs/vampire/bin/"))
     val short by option("--short", "-s", help = "Short output").flag(default = false)
 

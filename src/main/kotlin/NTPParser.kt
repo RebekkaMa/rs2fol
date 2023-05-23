@@ -79,7 +79,7 @@ object N3sToFolParser : Grammar<String?>() {
     val predicate by iri or blankNode.map { varSet.add(it); it } or literal
     val rdfObject by iri or blankNode.map { varSet.add(it); it } or literal or blankNodePropertyList //TODO("or collection")
 
-    val verb by predicate or a.map { it.text }
+    val verb by predicate or a.map { "'<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'" }
 
     val objectList by rdfObject and zeroOrMore(-comma and rdfObject) use { listOf(this.t1).plus(this.t2) }
     val predicateObjectList  by verb and objectList and zeroOrMore(
