@@ -27,6 +27,8 @@ object N3sToFolParser : Grammar<String?>() {
 
     val negativeSurfaceIRI by literalToken("<http://www.w3.org/2000/10/swap/log#onNegativeSurface>")
     val positiveSurfaceIRI by literalToken("<http://www.w3.org/2000/10/swap/log#onPositiveSurface>")
+    val querySurfaceIRI by literalToken("<http://www.w3.org/2000/10/swap/log#onQuerySurface>")
+    val neutralSurfaceIRI by literalToken("<http://www.w3.org/2000/10/swap/log#onNeutralSurface>")
 
     val blankNodeLabelToken by regexToken("_:\\w+")
     val blankNodeLabel by blankNodeLabelToken.use { this.text.drop(2).replaceFirstChar { it.uppercaseChar() } }
@@ -115,31 +117,64 @@ object N3sToFolParser : Grammar<String?>() {
     val emptyvarList by (lpar and rpar) use { listOf<String>() }
     val variableList by emptyvarList or (-lpar and oneOrMore(blankNode) and -rpar)
 
-    val N3sToFolParser: Parser<String> by
-    (oneOrMore(
+    val N3sToFolParserNonDefault: Parser<String> by (oneOrMore(
         (variableList and
-                (negativeSurfaceIRI or positiveSurfaceIRI) and
+                (negativeSurfaceIRI or positiveSurfaceIRI or querySurfaceIRI) and
                 -lparcurl and
-                (parser(this::N3sToFolParser) or optional(space).use { "\$true" }) and
+                (parser(this::N3sToFolParserNonDefault) or optional(space).use { "\$true" }) and
                 -rparcurl) map { (variableList, surface, rest) ->
             val variableListNotNull = variableList.isNotEmpty()
             val variableListStrings = variableList.joinToString(separator = ",")
             varSet.removeAll(variableList.toSet())
             buildString {
-                if (surface.type == positiveSurfaceIRI) {
-                    if (variableListNotNull) {
-                        this.append("? [$variableListStrings] : ")
+                when(surface.type){
+                    positiveSurfaceIRI -> {
+                        if (variableListNotNull) {
+                            this.append("? [$variableListStrings] : ")
+                        }
                     }
-                } else {
-                    if (variableListNotNull) {
-                        this.append("! [$variableListStrings] : ")
+                    else -> {
+                        if (variableListNotNull) {
+                            this.append("! [$variableListStrings] : ")
+                        }
+                        this.append("~")
                     }
-                    this.append("~")
                 }
                 this.append(rest)
             }
         } or triples
                 and -optional(dot)) use { this.joinToString(prefix = "(", postfix = ")", separator = " & ") })
+
+    val N3sToFolParser: Parser<String> by
+    (oneOrMore(
+        (variableList and
+                (negativeSurfaceIRI or positiveSurfaceIRI or querySurfaceIRI) and
+                -lparcurl and
+                (parser(this::N3sToFolParserNonDefault) or optional(space).use { "\$true" }) and
+                -rparcurl) map { (variableList, surface, rest) ->
+            val variableListNotNull = variableList.isNotEmpty()
+            val variableListStrings = variableList.joinToString(separator = ",")
+            varSet.removeAll(variableList.toSet())
+            buildString {
+                when (surface.type){
+                    positiveSurfaceIRI -> {
+                        if (variableListNotNull) {
+                            this.append("? [$variableListStrings] : ")
+                        }
+                        this.append(rest)
+                    }
+                    negativeSurfaceIRI -> {
+                        if (variableListNotNull) {
+                            this.append("! [$variableListStrings] : ")
+                        }
+                        this.append("~")
+                        this.append(rest)
+                    }
+                    else -> {}
+                }
+            }
+        } or triples
+                and -optional(dot)) use { this.filter { it.isNotEmpty() }.joinToString(prefix = "(", postfix = ")", separator = " & ") })
 
 
     val parserWithPrefix by PrefixParser.map { prefixMap = it } and N3sToFolParser.use {

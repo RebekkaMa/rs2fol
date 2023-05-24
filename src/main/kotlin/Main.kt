@@ -32,7 +32,6 @@ class RdfSurfaceToFol : CliktCommand() {
                     when {
                         it.contains("^\\s*@prefix ".toRegex()) -> prefixMap.putAll(PrefixParser.parseToEnd(it))
                         it.contains("^\\s*#".toRegex()) -> continue
-                        it.contains("onQuerySurface") -> break
                         else -> graph = graph + "\n" + it
                     }
                 }
