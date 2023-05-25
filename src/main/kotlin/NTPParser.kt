@@ -24,6 +24,7 @@ object N3sToFolParser : Grammar<String?>() {
     val semicolon by literalToken(";")
     val comma by literalToken(",")
     val a by literalToken("a")
+    // val comment by regexToken("^#") //TODO("skolem")
 
     val negativeSurfaceIRI by literalToken("<http://www.w3.org/2000/10/swap/log#onNegativeSurface>")
     val positiveSurfaceIRI by literalToken("<http://www.w3.org/2000/10/swap/log#onPositiveSurface>")
@@ -78,9 +79,11 @@ object N3sToFolParser : Grammar<String?>() {
         blankNodeSubj
     }
 
-    val subject by iri or blankNode.map { varSet.add(it); it } or literal//TODO("or collection")
+    val collection : Parser<String> by -lpar and zeroOrMore(parser(this::rdfObject)) and -rpar use {"list("+this.joinToString(",")+")"}
+
+    val subject by iri or blankNode.map { varSet.add(it); it } or literal or collection
     val predicate by iri or blankNode.map { varSet.add(it); it } or literal
-    val rdfObject by iri or blankNode.map { varSet.add(it); it } or literal or blankNodePropertyList //TODO("or collection")
+    val rdfObject : Parser<String> by iri or blankNode.map { varSet.add(it); it } or literal or blankNodePropertyList or collection
 
     val verb by predicate or a.map { "'<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'" }
 
