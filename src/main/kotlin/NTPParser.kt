@@ -9,6 +9,7 @@ object N3sToFolParser : Grammar<String?>() {
 
     var blankNodeCounter = 0
     var blankNodeTriplesSet = mutableListOf<String>()
+    var prefixMap = mapOf<String, String>()
 
     val varSet = mutableSetOf<String>()
 
@@ -23,11 +24,12 @@ object N3sToFolParser : Grammar<String?>() {
     val semicolon by literalToken(";")
     val comma by literalToken(",")
     val a by literalToken("a")
-    val unicodeSmall by literalToken("\\u")
-    val unicodeBig by literalToken("\\U")
+    // val comment by regexToken("^#") //TODO("skolem")
 
     val negativeSurfaceIRI by literalToken("<http://www.w3.org/2000/10/swap/log#onNegativeSurface>")
     val positiveSurfaceIRI by literalToken("<http://www.w3.org/2000/10/swap/log#onPositiveSurface>")
+    val querySurfaceIRI by literalToken("<http://www.w3.org/2000/10/swap/log#onQuerySurface>")
+    val neutralSurfaceIRI by literalToken("<http://www.w3.org/2000/10/swap/log#onNeutralSurface>")
 
     val blankNodeLabelToken by regexToken("_:\\w+")
     val blankNodeLabel by blankNodeLabelToken.use { this.text.drop(2).replaceFirstChar { it.uppercaseChar() } }
@@ -77,11 +79,13 @@ object N3sToFolParser : Grammar<String?>() {
         blankNodeSubj
     }
 
-    val subject by iri or blankNode.map { varSet.add(it); it } or literal//TODO("or collection")
-    val predicate by iri or blankNode.map { varSet.add(it); it } or literal
-    val rdfObject by iri or blankNode.map { varSet.add(it); it } or literal or blankNodePropertyList //TODO("or collection")
+    val collection : Parser<String> by -lpar and zeroOrMore(parser(this::rdfObject)) and -rpar use {"list("+this.joinToString(",")+")"}
 
-    val verb by predicate or a.map { it.text }
+    val subject by iri or blankNode.map { varSet.add(it); it } or literal or collection
+    val predicate by iri or blankNode.map { varSet.add(it); it } or literal
+    val rdfObject : Parser<String> by iri or blankNode.map { varSet.add(it); it } or literal or blankNodePropertyList or collection
+
+    val verb by predicate or a.map { "'<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'" }
 
     val objectList by rdfObject and zeroOrMore(-comma and rdfObject) use { listOf(this.t1).plus(this.t2) }
     val predicateObjectList  by verb and objectList and zeroOrMore(
@@ -116,31 +120,73 @@ object N3sToFolParser : Grammar<String?>() {
     val emptyvarList by (lpar and rpar) use { listOf<String>() }
     val variableList by emptyvarList or (-lpar and oneOrMore(blankNode) and -rpar)
 
-    val N3sToFolParser: Parser<String> by
-    (oneOrMore(
+    val N3sToFolParserNonDefault: Parser<String> by (oneOrMore(
         (variableList and
-                (negativeSurfaceIRI or positiveSurfaceIRI) and
+                (negativeSurfaceIRI or positiveSurfaceIRI or querySurfaceIRI) and
                 -lparcurl and
-                (parser(this::N3sToFolParser) or optional(space).use { "\$true" }) and
+                (parser(this::N3sToFolParserNonDefault) or optional(space).use { "\$true" }) and
                 -rparcurl) map { (variableList, surface, rest) ->
             val variableListNotNull = variableList.isNotEmpty()
             val variableListStrings = variableList.joinToString(separator = ",")
             varSet.removeAll(variableList.toSet())
             buildString {
-                if (surface.type == positiveSurfaceIRI) {
-                    if (variableListNotNull) {
-                        this.append("? [$variableListStrings] : ")
+                when(surface.type){
+                    positiveSurfaceIRI -> {
+                        if (variableListNotNull) {
+                            this.append("? [$variableListStrings] : ")
+                        }
                     }
-                } else {
-                    if (variableListNotNull) {
-                        this.append("! [$variableListStrings] : ")
+                    else -> {
+                        if (variableListNotNull) {
+                            this.append("! [$variableListStrings] : ")
+                        }
+                        this.append("~")
                     }
-                    this.append("~")
                 }
                 this.append(rest)
             }
         } or triples
                 and -optional(dot)) use { this.joinToString(prefix = "(", postfix = ")", separator = " & ") })
+
+    val N3sToFolParser: Parser<String> by
+    (oneOrMore(
+        (variableList and
+                (negativeSurfaceIRI or positiveSurfaceIRI or querySurfaceIRI) and
+                -lparcurl and
+                (parser(this::N3sToFolParserNonDefault) or optional(space).use { "\$true" }) and
+                -rparcurl) map { (variableList, surface, rest) ->
+            val variableListNotNull = variableList.isNotEmpty()
+            val variableListStrings = variableList.joinToString(separator = ",")
+            varSet.removeAll(variableList.toSet())
+            buildString {
+                when (surface.type){
+                    positiveSurfaceIRI -> {
+                        if (variableListNotNull) {
+                            this.append("? [$variableListStrings] : ")
+                        }
+                        this.append(rest)
+                    }
+                    negativeSurfaceIRI -> {
+                        if (variableListNotNull) {
+                            this.append("! [$variableListStrings] : ")
+                        }
+                        this.append("~")
+                        this.append(rest)
+                    }
+                    else -> {}
+                }
+            }
+        } or triples
+                and -optional(dot)) use { this.filter { it.isNotEmpty() }.joinToString(prefix = "(", postfix = ")", separator = " & ") })
+
+
+    val parserWithPrefix by PrefixParser.map { prefixMap = it } and N3sToFolParser.use {
+        if (varSet.isEmpty()) this else {
+            val varSetString = varSet.joinToString(separator = ",")
+            varSet.clear()
+            " ? [$varSetString] : $this"
+        }
+    }
 
     override val rootParser: Parser<String> by N3sToFolParser use {
         if (varSet.isEmpty()) this else {
@@ -157,7 +203,6 @@ object N3sToFolParser : Grammar<String?>() {
         blankNodeCounter++
         return "BN_$blankNodeCounter"
     }
-
 
     private fun createTripleString(str1: String, str2: String, str3: String): String = "triple($str1,$str2,$str3)"
 }
