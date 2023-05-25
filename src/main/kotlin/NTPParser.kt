@@ -26,9 +26,6 @@ object N3sToFolParser : Grammar<String?>() {
     val unicodeSmall by literalToken("\\u")
     val unicodeBig by literalToken("\\U")
 
-    val hex by regexToken("[0-9]|[A-F]|[a-f]")
-    val UCHAR by (unicodeSmall and hex and hex and hex and hex) or (unicodeBig and hex and hex and hex and hex and hex and hex and hex and hex)
-
     val negativeSurfaceIRI by literalToken("<http://www.w3.org/2000/10/swap/log#onNegativeSurface>")
     val positiveSurfaceIRI by literalToken("<http://www.w3.org/2000/10/swap/log#onPositiveSurface>")
 
