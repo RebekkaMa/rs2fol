@@ -1,4 +1,3 @@
-import PrefixParser.iriref
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parser
@@ -44,7 +43,7 @@ object N3sToFolParser : Grammar<String?>() {
     val pnLocal = "(($pnCharsU|:|[0-9]|$plx)(($pnChars|\\.|:|$plx)*($pnChars|:|$plx))?)".toRegex()
     val pnPrefix = "($pnCharsBase(($pnChars|\\.)*$pnChars)?)".toRegex()
 
-    val iriref by regexToken("<([^\u0000-\u0020<>\"{}|^`\\\\]|(((\\\\u([0-9]|[A-F]|[a-f]){4})|(\\\\U([0-9]|[A-F]|[a-f]){8}))))*>")
+    val iriref by regexToken("<([^\u0000-\u0020<>\"{}|^`\\\\]|((\\\\u([0-9]|[A-F]|[a-f]){4})|(\\\\U([0-9]|[A-F]|[a-f]){8})))*>")
 
     val pnameNs by regexToken("$pnPrefix?:")
     val pnameLn by regexToken("$pnameNs$pnLocal")
