@@ -30,7 +30,7 @@ class RdfSurfaceToFol : CliktCommand() {
             sourceFile.bufferedReader().lines().use { lines ->
                 for (it in lines) {
                     when {
-                        it.contains("^\\s*@prefix ".toRegex()) -> prefixMap.putAll(PrefixParser.parseToEnd(it))
+                        it.contains("^\\s*(@prefix) ".toRegex()) -> prefixMap.putAll(PrefixParser.parseToEnd(it))
                         it.contains("^\\s*#".toRegex()) -> continue
                         else -> graph = graph + "\n" + it
                     }
