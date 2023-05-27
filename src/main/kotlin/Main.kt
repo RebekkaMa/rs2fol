@@ -4,7 +4,6 @@ import com.github.ajalt.clikt.parameters.arguments.default
 import com.github.ajalt.clikt.parameters.arguments.optional
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.file
-import com.github.h0tk3y.betterParse.grammar.parseToEnd
 import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
 import com.github.h0tk3y.betterParse.parser.ErrorResult
 import com.github.h0tk3y.betterParse.parser.ParseException
@@ -30,7 +29,6 @@ class RdfSurfaceToFol : CliktCommand() {
             sourceFile.bufferedReader().lines().use { lines ->
                 for (it in lines) {
                     when {
-                        it.contains("^\\s*@prefix ".toRegex()) -> prefixMap.putAll(PrefixParser.parseToEnd(it))
                         it.contains("^\\s*#".toRegex()) -> continue
                         else -> graph = graph + "\n" + it
                     }
@@ -39,26 +37,13 @@ class RdfSurfaceToFol : CliktCommand() {
             return prefixMap to graph
         }
 
-        fun replacePrefix(prefixMap: Map<String, String>, graph: String): String {
-            var newGraph = graph
-            prefixMap.forEach { (prefix, uri) ->
-                newGraph =
-                    newGraph.replace(regex = Regex("(^|[\\[\\s,.;()^])$prefix([\\S&&[^.,;\\]()]]*)")) { matchResult: MatchResult ->
-                        val (start,name) = matchResult.destructured
-                        start + uri.dropLast(1) + name + ">"
-                    }
-            }
-            return newGraph
-        }
-
         val (prefixMap, graph) = readFile(axiomFile)
         val (answerPrefixMap, answerGraph) = readFile(computedAnswerFile)
 
         val (parseError, parseResultValue) = if (graph.isBlank()) {
             false to N3sToFolParser.createFofAnnotatedAxiom("\$true")
         } else {
-            val nonPrefixGraph = replacePrefix(prefixMap, graph)
-            when (val parserResult = N3sToFolParser.tryParseToEnd(nonPrefixGraph)) {
+            when (val parserResult = N3sToFolParser.tryParseToEnd(graph)) {
                 is Parsed -> {
                     false to N3sToFolParser.createFofAnnotatedAxiom(parserResult.value)
                 }
@@ -72,9 +57,7 @@ class RdfSurfaceToFol : CliktCommand() {
         val (answerParseError, answerParseResultValue) = if (answerGraph.isBlank()) {
             false to N3sToFolParser.createFofAnnotatedConjecture("\$true")
         } else {
-            val nonPrefixAnswerGraph = replacePrefix(answerPrefixMap, answerGraph)
-
-            when (val answerParserResult = N3sToFolParser.tryParseToEnd(nonPrefixAnswerGraph)) {
+            when (val answerParserResult = N3sToFolParser.tryParseToEnd(answerGraph)) {
                 is Parsed -> {
                     //TODO("beetle7.n3")
                     false to N3sToFolParser.createFofAnnotatedConjecture(answerParserResult.value)
