@@ -12,7 +12,8 @@ import java.io.File
 
 
 class RdfSurfaceToFol : CliktCommand() {
-    val axiomFile by option(help = "Path of the file with the RDF Surface graph").file().prompt("Path of the file with the RDF Surface graph")
+    val axiomFile by option(help = "Path of the file with the RDF Surface graph").file()
+        .prompt("Path of the file with the RDF Surface graph")
     val conjectureFile by argument(help = "Path of the file with the expected solution").file().optional()
     val vampireExecFile by argument(help = "Path of the vampire execution file").file()
         .default(File("/home/rebekka/Programs/vampire/bin/"))
@@ -23,49 +24,47 @@ class RdfSurfaceToFol : CliktCommand() {
         val computedAnswerFile =
             conjectureFile ?: File(axiomFile.parentFile.path + "/" + axiomFile.nameWithoutExtension + "-answer.n3")
 
-        fun readFile(sourceFile: File): Pair<Map<String, String>, String> {
-            val prefixMap = mutableMapOf<String, String>()
-            var graph = ""
-            sourceFile.bufferedReader().lines().use { lines ->
-                for (it in lines) {
-                    when {
-                        it.contains("^\\s*#".toRegex()) -> continue
-                        else -> graph = graph + "\n" + it
+        fun readFile(sourceFile: File): String {
+            return buildString {
+                sourceFile.bufferedReader().lines().use { lines ->
+                    for (it in lines) {
+                        when {
+                            it.contains("^\\s*#".toRegex()) -> continue
+                            else -> this.append(it + "\n")
+                        }
                     }
                 }
             }
-            return prefixMap to graph
         }
 
-        val (prefixMap, graph) = readFile(axiomFile)
-        val (answerPrefixMap, answerGraph) = readFile(computedAnswerFile)
+        val graph = readFile(axiomFile)
+        val answerGraph = readFile(computedAnswerFile)
 
-        val (parseError, parseResultValue) = if (graph.isBlank()) {
-            false to N3sToFolParser.createFofAnnotatedAxiom("\$true")
-        } else {
-            when (val parserResult = N3sToFolParser.tryParseToEnd(graph)) {
+        val (parseError, parseResultValue) =
+            when (
+                val parserResult = N3sToFolParser.tryParseToEnd(graph)) {
                 is Parsed -> {
                     false to N3sToFolParser.createFofAnnotatedAxiom(parserResult.value)
                 }
+
                 is ErrorResult -> {
                     true to ParseException(parserResult).stackTraceToString()
                 }
+
             }
-        }
 
 
-        val (answerParseError, answerParseResultValue) = if (answerGraph.isBlank()) {
-            false to N3sToFolParser.createFofAnnotatedConjecture("\$true")
-        } else {
-            when (val answerParserResult = N3sToFolParser.tryParseToEnd(answerGraph)) {
-                is Parsed -> {
-                    //TODO("beetle7.n3")
-                    false to N3sToFolParser.createFofAnnotatedConjecture(answerParserResult.value)
-                }
-                is ErrorResult -> {
-                    true to ParseException(answerParserResult).stackTraceToString()
-                }
+        val (answerParseError, answerParseResultValue) = when (
+            val answerParserResult = N3sToFolParser.tryParseToEnd(answerGraph)) {
+            is Parsed -> {
+                //TODO("beetle7.n3")
+                false to N3sToFolParser.createFofAnnotatedConjecture(answerParserResult.value)
             }
+
+            is ErrorResult -> {
+                true to ParseException(answerParserResult).stackTraceToString()
+            }
+
         }
 
         val resultString =
