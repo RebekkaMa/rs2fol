@@ -1,0 +1,5 @@
+#IRIs
+#Should be equal to example 7
+PREFIX somePrefix: <http://www.perceive.net/schemas/relationship/>
+
+<http://example.org/#green-goblin> somePrefix:enemyOf <http://example.org/#spiderman> .

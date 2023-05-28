@@ -7,6 +7,8 @@ import com.github.h0tk3y.betterParse.parser.Parser
 
 object N3sToFolParser : Grammar<String?>() {
 
+    val lineComment by regexToken("^\\s*#.*$".toRegex(RegexOption.MULTILINE), ignore = true) //TODO("skolem")
+    val inlineComment by regexToken("\\s#.*$".toRegex(RegexOption.MULTILINE), ignore = true) //TODO("skolem")
     val space by regexToken("\\s+", ignore = true)
 
     var blankNodeCounter = 0
@@ -26,7 +28,6 @@ object N3sToFolParser : Grammar<String?>() {
     val semicolon by literalToken(";")
     val comma by literalToken(",")
     val a by regexToken("\\ba\\b")
-    // val comment by regexToken("^#") //TODO("skolem")
 
     val prefixIdStart by literalToken("@prefix")
     val baseStart by literalToken("@base")
@@ -39,59 +40,37 @@ object N3sToFolParser : Grammar<String?>() {
     val querySurfaceIRI by literalToken("log:onQuerySurface")
     val neutralSurfaceIRI by literalToken("log:onNeutralSurface")
 
-    val numericLiteralToken by regexToken("(([+-]?([0-9]+\\.[0-9]*([eE][+-]?[0-9]+)))|(\\.[0-9]+([eE][+-]?[0-9]+))|([0-9]+([eE][+-]?[0-9]+)))|([+-]?[0-9]*\\.[0-9]+)|([+-]?[0-9]+)")
-
-    val pnLocalESC = "(\\\\[-_~.!$&'()*+,;=/?#@%])".toRegex()
-    val hex = "([0-9]|[A-F]|[a-f])".toRegex()
-    val percent = "(%$hex{2})".toRegex()
-    val plx = "$percent|$pnLocalESC".toRegex()
-
-    val pnCharsBase =
-        "([A-Z]|[a-z]|[\u00C0-\u00D6]|[\u00D8-\u00F6]|[\u00F8-\u02FF]|[\u0370-\u037D]|[\u037F-\u1FFF]|[\u200C-\u200D]|[\u2070-\u218F]|[\u2C00-\u2FEF]|[\u3001-\uD7FF]|[\uF900-\uFDCF]|[\uFDF0-\uFFFD]|[\uD800\uDC00-\uDB7F\uDFFF])".toRegex()
-    val pnCharsU = "($pnCharsBase|_)".toRegex()
-    val pnChars = "($pnCharsU|-|[0-9]|\u00B7|[\u0300-\u036F]|[\u203F-\u2040])".toRegex()
-
-    val pnLocal = "(($pnCharsU|:|[0-9]|$plx)(($pnChars|\\.|:|$plx)*($pnChars|:|$plx))?)".toRegex()
-    val pnPrefix = "($pnCharsBase(($pnChars|\\.)*$pnChars)?)".toRegex()
-
     val iriref by regexToken("<([^\u0000-\u0020<>\"{}|^`\\\\]|((\\\\u([0-9]|[A-F]|[a-f]){4})|(\\\\U([0-9]|[A-F]|[a-f]){8})))*>")
 
     val blankNodeLabelToken by regexToken("_:($pnCharsU|[0-9])(($pnChars|\\.)*$pnChars)?")
 
+    val pnameLn by regexToken("$pnPrefix?:$pnLocal")
     val pnameNs by regexToken("$pnPrefix?:")
-    //val a1 by regexToken("$pnPrefix?:(?!\\s)")
-    val a2 by regexToken("(?<!\\s)$pnLocal")
-    val pnameLn by pnameNs and a2
-    val prefixedName by pnameLn.use {"<" + prefixMap[this.t1.text.dropLast(1)] + this.t2.text + ">"
+    val prefixedName by pnameLn.use {
+        val (prefix, local) = this.text.split(':', limit = 2)
+        return@use "<" + prefixMap[prefix] + local + ">"
     } or pnameNs.use { "<" + prefixMap[this.text.trimEnd().dropLast(1)] + ">" }
 
-    val echar = "(\\[tbnrf\"'\\\\])".toRegex()
-    val uchar = "((\\\\u$hex{4})|(\\\\U$hex{8}))".toRegex()
-
     val iri by iriref.map { if (baseIri != null) "<$baseIri" + it.text.drop(1) else it.text} or prefixedName use { "'$this'" }
+
 
     val blankNodeLabel by blankNodeLabelToken.use { this.text.drop(2).replaceFirstChar { it.uppercaseChar() } }
     val anon by lparBracket and rparBracket //TODO(WS*)
     val blankNode by blankNodeLabel or anon.use { createBlankNodeId() }
 
-    val stringLiteralQuote = "(\"([^\u0022\u000A\u000D\\\\]|$echar|$uchar)*\")".toRegex()
-    val stringLiteralSingleQuote = "('([^\u0022\u000A\u000D\\\\]|$echar|$uchar)*')".toRegex()
-    val stringLiteralLongSingleQuote = "('''(('|(''))?([^'\\\\]|$echar|$uchar))*''')".toRegex()
-    val stringLiteralLongQuote = "(\"\"\"((\"|(\"\"))?([^\"\\\\]|$echar|$uchar))*\"\"\")".toRegex()
-
-
-    val stringToken by regexToken("$stringLiteralQuote|$stringLiteralSingleQuote|$stringLiteralLongSingleQuote|$stringLiteralLongQuote")
+    val numericLiteralToken by regexToken("(?<!:)\\b((([+-]?([0-9]+\\.[0-9]*([eE][+-]?[0-9]+)))|(\\.[0-9]+([eE][+-]?[0-9]+))|([0-9]+([eE][+-]?[0-9]+)))|([+-]?[0-9]*\\.[0-9]+)|([+-]?[0-9]+))\\b")
+    val numericLiteral by numericLiteralToken use { "'" + this.text + "'" }
+    val stringToken by regexToken("$stringLiteralLongSingleQuote|$stringLiteralLongQuote|$stringLiteralQuote|$stringLiteralSingleQuote")
     val string by stringToken use { this.text }
     val langTagToken by regexToken("@[a-zA-Z]+(-[a-zA-Z0-9]+)*")
     val langTag by langTagToken use { this.text }
     val circumflexToken by literalToken("^^")
     val circumflex by circumflexToken use { this.text }
     val rdfLiteral by string and optional(langTag or ((circumflex and iri) use { this.t1 + this.t2 })) use { "'" + this.t1 + (if (this.t2.isNullOrEmpty()) "" else this.t2) + "'" }
-    val numericLiteral by numericLiteralToken use { "'" + this.text + "'" }
     val booleanLiteralToken by regexToken("(true)|(false)")
     val booleanLiteral by booleanLiteralToken use { this.text }
 
-    val literal by rdfLiteral or numericLiteral or booleanLiteral
+    val literal by numericLiteral or rdfLiteral or booleanLiteral
 
     val blankNodePropertyList: Parser<String> by -lparBracket and parser(this::predicateObjectList) and -rparBracket map { (pred, objList, semicolonRestList) ->
         val blankNodeSubj = createBlankNodeId()

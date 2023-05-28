@@ -24,21 +24,8 @@ class RdfSurfaceToFol : CliktCommand() {
         val computedAnswerFile =
             conjectureFile ?: File(axiomFile.parentFile.path + "/" + axiomFile.nameWithoutExtension + "-answer.n3")
 
-        fun readFile(sourceFile: File): String {
-            return buildString {
-                sourceFile.bufferedReader().lines().use { lines ->
-                    for (it in lines) {
-                        when {
-                            it.contains("^\\s*#".toRegex()) -> continue
-                            else -> this.append(it + "\n")
-                        }
-                    }
-                }
-            }
-        }
-
-        val graph = readFile(axiomFile)
-        val answerGraph = readFile(computedAnswerFile)
+        val graph = axiomFile.readText()
+        val answerGraph = computedAnswerFile.readText()
 
         val (parseError, parseResultValue) =
             when (
@@ -50,7 +37,6 @@ class RdfSurfaceToFol : CliktCommand() {
                 is ErrorResult -> {
                     true to ParseException(parserResult).stackTraceToString()
                 }
-
             }
 
 

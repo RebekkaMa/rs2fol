@@ -1,0 +1,10 @@
+#nesting unlabeled blank nodes in turtle
+##should be correspond to example 16
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+_:a <http://xmlns.com/foaf/0.1/name> "Alice" .
+_:a <http://xmlns.com/foaf/0.1/knows> _:b .
+_:b <http://xmlns.com/foaf/0.1/name> "Bob" .
+_:b <http://xmlns.com/foaf/0.1/knows> _:c .
+_:c <http://xmlns.com/foaf/0.1/name> "Eve" .
+_:b <http://xmlns.com/foaf/0.1/mbox> <bob@example.com> .
