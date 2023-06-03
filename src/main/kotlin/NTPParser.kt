@@ -250,6 +250,11 @@ object N3sToFolParser : Grammar<String?>() {
         if (varSet.isEmpty()) this else {
             val varSetString = varSet.joinToString(separator = ",")
             varSet.clear()
+            blankNodeTriplesSet.clear()
+            prefixMap.clear()
+            baseIri = null
+
+
             " ? [$varSetString] : $this"
         }
     }
