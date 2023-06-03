@@ -42,6 +42,7 @@ class NTPParserTest : ShouldSpec(
             val file = File("/home/rebekka/IdeaProjects/untitled1/src/test/resources/turtle/example10.n3")
             println(N3sToFolParser.parseToEnd(file.readText()))
         }
+        //TODO("Multiline Support, multiple ' in TPTP Format")
         should("transform example11.n3 without exception"){
             val file = File("/home/rebekka/IdeaProjects/untitled1/src/test/resources/turtle/example11.n3")
             println(N3sToFolParser.parseToEnd(file.readText()))
@@ -119,6 +120,9 @@ class NTPParserTest : ShouldSpec(
         context("Literals"){
             should("not throw exception"){
                 println(N3sToFolParser.iri.parseToEnd(N3sToFolParser.tokenizer.tokenize("show:123")))
+            }
+            should("not throw exception"){
+                println(N3sToFolParser.literal.parseToEnd(N3sToFolParser.tokenizer.tokenize("2")))
             }
             should("not throw exception"){
                 println(N3sToFolParser.literal.parseToEnd(N3sToFolParser.tokenizer.tokenize("2")))

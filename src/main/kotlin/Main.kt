@@ -43,7 +43,7 @@ class RdfSurfaceToFol : CliktCommand() {
         val (answerParseError, answerParseResultValue) = when (
             val answerParserResult = N3sToFolParser.tryParseToEnd(answerGraph)) {
             is Parsed -> {
-                //TODO("beetle7.n3")
+                //TODO("beetle7.n3: fol query?")
                 false to N3sToFolParser.createFofAnnotatedConjecture(answerParserResult.value)
             }
 

@@ -1,57 +1,69 @@
-import javax.xml.bind.DatatypeConverter
-import javax.xml.datatype.DatatypeFactory
+import org.apache.jena.datatypes.xsd.XSDDatatype.*
 
 class RDFLiteralToTPTPConstantTransformer {
 
-    fun test(lexicalValue : String, datatype: String): String{
-        val datatypeFactory = DatatypeFactory.newDefaultInstance()
-        //TODO(Speparate "http://www.w3.org/2001/XMLSchema#" from ...)
+    val xsdIri = "http://www.w3.org/2001/XMLSchema#"
+
+    fun transformNumericLiteral(numericLiteral: String): String {
+        return when {
+            numericLiteral.contains("E", ignoreCase = true) -> transformLexicalValue(numericLiteral, xsdIri + "double")
+            numericLiteral.contains(".", ignoreCase = true) -> transformLexicalValue(numericLiteral, xsdIri + "decimal")
+            else -> transformLexicalValue(numericLiteral, xsdIri + "integer")
+        }
+    }
+
+    fun transformLexicalValue(lexicalValue: String, fullDatatypeIRI: String = xsdIri + "string"): String {
         //TODO(Catch exceptions)
-        val result =  when (datatype){
-            "http://www.w3.org/2001/XMLSchema#string" -> DatatypeConverter.parseString(lexicalValue)
-            "http://www.w3.org/2001/XMLSchema#boolean" -> DatatypeConverter.parseBoolean(lexicalValue)
-            "http://www.w3.org/2001/XMLSchema#decimal" -> DatatypeConverter.parseDecimal(lexicalValue)
-            "http://www.w3.org/2001/XMLSchema#integer" -> DatatypeConverter.parseInteger(lexicalValue)
-            "http://www.w3.org/2001/XMLSchema#double" -> DatatypeConverter.parseDouble(lexicalValue)
-            "http://www.w3.org/2001/XMLSchema#float" -> DatatypeConverter.parseFloat(lexicalValue)
-            "http://www.w3.org/2001/XMLSchema#date" -> DatatypeConverter.parseDate(lexicalValue)
-            "http://www.w3.org/2001/XMLSchema#time" -> DatatypeConverter.parseTime(lexicalValue)
-            "http://www.w3.org/2001/XMLSchema#dateTime" -> DatatypeConverter.parseDateTime(lexicalValue) //TODO()
-            "http://www.w3.org/2001/XMLSchema#dateTimeStamp" -> TODO()
-            "http://www.w3.org/2001/XMLSchema#gYear" -> TODO()
-            "http://www.w3.org/2001/XMLSchema#gMonth" -> TODO()
-            "http://www.w3.org/2001/XMLSchema#gDay" -> TODO()
-            "http://www.w3.org/2001/XMLSchema#gYearMonth" -> TODO()
-            "http://www.w3.org/2001/XMLSchema#duration" -> datatypeFactory.newDuration(lexicalValue).toString()
-            "http://www.w3.org/2001/XMLSchema#yearMonthDuration" -> datatypeFactory.newDurationYearMonth(lexicalValue).toString()
-            "http://www.w3.org/2001/XMLSchema#dayTimeDuration" -> datatypeFactory.newDurationDayTime(lexicalValue).toString()
-            "http://www.w3.org/2001/XMLSchema#byte" -> DatatypeConverter.parseByte(lexicalValue)
-            "http://www.w3.org/2001/XMLSchema#short" -> DatatypeConverter.parseShort(lexicalValue)
-            "http://www.w3.org/2001/XMLSchema#int" -> DatatypeConverter.parseInt(lexicalValue)
-            "http://www.w3.org/2001/XMLSchema#long" -> DatatypeConverter.parseLong(lexicalValue)
-            "http://www.w3.org/2001/XMLSchema#unsignedByte" -> TODO()
-            "http://www.w3.org/2001/XMLSchema#unsignedShort" -> DatatypeConverter.parseUnsignedShort(lexicalValue)
-            "http://www.w3.org/2001/XMLSchema#unsignedInt" -> DatatypeConverter.parseUnsignedInt(lexicalValue)
-            "http://www.w3.org/2001/XMLSchema#unsignedLong" -> TODO()
-            "http://www.w3.org/2001/XMLSchema#positiveInteger" -> TODO()
-            "http://www.w3.org/2001/XMLSchema#nonNegativeInteger" -> TODO()
-            "http://www.w3.org/2001/XMLSchema#negativeInteger" -> TODO()
-            "http://www.w3.org/2001/XMLSchema#nonPositiveInteger" -> TODO()
-            "http://www.w3.org/2001/XMLSchema#hexBinary" -> DatatypeConverter.parseHexBinary(lexicalValue)
-            "http://www.w3.org/2001/XMLSchema#base64Binary" -> DatatypeConverter.parseBase64Binary(lexicalValue)
-            "http://www.w3.org/2001/XMLSchema#anyURI" -> TODO()
-            "http://www.w3.org/2001/XMLSchema#language" -> TODO()
-            "http://www.w3.org/2001/XMLSchema#normalizedString" -> TODO()
-            "http://www.w3.org/2001/XMLSchema#token" -> TODO()
-            "http://www.w3.org/2001/XMLSchema#NMTOKEN" -> TODO()
-            "http://www.w3.org/2001/XMLSchema#Name" -> TODO()
-            "http://www.w3.org/2001/XMLSchema#NCName" -> TODO()
-            else -> lexicalValue
+
+        // https://jena.apache.org/documentation/javadoc/jena/org.apache.jena.core/org/apache/jena/datatypes/xsd/XSDDatatype.html#XSDnegativeInteger
+        val result = when {
+            fullDatatypeIRI.startsWith(xsdIri) -> when (fullDatatypeIRI.removePrefix(xsdIri)) {
+                "string" -> XSDstring.parse(lexicalValue).toString()
+                "boolean" -> XSDboolean.parse(lexicalValue).toString()
+                "decimal" -> XSDdecimal.parse(lexicalValue).toString()
+                "integer" -> XSDinteger.parse(lexicalValue).toString()
+                "double" -> XSDdouble.parse(lexicalValue).toString()
+                "float" -> XSDfloat.parse(lexicalValue).toString()
+                "date" -> XSDdate.parse(lexicalValue).toString()
+                "time" -> XSDtime.parse(lexicalValue).toString()
+                "dateTime" -> XSDdateTime.parse(lexicalValue).toString()
+                "dateTimeStamp" -> XSDdateTimeStamp.parse(lexicalValue).toString()
+                "gYear" -> XSDgYear.parse(lexicalValue).toString()
+                "gMonth" -> XSDgMonth.parse(lexicalValue).toString()
+                "gDay" -> XSDgYear.parse(lexicalValue).toString()
+                "gYearMonth" -> XSDgYearMonth.parse(lexicalValue).toString()
+                "duration" -> XSDduration.parse(lexicalValue).toString()
+                "yearMonthDuration" -> XSDyearMonthDuration.parse(lexicalValue).toString()
+                "dayTimeDuration" -> XSDdayTimeDuration.parse(lexicalValue).toString()
+                "byte" -> XSDbyte.parse(lexicalValue).toString()
+                "short" -> XSDshort.parse(lexicalValue).toString()
+                "int" -> XSDint.parse(lexicalValue).toString()
+                "long" -> XSDlong.parse(lexicalValue).toString()
+                "unsignedByte" -> XSDunsignedByte.parse(lexicalValue).toString()
+                "unsignedShort" -> XSDshort.parse(lexicalValue).toString()
+                "unsignedInt" -> XSDunsignedInt.parse(lexicalValue).toString()
+                "unsignedLong" -> XSDunsignedLong.parse(lexicalValue).toString()
+                "positiveInteger" -> XSDpositiveInteger.parse(lexicalValue).toString()
+                "nonNegativeInteger" -> XSDnonNegativeInteger.parse(lexicalValue).toString()
+                "negativeInteger" -> XSDnegativeInteger.parse(lexicalValue).toString()
+                "nonPositiveInteger" -> XSDnonPositiveInteger.parse(lexicalValue).toString()
+                "hexBinary" -> XSDhexBinary.parse(lexicalValue).toString()
+                "base64Binary" -> XSDbase64Binary.parse(lexicalValue).toString()
+                "anyURI" -> XSDanyURI.parse(lexicalValue).toString()
+                "language" -> XSDlanguage.parse(lexicalValue).toString()
+                "normalizedString" -> XSDnormalizedString.parse(lexicalValue).toString()
+                "token" -> XSDtoken.parse(lexicalValue).toString()
+                "NMTOKEN" -> XSDNMTOKEN.parse(lexicalValue).toString()
+                "Name" -> XSDName.parse(lexicalValue).toString()
+                "NCName" -> XSDNCName.parse(lexicalValue).toString()
+                else -> lexicalValue
+            }.let { "\"$it\"^^$fullDatatypeIRI" }
+            fullDatatypeIRI.startsWith("@") -> "\"" + lexicalValue + "\"" + fullDatatypeIRI.lowercase()
+            else -> "\"$lexicalValue\"^^$fullDatatypeIRI"
+
         }
         return "'$result'"
     }
-
-
 
 
 }

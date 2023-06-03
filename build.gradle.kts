@@ -17,6 +17,7 @@ dependencies {
     testImplementation("io.kotest:kotest-runner-junit5-jvm:4.6.0")
     implementation("javax.xml.bind:jaxb-api:2.3.1")
     implementation("org.glassfish.jaxb:jaxb-runtime:2.3.1")
+    implementation("org.apache.jena:jena-core:4.8.0")
 }
 
 tasks.test {

@@ -48,38 +48,95 @@ class RDFLiteralToTPTPConstantTransformerTest : ShouldSpec(
 
         should("return equal integer numbers") {
 
-            val res1 = transformer.test("005", xmlInteger)
-            val res2 = transformer.test("5", xmlInteger)
-            val res3 = transformer.test("+5", xmlInteger)
+            val res1 = transformer.transformLexicalValue("005", xmlInteger)
+            val res2 = transformer.transformLexicalValue("5", xmlInteger)
+            val res3 = transformer.transformLexicalValue("+5", xmlInteger)
 
             res1 shouldBeEqualComparingTo res2
             res2 shouldBeEqualComparingTo res3
         }
 
+
         should("return equal decimal numbers") {
 
-            val res1 = transformer.test("005.", xmlDecimal)
-            val res2 = transformer.test("5.00", xmlDecimal)
-            val res3 = transformer.test("+5", xmlDecimal)
-            val res4 = transformer.test("+5.00", xmlDecimal)
+            //"Precision is not reflected in this value space." <-- https://www.w3.org/TR/xmlschema11-2/#decimal
+            val res1 = transformer.transformLexicalValue("005.", xmlDecimal)
+            val res2 = transformer.transformLexicalValue("5.000", xmlDecimal)
+            val res3 = transformer.transformLexicalValue("+5", xmlDecimal)
+            val res4 = transformer.transformLexicalValue("+5.000", xmlDecimal)
+
+            res1 shouldBeEqualComparingTo res2
+            res2 shouldBeEqualComparingTo  res3
+            res3 shouldBeEqualComparingTo res4
+        }
+
+        should("return equal float numbers") {
+
+            val res1 = transformer.transformLexicalValue("005.", xmlDecimal)
+            val res2 = transformer.transformLexicalValue("5.000", xmlDecimal)
+            val res3 = transformer.transformLexicalValue("+5", xmlDecimal)
+            val res4 = transformer.transformLexicalValue("+5.000", xmlDecimal)
+
+            val res5 = transformer.transformLexicalValue("100", xmlFloat)
+            val res6 = transformer.transformLexicalValue("1.0E2", xmlFloat)
 
 
-            res1 shouldBeEqualComparingTo res3
-            res1 shouldNotBeEqualComparingTo res2
-            res4 shouldBeEqualComparingTo res2
+            res1 shouldBeEqualComparingTo res2
+            res2 shouldBeEqualComparingTo  res3
+            res3 shouldBeEqualComparingTo res4
+
+            res5 shouldBeEqualComparingTo res6
+
+        }
+
+        should("return equal double numbers") {
+
+            val res1 = transformer.transformLexicalValue("005.", xmlDecimal)
+            val res2 = transformer.transformLexicalValue("5.000", xmlDecimal)
+            val res3 = transformer.transformLexicalValue("+5", xmlDecimal)
+            val res4 = transformer.transformLexicalValue("+5.000", xmlDecimal)
+            val res5 = transformer.transformLexicalValue("NaN", xmlDouble)
+
+            res1 shouldBeEqualComparingTo res2
+            res2 shouldBeEqualComparingTo  res3
+            res3 shouldBeEqualComparingTo res4
         }
 
         should("return equal boolean values"){
-            val res1 = transformer.test("true", xmlBoolean)
-            val res2 = transformer.test("1", xmlBoolean)
-            val res3 = transformer.test("false", xmlBoolean)
-            val res4 = transformer.test("0", xmlBoolean)
+            val res1 = transformer.transformLexicalValue("true", xmlBoolean)
+            val res2 = transformer.transformLexicalValue("1", xmlBoolean)
+            val res3 = transformer.transformLexicalValue("false", xmlBoolean)
+            val res4 = transformer.transformLexicalValue("0", xmlBoolean)
 
             res1 shouldBeEqualComparingTo res2
             res3 shouldBeEqualComparingTo res4
 
         }
+        should("return equal date values"){
+            val res1 = transformer.transformLexicalValue("2002-10-10+13:00", xmlDate)
+            val res2 = transformer.transformLexicalValue("2002-10-09-11:00", xmlDate)
 
+            res1 shouldBeEqualComparingTo res2
+
+        }
+
+        should("return unequal gYear values"){
+            val res1 = transformer.transformLexicalValue("2002", xmlGYear)
+            val res2 = transformer.transformLexicalValue("2002Z", xmlGYear)
+
+            res1 shouldNotBeEqualComparingTo  res2
+        }
+
+        should("return unequal gMonth values"){
+            val res1 = transformer.transformLexicalValue("--12", xmlGMonth)
+            val res2 = transformer.transformLexicalValue("--12Z", xmlGMonth)
+            val res3 = transformer.transformLexicalValue("--12+02:00", xmlGMonth)
+            val res4 = transformer.transformLexicalValue("--12-02:00", xmlGMonth)
+
+
+            res1 shouldNotBeEqualComparingTo  res2
+
+        }
 
     }
 

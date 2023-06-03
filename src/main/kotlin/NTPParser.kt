@@ -9,12 +9,15 @@ object N3sToFolParser : Grammar<String?>() {
 
     val lineComment by regexToken("^\\s*#.*$".toRegex(RegexOption.MULTILINE), ignore = true) //TODO("skolem")
     val inlineComment by regexToken("\\s#.*$".toRegex(RegexOption.MULTILINE), ignore = true) //TODO("skolem")
+
+    val transformer = RDFLiteralToTPTPConstantTransformer()
+
     val space by regexToken("\\s+", ignore = true)
 
     var blankNodeCounter = 0
     var blankNodeTriplesSet = mutableListOf<String>()
     val prefixMap = mutableMapOf<String, String>()
-    var baseIri :String? = null
+    var baseIri: String? = null
 
     val varSet = mutableSetOf<String>()
 
@@ -48,10 +51,10 @@ object N3sToFolParser : Grammar<String?>() {
     val pnameNs by regexToken("$pnPrefix?:")
     val prefixedName by pnameLn.use {
         val (prefix, local) = this.text.split(':', limit = 2)
-        return@use "<" + prefixMap[prefix] + local + ">"
-    } or pnameNs.use { "<" + prefixMap[this.text.trimEnd().dropLast(1)] + ">" }
+        return@use prefixMap[prefix] + local
+    } or pnameNs.use { prefixMap[this.text.trimEnd().dropLast(1)]}
 
-    val iri by iriref.map { if (baseIri != null) "<$baseIri" + it.text.drop(1) else it.text} or prefixedName use { "'$this'" }
+    val iri by iriref.map { if (baseIri != null) "$baseIri" + it.text.removeSurrounding("<",">") else it.text.removeSurrounding("<",">") } or prefixedName
 
 
     val blankNodeLabel by blankNodeLabelToken.use { this.text.drop(2).replaceFirstChar { it.uppercaseChar() } }
@@ -59,16 +62,34 @@ object N3sToFolParser : Grammar<String?>() {
     val blankNode by blankNodeLabel or anon.use { createBlankNodeId() }
 
     val numericLiteralToken by regexToken("(?<!:)\\b((([+-]?([0-9]+\\.[0-9]*([eE][+-]?[0-9]+)))|(\\.[0-9]+([eE][+-]?[0-9]+))|([0-9]+([eE][+-]?[0-9]+)))|([+-]?[0-9]*\\.[0-9]+)|([+-]?[0-9]+))\\b")
-    val numericLiteral by numericLiteralToken use { "'" + this.text + "'" }
-    val stringToken by regexToken("$stringLiteralLongSingleQuote|$stringLiteralLongQuote|$stringLiteralQuote|$stringLiteralSingleQuote")
-    val string by stringToken use { this.text }
+    val numericLiteral by numericLiteralToken use { transformer.transformNumericLiteral(this.text) }
+
+    val stringLiteralLongSingleQuote by regexToken("('''(('|(''))?([^'\\\\]|$echar|$uchar))*''')")
+    val stringLiteralLongQuote by regexToken("(\"\"\"((\"|(\"\"))?([^\"\\\\]|$echar|$uchar))*\"\"\")")
+    val stringLiteralQuote by regexToken("(\"([^\u0022\u000A\u000D\\\\]|$echar|$uchar)*\")")
+    val stringLiteralSingleQuote by regexToken("('([^\u0022\u000A\u000D\\\\]|$echar|$uchar)*')")
+
+    val string by stringLiteralLongSingleQuote.use { this.text.removeSurrounding("'''") } or stringLiteralLongQuote.use {
+        this.text.removeSurrounding(
+            "\"\"\""
+        )
+    } or stringLiteralQuote.use { this.text.removeSurrounding("\"") } or stringLiteralSingleQuote.use {
+        this.text.removeSurrounding(
+            "'"
+        )
+    }
+
     val langTagToken by regexToken("@[a-zA-Z]+(-[a-zA-Z0-9]+)*")
     val langTag by langTagToken use { this.text }
     val circumflexToken by literalToken("^^")
     val circumflex by circumflexToken use { this.text }
-    val rdfLiteral by string and optional(langTag or ((circumflex and iri) use { this.t1 + this.t2 })) use { "'" + this.t1 + (if (this.t2.isNullOrEmpty()) "" else this.t2) + "'" }
+    val rdfLiteral by string and optional(langTag or ((circumflex and iri) use { this.t2 })) use {
+        if (this.t2.isNullOrEmpty()) transformer.transformLexicalValue(
+            this.t1
+        ) else transformer.transformLexicalValue(this.t1, this.t2!!)
+    }
     val booleanLiteralToken by regexToken("(true)|(false)")
-    val booleanLiteral by booleanLiteralToken use { this.text }
+    val booleanLiteral by booleanLiteralToken use { transformer.transformLexicalValue(this.text, transformer.xsdIri + "boolean") }
 
     val literal by numericLiteral or rdfLiteral or booleanLiteral
 
@@ -104,11 +125,11 @@ object N3sToFolParser : Grammar<String?>() {
         ) + ")"
     }
 
-    val subject by iri or blankNode.map { varSet.add(it); it } or literal or collection
-    val predicate by iri or blankNode.map { varSet.add(it); it } or literal
-    val rdfObject: Parser<String> by iri or blankNode.map { varSet.add(it); it } or literal or blankNodePropertyList or collection
+    val subject by iri use { "'$this'" } or blankNode.map { varSet.add(it); it } or literal or collection
+    val predicate by iri use { "'$this'" } or blankNode.map { varSet.add(it); it } or literal
+    val rdfObject: Parser<String> by iri use { "'$this'" } or blankNode.map { varSet.add(it); it } or literal or blankNodePropertyList or collection
 
-    val verb by predicate or a.map { "'<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'" }
+    val verb by predicate or a.map { "'http://www.w3.org/1999/02/22-rdf-syntax-ns#type'" }
 
     val objectList by rdfObject and zeroOrMore(-comma and rdfObject) use { listOf(this.t1).plus(this.t2) }
     val predicateObjectList by verb and objectList and zeroOrMore(
@@ -214,7 +235,7 @@ object N3sToFolParser : Grammar<String?>() {
     } or triples and -optional(dot)
 
     val directive by (prefixID or sparqlPrefix).map {
-        prefixMap.put(it.t1.text.dropLast(1), it.t2.text.drop(1).dropLast(1))
+        prefixMap.put(it.t1.text.dropLast(1), it.t2.text.removeSurrounding("<",">"))
     } or (base or sparqlBase).map { baseIri = it.text.drop(1).dropLast(1) } use { null }
 
     val statement by directive or N3sToFolParser
