@@ -52,9 +52,14 @@ object N3sToFolParser : Grammar<String?>() {
     val prefixedName by pnameLn.use {
         val (prefix, local) = this.text.split(':', limit = 2)
         return@use prefixMap[prefix] + local
-    } or pnameNs.use { prefixMap[this.text.trimEnd().dropLast(1)]}
+    } or pnameNs.use { prefixMap[this.text.trimEnd().dropLast(1)] }
 
-    val iri by iriref.map { if (baseIri != null) "$baseIri" + it.text.removeSurrounding("<",">") else it.text.removeSurrounding("<",">") } or prefixedName
+    val iri by iriref.map {
+        if (baseIri != null) "$baseIri" + it.text.removeSurrounding(
+            "<",
+            ">"
+        ) else it.text.removeSurrounding("<", ">")
+    } or prefixedName
 
 
     val blankNodeLabel by blankNodeLabelToken.use { this.text.drop(2).replaceFirstChar { it.uppercaseChar() } }
@@ -89,7 +94,12 @@ object N3sToFolParser : Grammar<String?>() {
         ) else transformer.transformLexicalValue(this.t1, this.t2!!)
     }
     val booleanLiteralToken by regexToken("(true)|(false)")
-    val booleanLiteral by booleanLiteralToken use { transformer.transformLexicalValue(this.text, transformer.xsdIri + "boolean") }
+    val booleanLiteral by booleanLiteralToken use {
+        transformer.transformLexicalValue(
+            this.text,
+            transformer.xsdIri + "boolean"
+        )
+    }
 
     val literal by numericLiteral or rdfLiteral or booleanLiteral
 
@@ -120,9 +130,8 @@ object N3sToFolParser : Grammar<String?>() {
     }
 
     val collection: Parser<String> by -lpar and zeroOrMore(parser(this::rdfObject)) and -rpar use {
-        "list(" + this.joinToString(
-            ","
-        ) + ")"
+        val listSize = this.size
+        if (listSize == 0) "list0" else "list$listSize(" + this.joinToString(",") + ")"
     }
 
     val subject by iri use { "'$this'" } or blankNode.map { varSet.add(it); it } or literal or collection
@@ -235,7 +244,7 @@ object N3sToFolParser : Grammar<String?>() {
     } or triples and -optional(dot)
 
     val directive by (prefixID or sparqlPrefix).map {
-        prefixMap.put(it.t1.text.dropLast(1), it.t2.text.removeSurrounding("<",">"))
+        prefixMap.put(it.t1.text.dropLast(1), it.t2.text.removeSurrounding("<", ">"))
     } or (base or sparqlBase).map { baseIri = it.text.drop(1).dropLast(1) } use { null }
 
     val statement by directive or N3sToFolParser
