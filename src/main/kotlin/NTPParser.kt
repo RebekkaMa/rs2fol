@@ -171,12 +171,15 @@ object N3sToFolParser : Grammar<String?>() {
                     )
                 })
             }
-            if (blankNodeTriplesSet.isNotEmpty()) this.append(
-                blankNodeTriplesSet.joinToString(
-                    prefix = " & ",
-                    separator = " & "
+            if (blankNodeTriplesSet.isNotEmpty()) {
+                this.append(
+                    blankNodeTriplesSet.joinToString(
+                        prefix = " & ",
+                        separator = " & "
+                    )
                 )
-            )
+                blankNodeTriplesSet.clear()
+            }
         }
     }
 
