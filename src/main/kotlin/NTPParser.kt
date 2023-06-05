@@ -279,13 +279,13 @@ object N3sToFolParser : Grammar<String?>() {
     }
 
     override val rootParser: Parser<String> by turtleDoc use {
+        varSet.clear()
+        blankNodeTriplesSet.clear()
+        prefixMap.clear()
+        baseIri = null
         val (triplesString, freeVariables) = this
         if (freeVariables.isEmpty()) triplesString else {
             val varSetString = freeVariables.joinToString(separator = ",")
-            varSet.clear()
-            blankNodeTriplesSet.clear()
-            prefixMap.clear()
-            baseIri = null
             " ? [$varSetString] : $triplesString"
         }
     }

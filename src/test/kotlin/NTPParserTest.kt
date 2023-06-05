@@ -56,17 +56,20 @@ class NTPParserTest : ShouldSpec(
         should("transform example10.n3 without exception"){
             val file = File("src/test/resources/turtle/example10.n3")
             val solutionFile = File("src/test/resources/turtle-fol/example10.p")
+            println(N3sToFolParser.createFofAnnotatedAxiom(N3sToFolParser.parseToEnd(file.readText())))
             N3sToFolParser.createFofAnnotatedAxiom(N3sToFolParser.parseToEnd(file.readText())) shouldBeEqualComparingTo solutionFile.readText()
         }
         //TODO("Multiline Support, multiple ' in TPTP Format")
         should("transform example11.n3 without exception"){
             val file = File("src/test/resources/turtle/example11.n3")
             val solutionFile = File("src/test/resources/turtle-fol/example11.p")
+            println(N3sToFolParser.createFofAnnotatedAxiom(N3sToFolParser.parseToEnd(file.readText())))
             N3sToFolParser.createFofAnnotatedAxiom(N3sToFolParser.parseToEnd(file.readText())) shouldBeEqualComparingTo solutionFile.readText()
         }
         should("transform example12.n3 without exception"){
             val file = File("src/test/resources/turtle/example12.n3")
             val solutionFile = File("src/test/resources/turtle-fol/example12.p")
+            println(N3sToFolParser.createFofAnnotatedAxiom(N3sToFolParser.parseToEnd(file.readText())))
             N3sToFolParser.createFofAnnotatedAxiom(N3sToFolParser.parseToEnd(file.readText())) shouldBeEqualComparingTo solutionFile.readText()
         }
         should("transform example13.n3 without exception"){
