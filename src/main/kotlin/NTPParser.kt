@@ -299,4 +299,8 @@ object N3sToFolParser : Grammar<String?>() {
     }
 
     private fun createTripleString(str1: String, str2: String, str3: String): String = "triple($str1,$str2,$str3)"
+
+    fun resetBlankNodeCounter(){
+        blankNodeCounter=0
+    }
 }

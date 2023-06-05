@@ -1,0 +1,1 @@
+fof(axiom,axiom,(triple('http://example.org/#spiderman','http://www.perceive.net/schemas/relationship/enemyOf','http://example.org/#green-goblin'))).

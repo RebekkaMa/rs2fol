@@ -1,0 +1,2 @@
+fof(axiom,axiom,? [V] : (! [S1,S2] : ~(! [S1] : ~((triple(V,'<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>','<urn:example:C>'))) & ! [S2] : ~((triple(V,'<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>','<urn:example:C>'))) & ~(triple('<urn:example:test>','<urn:example:is>',true))))).
+fof(conjecture,conjecture,(triple('<urn:example:test>','<urn:example:is>',true))).
