@@ -153,7 +153,7 @@ object N3sToFolParser : Grammar<String?>() {
 
     val triples by (subject and predicateObjectList) or (blankNodePropertyList and predicateObjectList) map { (subj, predObjList) -> //TODO("0-1 times predicateObjectList")
         val (pred, objList, semicolonRestList) = predObjList
-        buildString {
+        val triplesResult = buildString {
             this.append(objList.joinToString(separator = " & ") {
                 createTripleString(
                     str1 = subj,
@@ -180,70 +180,81 @@ object N3sToFolParser : Grammar<String?>() {
                 )
                 blankNodeTriplesSet.clear()
             }
-        }
+        } to varSet.toSet()
+        varSet.clear()
+        triplesResult
     }
 
     val emptyvarList by (lpar and rpar) use { listOf<String>() }
     val variableList by emptyvarList or (-lpar and oneOrMore(blankNode) and -rpar)
 
-    val N3sToFolParserNonDefault: Parser<String> by (oneOrMore(
+    val N3sToFolParserNonDefault: Parser<Pair<String,Set<String>>> by (oneOrMore(
         (variableList and
                 (negativeSurfaceIRI or positiveSurfaceIRI or querySurfaceIRI) and
                 -lparcurl and
-                (parser(this::N3sToFolParserNonDefault) or optional(space).use { "\$true" }) and
+                (parser(this::N3sToFolParserNonDefault) or optional(space).use { "\$true" to setOf<String>() }) and
                 -rparcurl) map { (variableList, surface, rest) ->
-            val variableListNotNull = variableList.isNotEmpty()
+            val (restString, freeVariables) = rest
+            val variableListIsNotNull = variableList.isNotEmpty()
             val variableListStrings = variableList.joinToString(separator = ",")
             varSet.removeAll(variableList.toSet())
             buildString {
                 when (surface.type) {
                     positiveSurfaceIRI -> {
-                        if (variableListNotNull) {
+                        if (variableListIsNotNull) {
                             this.append("? [$variableListStrings] : ")
                         }
                     }
 
                     else -> {
-                        if (variableListNotNull) {
+                        if (variableListIsNotNull) {
                             this.append("! [$variableListStrings] : ")
                         }
                         this.append("~")
                     }
                 }
-                this.append(rest)
-            }
+                this.append(restString)
+            } to freeVariables.minus(variableList.toSet())
         } or triples
-                and -optional(dot)) use { this.joinToString(prefix = "(", postfix = ")", separator = " & ") })
+                and -optional(dot)) use {
+                    val listSize = this.size
+                    this.foldIndexed("(" to setOf<String>()){
+                        index, acc, pair ->
+                        if (index < listSize - 1){
+                            acc.first + pair.first + " & "
+                        } else {
+                            acc.first + pair.first + ")"
+                        } to acc.second.plus(pair.second)
+                    }
+                })
 
-    val N3sToFolParser: Parser<String> by
+    val N3sToFolParser: Parser<Pair<String,Set<String>>> by
     (variableList and
             (negativeSurfaceIRI or positiveSurfaceIRI or querySurfaceIRI) and
             -lparcurl and
-            (parser(this::N3sToFolParserNonDefault) or optional(space).use { "\$true" }) and
+            (parser(this::N3sToFolParserNonDefault) or optional(space).use { "\$true" to setOf<String>() }) and
             -rparcurl) map { (variableList, surface, rest) ->
+                val (restString, freeVariables) = rest
         val variableListNotNull = variableList.isNotEmpty()
         val variableListStrings = variableList.joinToString(separator = ",")
-        varSet.removeAll(variableList.toSet())
         buildString {
             when (surface.type) {
                 positiveSurfaceIRI -> {
                     if (variableListNotNull) {
                         this.append("? [$variableListStrings] : ")
                     }
-                    this.append(rest)
+                    this.append(restString)
                 }
-
                 negativeSurfaceIRI -> {
                     if (variableListNotNull) {
                         this.append("! [$variableListStrings] : ")
                     }
                     this.append("~")
-                    this.append(rest)
+                    this.append(restString)
                 }
-
                 else -> {}
             }
-        }
+        } to freeVariables.minus(variableList.toSet())
     } or triples and -optional(dot)
 
     val directive by (prefixID or sparqlPrefix).map {
@@ -252,22 +263,30 @@ object N3sToFolParser : Grammar<String?>() {
 
     val statement by directive or N3sToFolParser
     val turtleDoc by oneOrMore(statement) use {
-        this.filter { !it.isNullOrEmpty() }.let {
-            if (it.isEmpty()) return@let "\$true"
-            return@let it.joinToString(prefix = "(", postfix = ")", separator = " & ")
+        this.filter { (it != null) and (it?.first?.isNotBlank() ?: false) } .let {
+            if (it.isEmpty()) return@let "\$true" to setOf()
+            val listSize = it.size
+            return@let it.foldIndexed("(" to setOf<String>()){
+                    index, acc, pair ->
+                if (index < listSize - 1){
+                    acc.first + (pair?.first ?: "") + " & "
+                } else {
+                    acc.first + (pair?.first ?: "") + ")"
+                } to acc.second.plus(pair?.second ?: setOf())
+            }
+
         }
     }
 
     override val rootParser: Parser<String> by turtleDoc use {
-        if (varSet.isEmpty()) this else {
-            val varSetString = varSet.joinToString(separator = ",")
+        val (triplesString, freeVariables) = this
+        if (freeVariables.isEmpty()) triplesString else {
+            val varSetString = freeVariables.joinToString(separator = ",")
             varSet.clear()
             blankNodeTriplesSet.clear()
             prefixMap.clear()
             baseIri = null
-
-
-            " ? [$varSetString] : $this"
+            " ? [$varSetString] : $triplesString"
         }
     }
 
