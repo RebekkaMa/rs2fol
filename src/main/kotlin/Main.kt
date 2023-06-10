@@ -1,4 +1,5 @@
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.default
 import com.github.ajalt.clikt.parameters.arguments.optional
@@ -11,14 +12,40 @@ import com.github.h0tk3y.betterParse.parser.Parsed
 import java.io.File
 
 
-class RdfSurfaceToFol : CliktCommand() {
-    val axiomFile by option(help = "Path of the file with the RDF Surface graph").file()
-        .prompt("Path of the file with the RDF Surface graph")
-    val conjectureFile by argument(help = "Path of the file with the expected solution").file().optional()
-    val vampireExecFile by argument(help = "Path of the vampire execution file").file()
-        .default(File("/home/rebekka/Programs/vampire/bin/"))
-    val short by option("--short", "-s", help = "Short output").flag(default = false)
+class RdfSurfaceToFol : CliktCommand(){
+    override fun run() = Unit
+}
 
+class Transform: CliktCommand(help = "Transform RDF Surface graph to first-order formula in TPTP format"){
+    val path by option(help = "Path to the RDF Surface graph").file().prompt("Path to the RDF Surface graph")
+
+    override fun run() {
+        val rdfSurfaceGraph = path.readText()
+
+        val (parseError, parseResultValue) =
+            when (
+                val parserResult = N3sToFolParser.tryParseToEnd(rdfSurfaceGraph)) {
+                is Parsed -> {
+                    false to N3sToFolParser.createFofAnnotatedAxiom(parserResult.value)
+                }
+
+                is ErrorResult -> {
+                    true to ParseException(parserResult).stackTraceToString()
+                }
+            }
+
+        val resultString =
+            if (parseError) ("Failed to parse " + path.name + ":\n" + parseResultValue + "\n") else parseResultValue
+
+        println(resultString)
+    }
+}
+
+class Check: CliktCommand(){
+    val axiomFile by argument(name = "PATH_TO_RDF_SURFACE_GRAPH", help = "Path of the file with the RDF Surface graph").file()
+    val conjectureFile by argument(name = "PATH_TO_CONCLUSIONS", help = "Path of the file with the expected solution").file().optional()
+    val vampireExecFile by option(help = "Path of the vampire execution file").file().default(File("/home/rebekka/Programs/vampire/bin/"))
+    val short by option("--short", "-s", help = "Short output").flag(default = false)
     override fun run() {
 
         val computedAnswerFile =
@@ -94,7 +121,6 @@ class RdfSurfaceToFol : CliktCommand() {
             .joinToString(separator = " --- "))
     }
 }
-
 fun String.runCommand(workingDir: File): Process? {
     return ProcessBuilder(*split(" ").toTypedArray())
         .directory(workingDir)
@@ -102,4 +128,4 @@ fun String.runCommand(workingDir: File): Process? {
         .start()
 }
 
-fun main(args: Array<String>) = RdfSurfaceToFol().main(args)
+fun main(args: Array<String>) = RdfSurfaceToFol().subcommands(Transform(), Check()).main(args)

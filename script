@@ -6,7 +6,7 @@ for f in $FILES
 do
   if [[ $f = *answer.n3 ]]; then continue ; fi
   # echo "Processing $f file..."
-  ./bin/untitled1 -s --axiom-file $f
+  ./bin/untitled1 check -s $f
   ((RE++))
 done
 echo "Number of processed files: $RE"
