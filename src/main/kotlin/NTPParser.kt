@@ -5,7 +5,7 @@ import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.Parser
 
-object N3sToFolParser : Grammar<String?>() {
+object N3sToFolParser : Grammar<Pair<String,String>>() {
 
     val lineComment by regexToken("^\\s*#.*$".toRegex(RegexOption.MULTILINE), ignore = true) //TODO("skolem")
     val inlineComment by regexToken("\\s#.*$".toRegex(RegexOption.MULTILINE), ignore = true) //TODO("skolem")
@@ -20,6 +20,8 @@ object N3sToFolParser : Grammar<String?>() {
     var baseIri: String? = null
 
     val varSet = mutableSetOf<String>()
+
+    var querySurfaceExpression = StringBuilder()
 
     val lpar by literalToken("(")
     val rpar by literalToken(")")
@@ -188,7 +190,7 @@ object N3sToFolParser : Grammar<String?>() {
     val emptyvarList by (lpar and rpar) use { listOf<String>() }
     val variableList by emptyvarList or (-lpar and oneOrMore(blankNode) and -rpar)
 
-    val N3sToFolParserNonDefault: Parser<Pair<String,Set<String>>> by (oneOrMore(
+    val N3sToFolParserNonDefault: Parser<Pair<String, Set<String>>> by (oneOrMore(
         (variableList and
                 (negativeSurfaceIRI or positiveSurfaceIRI or querySurfaceIRI) and
                 -lparcurl and
@@ -217,24 +219,23 @@ object N3sToFolParser : Grammar<String?>() {
             } to freeVariables.minus(variableList.toSet())
         } or triples
                 and -optional(dot)) use {
-                    val listSize = this.size
-                    this.foldIndexed("(" to setOf<String>()){
-                        index, acc, pair ->
-                        if (index < listSize - 1){
-                            acc.first + pair.first + " & "
-                        } else {
-                            acc.first + pair.first + ")"
-                        } to acc.second.plus(pair.second)
-                    }
-                })
+        val listSize = this.size
+        this.foldIndexed("(" to setOf<String>()) { index, acc, pair ->
+            if (index < listSize - 1) {
+                acc.first + pair.first + " & "
+            } else {
+                acc.first + pair.first + ")"
+            } to acc.second.plus(pair.second)
+        }
+    })
 
-    val N3sToFolParser: Parser<Pair<String,Set<String>>> by
+    val N3sToFolParser: Parser<Pair<String, Set<String>>> by
     (variableList and
             (negativeSurfaceIRI or positiveSurfaceIRI or querySurfaceIRI) and
             -lparcurl and
             (parser(this::N3sToFolParserNonDefault) or optional(space).use { "\$true" to setOf<String>() }) and
             -rparcurl) map { (variableList, surface, rest) ->
-                val (restString, freeVariables) = rest
+        val (restString, freeVariables) = rest
         val variableListNotNull = variableList.isNotEmpty()
         val variableListStrings = variableList.joinToString(separator = ",")
         buildString {
@@ -251,6 +252,12 @@ object N3sToFolParser : Grammar<String?>() {
                     }
                     this.append("~")
                     this.append(restString)
+                }
+                querySurfaceIRI -> {
+                    if (variableListNotNull) {
+                        querySurfaceExpression.append("? [$variableListStrings] : ")
+                    }
+                    querySurfaceExpression.append(restString)
                 }
                 else -> {}
             }
@@ -278,20 +285,25 @@ object N3sToFolParser : Grammar<String?>() {
         }
     }
 
-    override val rootParser: Parser<String> by turtleDoc use {
+    override val rootParser: Parser<Pair<String,String>> by turtleDoc use {
         varSet.clear()
         blankNodeTriplesSet.clear()
         prefixMap.clear()
         baseIri = null
+        val questionString = querySurfaceExpression.toString()
+        querySurfaceExpression.clear()
         val (triplesString, freeVariables) = this
         if (freeVariables.isEmpty()) triplesString else {
             val varSetString = freeVariables.joinToString(separator = ",")
             " ? [$varSetString] : $triplesString"
-        }
+        } to questionString
     }
 
     fun createFofAnnotatedAxiom(formula: String?) = "fof(axiom,axiom,$formula)."
     fun createFofAnnotatedConjecture(formula: String?) = "fof(conjecture,conjecture,$formula)."
+
+    fun createFofAnnotatedQuestion(formula: String?) = "fof(question,question,$formula)."
+
 
     fun createBlankNodeId(): String {
         blankNodeCounter++
@@ -300,7 +312,7 @@ object N3sToFolParser : Grammar<String?>() {
 
     private fun createTripleString(str1: String, str2: String, str3: String): String = "triple($str1,$str2,$str3)"
 
-    fun resetBlankNodeCounter(){
-        blankNodeCounter=0
+    fun resetBlankNodeCounter() {
+        blankNodeCounter = 0
     }
 }
