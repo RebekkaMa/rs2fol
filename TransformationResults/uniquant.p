@@ -1,2 +1,2 @@
 fof(axiom,axiom,(triple('http://example.org/ns#beetle','http://www.w3.org/1999/02/22-rdf-syntax-ns#type','http://example.org/ns#Car') & ! [A] : ~(~(triple(A,'http://example.org/ns#is','http://example.org/ns#beautiful'))))).
-fof(conjecture,conjecture,(triple('http://example.org/ns#beetle','http://example.org/ns#is','http://example.org/ns#beautiful'))).
+fof(conjecture,conjecture, ? [Sk_1] : (triple(Sk_1,'http://example.org/ns#is','http://example.org/ns#beautiful'))).

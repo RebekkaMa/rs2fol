@@ -1,2 +1,2 @@
 fof(axiom,axiom,(triple('urn:example:S','http://www.w3.org/1999/02/22-rdf-syntax-ns#type','urn:example:A') & triple('urn:example:S','http://www.w3.org/1999/02/22-rdf-syntax-ns#type','urn:example:B') & ! [X] : ~(triple(X,'http://www.w3.org/1999/02/22-rdf-syntax-ns#type','urn:example:A') & triple(X,'http://www.w3.org/1999/02/22-rdf-syntax-ns#type','urn:example:B') & triple(X,'http://www.w3.org/1999/02/22-rdf-syntax-ns#type','urn:example:C')))).
-fof(conjecture,conjecture,$true).
+fof(conjecture,conjecture,(triple('urn:example:S','http://www.w3.org/1999/02/22-rdf-syntax-ns#type','urn:example:A') & triple('urn:example:S','http://www.w3.org/1999/02/22-rdf-syntax-ns#type','urn:example:B'))).

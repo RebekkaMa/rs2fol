@@ -44,6 +44,7 @@ object N3sToFolParser : Grammar<Pair<String,String>>() {
     val positiveSurfaceIRI by literalToken("log:onPositiveSurface")
     val querySurfaceIRI by literalToken("log:onQuerySurface")
     val neutralSurfaceIRI by literalToken("log:onNeutralSurface")
+    val negativeTripleIRI by literalToken("log:negativeTriple")
 
     val iriref by regexToken("<([^\u0000-\u0020<>\"{}|^`\\\\]|((\\\\u([0-9]|[A-F]|[a-f]){4})|(\\\\U([0-9]|[A-F]|[a-f]){8})))*>")
 
@@ -192,7 +193,7 @@ object N3sToFolParser : Grammar<Pair<String,String>>() {
 
     val N3sToFolParserNonDefault: Parser<Pair<String, Set<String>>> by (oneOrMore(
         (variableList and
-                (negativeSurfaceIRI or positiveSurfaceIRI or querySurfaceIRI) and
+                (negativeSurfaceIRI or positiveSurfaceIRI or querySurfaceIRI or negativeTripleIRI) and
                 -lparcurl and
                 (parser(this::N3sToFolParserNonDefault) or optional(space).use { "\$true" to setOf<String>() }) and
                 -rparcurl) map { (variableList, surface, rest) ->
@@ -207,7 +208,6 @@ object N3sToFolParser : Grammar<Pair<String,String>>() {
                             this.append("? [$variableListStrings] : ")
                         }
                     }
-
                     else -> {
                         if (variableListIsNotNull) {
                             this.append("! [$variableListStrings] : ")
@@ -246,7 +246,7 @@ object N3sToFolParser : Grammar<Pair<String,String>>() {
                     }
                     this.append(restString)
                 }
-                negativeSurfaceIRI -> {
+                negativeSurfaceIRI, negativeTripleIRI -> {
                     if (variableListNotNull) {
                         this.append("! [$variableListStrings] : ")
                     }
@@ -259,7 +259,6 @@ object N3sToFolParser : Grammar<Pair<String,String>>() {
                     }
                     querySurfaceExpression.append(restString)
                 }
-                else -> {}
             }
         } to freeVariables.minus(variableList.toSet())
     } or triples and -optional(dot)
@@ -303,7 +302,6 @@ object N3sToFolParser : Grammar<Pair<String,String>>() {
     fun createFofAnnotatedConjecture(formula: String?) = "fof(conjecture,conjecture,$formula)."
 
     fun createFofAnnotatedQuestion(formula: String?) = "fof(question,question,$formula)."
-
 
     fun createBlankNodeId(): String {
         blankNodeCounter++
