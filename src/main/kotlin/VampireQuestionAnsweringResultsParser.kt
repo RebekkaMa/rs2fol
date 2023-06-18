@@ -19,9 +19,10 @@ object VampireQuestionAnsweringResultsParser : Grammar<Pair<List<String>,List<St
     val verticalBar by literalToken("|")
     val underscore by literalToken("_")
     val iri by regexToken("'([^\\s'\\[\\](),|])+'")
+    val lists by regexToken("list([^\\s\\[\\]])+")
     val bn by regexToken("([^\\s'\\[\\](),|])+")
 
-    val variableList = lparBracket and ((iri or bn) and zeroOrMore(comma and (iri or bn))) and rparBracket use {this.t1.text + this.t2.t1.text + this.t2.t2.joinToString(separator = ""){it.t1.text + (it.t2.text) } + this.t3.text}
+    val variableList = lparBracket and ((iri or lists or bn) and zeroOrMore(comma and (iri or lists or bn))) and rparBracket use {this.t1.text + this.t2.t1.text + this.t2.t2.joinToString(separator = ""){it.t1.text + (it.t2.text) } + this.t3.text}
     val multipleVariableList = lpar and (variableList and oneOrMore(verticalBar and variableList)) and rpar use {this.t1.text + this.t2.t1 + this.t2.t2.joinToString(separator = ""){it.t1.text + it.t2} + this.t3.text}
     val resultValue by -lparBracket and optional((variableList.map{results.add(it)} or multipleVariableList.map{orResults.add(it)}) and zeroOrMore(-comma and (variableList.map{results.add(it)} or multipleVariableList.map{orResults.add(it)}))) and -verticalBar and -underscore and -rparBracket
 

@@ -8,5 +8,11 @@ class VampireQuestionAnsweringResultsParserTest : ShouldSpec(
             println( VampireQuestionAnsweringResultsParser.parseToEnd(str))
         }
 
+        should("do the right things with lists"){
+            val str = "[[list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s','\"0\"^^http://www.w3.org/2001/XMLSchema#integer'))))),list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s',list2('http://example.org/ns#s','\"0\"^^http://www.w3.org/2001/XMLSchema#integer'))))))))))))))))))))]|_]"
+            println( VampireQuestionAnsweringResultsParser.parseToEnd(str))
+
+        }
+
     }
 )

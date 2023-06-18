@@ -1,17 +1,14 @@
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
-import com.github.ajalt.clikt.parameters.arguments.default
 import com.github.ajalt.clikt.parameters.arguments.optional
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.file
-import com.github.h0tk3y.betterParse.grammar.parseToEnd
 import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
 import com.github.h0tk3y.betterParse.parser.ErrorResult
-import com.github.h0tk3y.betterParse.parser.ParseException
 import com.github.h0tk3y.betterParse.parser.Parsed
-import com.github.h0tk3y.betterParse.parser.parseToEnd
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 
 class RdfSurfaceToFol : CliktCommand() {
@@ -118,7 +115,7 @@ class Check : CliktCommand() {
     }
 }
 
-class CheckWithVampireQueryAnswering : CliktCommand() {
+class CheckWithVampireQuestionAnswering : CliktCommand() {
     val axiomFile by argument(
         name = "PATH_TO_RDF_SURFACE_GRAPH",
         help = "Path of the file with the RDF Surface graph"
@@ -162,34 +159,43 @@ class CheckWithVampireQueryAnswering : CliktCommand() {
             println("Starting Vampire...")
         }
 
-        println("./vampire_z3_rel_qa_6176 -av off -qa answer_literal $absolutePath -qa_io on$cascCommand")
-
         val vampireProcess =
-            "./vampire_z3_rel_qa_6176 -av off -qa answer_literal $absolutePath -qa_io on$cascCommand".runCommand(vampireExecFile)
+            //    "./vampire_z3_rel_qa_6176 -av off$cascCommand -qa answer_literal $absolutePath".runCommand(vampireExecFile)
+            // "./vampire_z3_rel_qa_6176 -av off -qa answer_literal -gs on -gsem off -inw on -lcm reverse -lwlo on -nm 64 -nwc 1 -sos all -sac on -thi all -uwa all -updr off -uhcvi on -sp frequency -qa answer_literal $absolutePath"
+             "./vampire_z3_rel_qa_6176 -av off$cascCommand -qa answer_literal $absolutePath".runCommand(
+                vampireExecFile
+            )
 
-        vampireProcess?.waitFor()
+        vampireProcess?.waitFor(70, TimeUnit.SECONDS)
 
-        val vampireParsingResult = vampireProcess?.inputStream?.reader()?.useLines {
-            val vampireQuestionResults = it.last().trimStart { char -> (char != '[') }.trimEnd { char -> char != ']' }
-            return@useLines when (val parserResult = VampireQuestionAnsweringResultsParser.tryParseToEnd(vampireQuestionResults)) {
-                is Parsed -> {
-                    if (parserResult.value.first.isEmpty() && parserResult.value.second.isEmpty()) {
-                        "No results"
-                    } else {
-                        parserResult.value.second.let { list ->
-                            return@let if (list.isEmpty()) "" else list.joinToString(
-                                separator = "\n  -  ",
-                                prefix = "Or Results:\n  -  "
-                            )
-                        } + parserResult.value.first.let { list ->
-                            return@let if (list.isEmpty()) "" else list.joinToString(
-                                separator = "\n  -  ",
-                                prefix = "\nResults:\n  -  "
-                            )
+        val vampireParsingResult = vampireProcess?.inputStream?.reader()?.useLines { vampireOutput ->
+            val result = mutableSetOf<String>()
+            val orResult = mutableSetOf<String>()
+            vampireOutput.forEach { vampireOutputLine ->
+                if (vampireOutputLine.startsWith("% SZS answers Tuple")) {
+                    val rawVampireOutputLine =
+                        vampireOutputLine.trimStart { char -> (char != '[') }.trimEnd { char -> char != ']' }
+                    when (val parserResult =
+                        VampireQuestionAnsweringResultsParser.tryParseToEnd(rawVampireOutputLine)) {
+                        is Parsed -> {
+                            result.addAll(parserResult.value.first)
+                            orResult.addAll(parserResult.value.second)
                         }
+                        is ErrorResult -> println("Error: " + vampireOutputLine)
                     }
                 }
-                is ErrorResult -> vampireQuestionResults
+            }
+            if (result.isEmpty() and orResult.isEmpty()) return@useLines "No solutions"
+            orResult.let { set ->
+                return@let if (set.isEmpty()) "" else set.joinToString(
+                    separator = "\n  -  ",
+                    prefix = "Or Results:\n  -  "
+                )
+            } + result.let { set ->
+                return@let if (set.isEmpty()) "" else set.joinToString(
+                    separator = "\n  -  ",
+                    prefix = "\nResults:\n  -  "
+                )
             }
         }
         println(vampireParsingResult)
@@ -199,9 +205,9 @@ class CheckWithVampireQueryAnswering : CliktCommand() {
 fun String.runCommand(workingDir: File): Process? {
     return ProcessBuilder(*split(" ").toTypedArray())
         .directory(workingDir)
-        .redirectError(ProcessBuilder.Redirect.INHERIT)
+        .redirectErrorStream(true)
         .start()
 }
 
 fun main(args: Array<String>) =
-    RdfSurfaceToFol().subcommands(Transform(), Check(), CheckWithVampireQueryAnswering()).main(args)
+    RdfSurfaceToFol().subcommands(Transform(), Check(), CheckWithVampireQuestionAnswering()).main(args)
