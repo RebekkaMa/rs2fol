@@ -15,50 +15,80 @@ class RdfSurfaceToFol : CliktCommand() {
     override fun run() = Unit
 }
 
-class Transform : CliktCommand(help = "Transform RDF Surface graph to first-order formula in TPTP format") {
-    val ignoreQuerySurface by option("--ignoreQuerySurface", "-iqs").flag(
-        "--includeQuerySurface",
-        "-qs",
-        default = false
-    )
-    val path by argument(help = "Path to the RDF Surface graph").file()
+class TransformToNotation3 : CliktCommand(help = "Transform RDF Surface graph to Notation 3") {
+    private val outputFile by option(help = "write output to PATH").file(mustExist = false)
 
-    val rdfSurfaceToFOLController = RDFSurfaceToFOLController()
+    private val rdfSurfaceGraphFile by argument(help = "Path to the RDF Surface graph").file(
+        mustExist = true,
+        canBeDir = false,
+        mustBeReadable = true
+    )
+
+    private val rdfSurfaceToFOLController = RDFSurfaceToFOLController()
 
     override fun run() {
-        val rdfSurfaceGraph = path.readText()
+        val rdfSurfaceGraph = rdfSurfaceGraphFile.readText()
+
+        val (parseError, parseResultValue) = rdfSurfaceToFOLController.transformRDFSurfaceGraphToNotation3(
+            rdfSurfaceGraph,
+        )
+        if (parseError) {
+            println("Failed to parse " + rdfSurfaceGraphFile.name + ":\n" + parseResultValue + "\n")
+            return
+        }
+        outputFile?.writeText(parseResultValue) ?: println(parseResultValue)
+    }
+}
+
+
+class Transform : CliktCommand(help = "Transform RDF Surface graph to first-order formula in TPTP format") {
+    private val ignoreQuerySurface by option("--ignoreQuerySurface", "-iqs").flag(default = false)
+    private val outputFile by option(help = "write output to PATH").file(mustExist = false)
+
+    private val rdfSurfaceGraphFile by argument(help = "Path to the RDF Surface graph").file(
+        mustExist = true,
+        canBeDir = false,
+        mustBeReadable = true
+    )
+
+    private val rdfSurfaceToFOLController = RDFSurfaceToFOLController()
+
+    override fun run() {
+        val rdfSurfaceGraph = rdfSurfaceGraphFile.readText()
 
         val (parseError, parseResultValue) = rdfSurfaceToFOLController.transformRDFSurfaceGraphToFOL(
             rdfSurfaceGraph,
             ignoreQuerySurface
         )
-
-        val outputString =
-            if (parseError) ("Failed to parse " + path.name + ":\n" + parseResultValue + "\n") else parseResultValue
-
-        println(outputString)
+        if (parseError) {
+            println("Failed to parse " + rdfSurfaceGraphFile.name + ":\n" + parseResultValue + "\n")
+            return
+        }
+        outputFile?.writeText(parseResultValue) ?: println(parseResultValue)
     }
 }
 
 class Check : CliktCommand() {
-    val axiomFile by argument(
+    private val axiomFile by argument(
         name = "PATH_TO_RDF_SURFACE_GRAPH",
         help = "Path of the file with the RDF Surface graph"
     ).file()
-    val conjectureFile by argument(
+    private val conjectureFile by argument(
         name = "PATH_TO_CONCLUSIONS",
         help = "Path of the file with the expected solution"
     ).file().optional()
-    val vampireExecFile by option(help = "Path of the vampire execution file").file()
+    private val vampireExecFile by option(help = "Path of the vampire execution file").file()
         .default(File("/home/rebekka/Programs/Vampire-qa/tmp/build/bin/"))
-    val short by option("--short", "-s", help = "Short output").flag(default = false)
+    private val short by option("--short", "-s", help = "Short output").flag(default = false)
 
-    val rdfSurfaceToFOLController = RDFSurfaceToFOLController()
+    private val rdfSurfaceToFOLController = RDFSurfaceToFOLController()
+
+    val outputFile by option(help = "write transformation output to PATH").file(mustExist = false)
 
     override fun run() {
 
         val computedAnswerFile =
-            conjectureFile ?: File(axiomFile.parentFile.path + "/" + axiomFile.nameWithoutExtension + "-answer.n3")
+            conjectureFile ?: File(axiomFile.parentFile.path + "/" + axiomFile.nameWithoutExtension + "-answer.n3s")
 
         val graph = axiomFile.readText()
         val answerGraph = computedAnswerFile.readText()
@@ -83,9 +113,11 @@ class Check : CliktCommand() {
         }
 
         if (!short) println("Transformation was successful!")
+        val file = outputFile ?: File("transformationResults/" + axiomFile.nameWithoutExtension + ".p")
 
-        File("TransformationResults/").mkdir()
-        val file = File("TransformationResults/" + axiomFile.nameWithoutExtension + ".p")
+        file.parentFile.mkdirs()
+        file.createNewFile()
+
         file.writeText("$parseResultValue\n$answerParseResultValue")
         val absolutePath = file.absolutePath
 
@@ -126,6 +158,8 @@ class CheckWithVampireQuestionAnswering : CliktCommand() {
 
     val casc by option("--casc", "-c").flag(default = false)
 
+    val outputFile by option(help = "write transformation output to PATH").file(mustExist = false)
+
     val rdfSurfaceToFOLController = RDFSurfaceToFOLController()
     override fun run() {
 
@@ -149,8 +183,11 @@ class CheckWithVampireQuestionAnswering : CliktCommand() {
 
         if (!short) println("Transformation was successful!")
 
-        File("TransformationResults/").mkdir()
-        val file = File("TransformationResults/" + axiomFile.nameWithoutExtension + ".p")
+        val file = outputFile ?: File("transformationResults/" + axiomFile.nameWithoutExtension + ".p")
+
+        file.parentFile.mkdirs()
+        file.createNewFile()
+
         file.writeText("$parseResultValue")
         val absolutePath = file.absolutePath
 
@@ -160,9 +197,9 @@ class CheckWithVampireQuestionAnswering : CliktCommand() {
         }
 
         val vampireProcess =
-            //    "./vampire_z3_rel_qa_6176 -av off$cascCommand -qa answer_literal $absolutePath".runCommand(vampireExecFile)
+        //    "./vampire_z3_rel_qa_6176 -av off$cascCommand -qa answer_literal $absolutePath".runCommand(vampireExecFile)
             // "./vampire_z3_rel_qa_6176 -av off -qa answer_literal -gs on -gsem off -inw on -lcm reverse -lwlo on -nm 64 -nwc 1 -sos all -sac on -thi all -uwa all -updr off -uhcvi on -sp frequency -qa answer_literal $absolutePath"
-             "./vampire_z3_rel_qa_6176 -av off$cascCommand -qa answer_literal $absolutePath".runCommand(
+            "./vampire_z3_rel_qa_6176 -av off$cascCommand -qa answer_literal $absolutePath -t 2m".runCommand(
                 vampireExecFile
             )
 
@@ -181,7 +218,8 @@ class CheckWithVampireQuestionAnswering : CliktCommand() {
                             result.addAll(parserResult.value.first)
                             orResult.addAll(parserResult.value.second)
                         }
-                        is ErrorResult -> println("Error: " + vampireOutputLine)
+
+                        is ErrorResult -> println("Error: $vampireOutputLine")
                     }
                 }
             }
@@ -210,4 +248,4 @@ fun String.runCommand(workingDir: File): Process? {
 }
 
 fun main(args: Array<String>) =
-    RdfSurfaceToFol().subcommands(Transform(), Check(), CheckWithVampireQuestionAnswering()).main(args)
+    RdfSurfaceToFol().subcommands(Transform(), Check(), CheckWithVampireQuestionAnswering(), TransformToNotation3()).main(args)

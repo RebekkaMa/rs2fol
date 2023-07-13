@@ -14,11 +14,9 @@ class RDFSurfaceToFOLController {
      */
     fun transformRDFSurfaceGraphToFOL(rdfSurfaceGraph: String, ignoreQuerySurface: Boolean): Pair<Boolean, String> {
         return when (
-            val parserResult = N3sToFolParser.tryParseToEnd(rdfSurfaceGraph)) {
+            val parserResult = RDFSurfacesParser.tryParseToEnd(rdfSurfaceGraph)) {
             is Parsed -> {
-                false to (N3sToFolParser.createFofAnnotatedAxiom(parserResult.value.first) + (if (ignoreQuerySurface) "" else ("\n" + N3sToFolParser.createFofAnnotatedQuestion(
-                    parserResult.value.second
-                ))))
+                false to  Transformer().transformToFOL(parserResult.value, ignoreQuerySurface)
             }
             is ErrorResult -> {
                 true to ParseException(parserResult).stackTraceToString()
@@ -34,12 +32,24 @@ class RDFSurfaceToFOLController {
      */
     fun transformRDFSurfaceGraphToFOLConjecture(rdfSurfaceGraph: String): Pair<Boolean, String> {
         return when (
-            val answerParserResult = N3sToFolParser.tryParseToEnd(rdfSurfaceGraph)) {
+            val answerParserResult = RDFSurfacesParser.tryParseToEnd(rdfSurfaceGraph)) {
             is Parsed -> {
-                false to N3sToFolParser.createFofAnnotatedConjecture(answerParserResult.value.first)
+                false to Transformer().transformToFOL(answerParserResult.value,false, "conjecture","conjecture")
             }
             is ErrorResult -> {
                 true to ParseException(answerParserResult).stackTraceToString()
+            }
+        }
+    }
+
+    fun transformRDFSurfaceGraphToNotation3(rdfSurfaceGraph: String): Pair<Boolean,String>{
+        return when (
+            val parserResult = RDFSurfacesParser.tryParseToEnd(rdfSurfaceGraph)) {
+            is Parsed -> {
+                false to Transformer().printRDFSurfaceGraphUsingNotation3(parserResult.value)
+            }
+            is ErrorResult -> {
+                true to ParseException(parserResult).stackTraceToString()
             }
         }
     }

@@ -1,0 +1,122 @@
+# Peano arithmetic
+# See https://en.wikipedia.org/wiki/Peano_axioms
+# Alternative which works
+# @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+@prefix r: <http://example.org/lists#>.
+
+(_:first _:rest) log:onNegativeSurface {
+     (_:A) log:onNegativeSurface {
+       _:A r:first _:first; r:rest _:rest.
+    }.
+}.
+
+# list as Subject
+(_:A _:B _:first _:rest _:p _:o) log:onNegativeSurface {
+    () log:onNegativeSurface {
+    _:B _:p _:o.
+    }.
+    _:A _:p _:o.
+
+    _:A r:first _:first; r:rest _:rest.
+    _:B r:first _:first; r:rest _:rest.
+}.
+
+# list as Object
+(_:A _:B _:first _:rest _:p _:s) log:onNegativeSurface {
+    () log:onNegativeSurface {
+    _:s _:p _:B.
+    }.
+    _:s _:p _:A.
+
+    _:A r:first _:first; r:rest _:rest.
+    _:B r:first _:first; r:rest _:rest.
+}.
+
+# lists as objects and subjects
+(_:A _:B _:A1 _:B1 _:first _:rest _:p _:first1 _:rest1) log:onNegativeSurface {
+    () log:onNegativeSurface {
+    _:B1 _:p _:B.
+    }.
+    _:A1 _:p _:A.
+
+    _:A r:first _:first; r:rest _:rest.
+    _:B r:first _:first; r:rest _:rest.
+
+    _:A1 r:first _:first1; r:rest _:rest1.
+    _:B1 r:first _:first1; r:rest _:rest1.
+}.
+
+
+(_:A) log:onNegativeSurface {
+   (_:bN1 _:bN2) log:onNegativeSurface {
+      _:bN1 r:first _:A.
+      _:bN1 r:rest _:bN2.
+      _:bN2 r:first 0.
+      _:bN2 r:rest r:nil.
+      _:bN1 :add _:A.
+   }.
+}.
+
+(_:A _:B _:C _:BN_13 _:BN_14) log:onNegativeSurface {
+   (_:BN_7 _:BN_4 _:BN_8 _:BN_5 _:BN_10 _:BN_11) log:onNegativeSurface {
+
+      _:BN_7 r:first _:A; r:rest _:BN_8 .
+      _:BN_8 r:first _:BN_4 ; r:rest r:nil .
+
+      _:BN_4 r:first :s; r:rest _:BN_5 .
+      _:BN_5 r:first _:B; r:rest r:nil .
+
+      _:BN_10 r:first :s; r:rest _:BN_11 .
+      _:BN_11 r:first _:C; r:rest r:nil .
+
+      _:BN_7 :add _:BN_10 .
+
+   }.
+   _:BN_13 r:first _:A; r:rest _:BN_14 .
+   _:BN_14 r:first _:B; r:rest r:nil .
+
+   _:BN_13 :add _:C.
+}.
+
+(_:A) log:onNegativeSurface {
+   (_:BN_16 _:BN_17) log:onNegativeSurface {
+      _:BN_16 r:first _:A; r:rest _:BN_17 .
+      _:BN_17 r:first 0; r:rest r:nil .
+
+      _:BN_16 :multiply 0 .
+   }.
+}.
+
+(_:A _:B _:C _:D _:BN_25 _:BN_26 _:BN_28 _:BN_29) log:onNegativeSurface {
+   (_:BN_22 _:BN_19 _:BN_23 _:BN_20) log:onNegativeSurface {
+      _:BN_22 r:first _:A; r:rest _:BN_23 .
+      _:BN_23 r:first _:BN_19 ; r:rest r:nil .
+
+      _:BN_19 r:first :s; r:rest _:BN_20 .
+      _:BN_20 r:first _:B; r:rest r:nil .
+
+      _:BN_22 :multiply _:C .
+   }.
+   _:BN_25 r:first _:A; r:rest _:BN_26 .
+   _:BN_26 r:first _:B; r:rest r:nil .
+
+   _:BN_25 :multiply _:D .
+
+   _:BN_28 r:first _:A; r:rest _:BN_29 .
+   _:BN_29 r:first _:D; r:rest r:nil .
+
+   _:BN_28 :add _:C .
+}.
+
+ # ((:s 0) 0) :multiply 0.
+(_:l01 _:l02 _:l011 _:l012) log:onQuerySurface {
+      _:l01 r:first _:l011; r:rest _:l02 .
+      _:l02 r:first 0; r:rest r:nil .
+      _:l011 r:first :s; r:rest _:l012 .
+      _:l012 r:first 0; r:rest r:nil .
+      _:l01 :multiply 0 .
+}.

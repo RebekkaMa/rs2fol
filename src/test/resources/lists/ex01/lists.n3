@@ -1,0 +1,32 @@
+@prefix : <pre:> .
+@prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+
+# r:first is functional - _:first as object
+(_:A _:B _:first _:first1 _:p) log:onNegativeSurface {
+    () log:negativeTriple {
+    _:B _:p _:first1.
+    }.
+    _:B _:p _:first.
+    _:A r:first _:first; r:first _:first1.
+}.
+
+# r:first is functional - _:first as subject
+(_:A _:B _:first _:first1 _:p) log:onNegativeSurface {
+    () log:negativeTriple {
+    _:first1 _:p _:B .
+    }.
+    _:first _:p _:B .
+    _:A r:first _:first; r:first _:first1.
+}.
+
+_:t :predicate ( :a :b :c ) .
+_:BN_1 r:first :c .
+:c r:type :cat.
+
+
+(_:A) log:onQuerySurface {
+    _:A r:type :cat.
+}.
+
+

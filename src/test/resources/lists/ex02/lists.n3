@@ -1,0 +1,27 @@
+@prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+# @prefix r: <http://www.example.org#>.
+
+# without constraint
+# eye:
+#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds (_:sk_0
+#    - @prefix r: <http://www.example.org#>. --> finds nothing
+
+# vampire:
+#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds nothing
+#    - @prefix r: <http://www.example.org#>. --> finds nothing
+
+#------------------
+
+# with constraint
+# vampire:
+#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> [[sK1(X0,X1),X0]|_]
+#    - @prefix r: <http://www.example.org#>. -- > [[sK1(X0,X1),X0]|_]
+# eye:
+#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds (_:sk_3
+#    - @prefix r: <http://www.example.org#>. --> finds nothing
+
+
+(_:A _:B) log:onQuerySurface {
+    _:A r:first _:B.
+}.

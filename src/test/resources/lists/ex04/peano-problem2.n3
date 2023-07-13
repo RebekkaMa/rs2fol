@@ -1,0 +1,28 @@
+# Peano arithmetic
+# See https://en.wikipedia.org/wiki/Peano_axioms
+# Alternative which works
+# @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+@prefix r: <http://example.org/lists#>.
+
+# eye --quiet --blogic /home/rebekka/Nextcloud/Studium/SS23/untitled1/src/test/resources/lists/ex04/peano-problem1.n3 --nope
+# --> kein Ergebnis
+
+(_:A) log:onNegativeSurface {
+   (_:BN1 _:BN2) log:onNegativeSurface {
+      _:BN1 r:first _:A.
+      _:BN1 r:rest _:BN2.
+      _:BN2 r:first 0.
+      _:BN2 r:rest r:nil.
+      _:BN1 :add _:A.
+   }.
+}.
+
+(_:l01 _:l02 _:l011 _:l012) log:onQuerySurface {
+      _:l01 r:first _:l011; r:rest _:l02 .
+      _:l02 r:first 0; r:rest r:nil .
+      _:l01 :add 0 .
+}.
