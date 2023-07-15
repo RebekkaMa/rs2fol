@@ -1,6 +1,8 @@
 import rdfSurface.*
 import rdfSurface.Collection
 
+class TransformerException(message: String? = null, cause: Throwable? = null) : Exception(message, cause)
+
 class Transformer {
     fun printRDFSurfaceGraphUsingNotation3(defaultPositiveSurface: PositiveRDFSurface): String {
         val spaceBase = "   "
@@ -19,6 +21,7 @@ class Transformer {
                     val (lexVal, langTag) = literal.lexicalValue as Pair<*, *>
                     "\"$lexVal\"$langTag"
                 }
+                IRIConstants.XSD_INTEGER,IRIConstants.XSD_DOUBLE, IRIConstants.XSD_BOOLEAN_IRI -> literal.lexicalValue.toString()
                 else -> "\"${literal.lexicalValue}\"^^<${literal.xsdDatatype.uri}>"
             }
 
@@ -33,7 +36,7 @@ class Transformer {
             is Literal -> transform(rdfTripleElement)
             is IRI -> transform(rdfTripleElement)
             is Collection -> rdfTripleElement.list.joinToString(prefix = "(", separator = " ", postfix = ")"){transform(it)}
-            else -> ""
+            else -> throw TransformerException("RDF triple element type not supported")
         }
 
         fun transform(hayesGraphElement: HayesGraphElement, depth: Int): String {
@@ -46,7 +49,7 @@ class Transformer {
                         is QueryRDFSurface -> "log:onQuerySurface"
                         is NegativeTripleRDFSurface -> "log:negativeTriple"
                         is NeutralRDFSurface -> "log:onNeutralSurface"
-                        else -> throw Exception("Transformation Error: Surface-type is not supported")
+                        else -> throw TransformerException("Surface-type is not supported")
                     }
                     val graffitiStringList = transform(hayesGraphElement.graffiti)
                     val hayesGraphString =
@@ -69,14 +72,13 @@ class Transformer {
                     )
                 } ${transform(hayesGraphElement.rdfObject)}."
 
-                else -> ""
+                else -> throw TransformerException("HayesGraphElement type not supported")
             }
         }
 
         val rdfSurfacesGraphString = StringBuilder()
         rdfSurfacesGraphString.append("@prefix log: <${IRIConstants.LOG_IRI}>.\n")
         rdfSurfacesGraphString.append("@prefix rdf: <${IRIConstants.RDF_IRI}>.\n\n")
-
 
         val graffitiListString = transform(defaultPositiveSurface.graffiti)
         val hayesGraphString =
@@ -120,7 +122,7 @@ class Transformer {
             is Literal -> transform(rdfTripleElement)
             is IRI -> transform(rdfTripleElement)
             is Collection -> if (rdfTripleElement.list.isEmpty()) "list" else ("list(" + rdfTripleElement.list.joinToString(",") {transform(it)} + ")")
-            else -> ""
+            else -> throw TransformerException("RDF triple element type not supported")
         }
 
         fun transform(blankNodeList: List<BlankNode>) = blankNodeList.joinToString(separator = ",") { transform(it) }
@@ -142,7 +144,7 @@ class Transformer {
                             postfix = ")"
                         ) { transform(it) }
 
-                        else -> throw Exception("FOL Transformation Error: Surface-type is not supported")
+                        else -> throw TransformerException("Surface-type is not supported")
                     }
                 }
 
@@ -150,7 +152,7 @@ class Transformer {
                     hayesGraphElement.rdfObject
                 ) + ")"
 
-                else -> ""
+                else -> throw TransformerException("HayesGraphElement type not supported")
             }
         }
 
@@ -170,7 +172,7 @@ class Transformer {
         val fofQuantifiedFormulaQuestion = querySurfaces.mapIndexed { index, surface ->
             val querySurface = surface as QueryRDFSurface
             val fofFormula = if (querySurface.hayesGraph.isEmpty()) "\$true" else querySurface.hayesGraph.joinToString(
-                prefix = (if (querySurface.graffiti.isEmpty()) "" else "? [$fofVariableList] : ") + "(",
+                prefix = (if (querySurface.graffiti.isEmpty()) "" else "? [${transform(querySurface.graffiti)}] : ") + "(",
                 separator = " & ",
                 postfix = ")"
             ) { transform(it) }
@@ -181,5 +183,9 @@ class Transformer {
             prefix = "\n",
             separator = "\n"
         ) else ""
+    }
+
+    fun transformQuestionAnsweringResultToRDFSurfaces(){
+
     }
 }

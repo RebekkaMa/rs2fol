@@ -1,5 +1,6 @@
 import com.github.h0tk3y.betterParse.grammar.parseToEnd
 import io.kotest.core.spec.style.ShouldSpec
+import parser.RDFSurfacesParser
 import java.io.File
 
 class TransformatorTest

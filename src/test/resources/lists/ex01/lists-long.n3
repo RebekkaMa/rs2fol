@@ -6,9 +6,14 @@
 #    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds only 'pre:c' solution
 #    - @prefix r: <http://www.example.org#>. --> finds 'pre:a' and 'pre:c' solution
 
-# vampire:
+# vampire - first-rest-chains:
 #    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds 'pre:a' and 'pre:c' solution
 #    - @prefix r: <http://www.example.org#>. --> finds 'pre:a' and 'pre:c' solution
+
+# vampire - functions:
+#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds 'pre:a' and 'pre:c' solution
+#    - @prefix r: <http://www.example.org#>. --> finds 'pre:a' and 'pre:c' solution
+
 
 # both: without the additional constraints --> finds only 'pre:c' solution
 

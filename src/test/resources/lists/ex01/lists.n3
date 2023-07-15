@@ -1,6 +1,28 @@
 @prefix : <pre:> .
-@prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+#@prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix log: <http://www.w3.org/2000/10/swap/log#>.
+ @prefix r: <http://www.example.org#>.
+
+
+# eye:
+# with constraints
+#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds only 'pre:c' solution
+#    - @prefix r: <http://www.example.org#>. --> finds only 'pre:c' solution
+
+# vampire - first-rest-chains:
+# with constraints
+#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds 'pre:a' and 'pre:c' solution
+#    - @prefix r: <http://www.example.org#>. --> finds only 'pre:c' solution ???
+# without constraints
+#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds 'pre:a' and 'pre:c' solution
+#    - @prefix r: <http://www.example.org#>. --> finds only 'pre:c' solution ???
+//TODO()
+
+# vampire - functions:
+# with constraints
+#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds only 'pre:c' solution
+#    - @prefix r: <http://www.example.org#>. --> finds only 'pre:c' solution
+
 
 # r:first is functional - _:first as object
 (_:A _:B _:first _:first1 _:p) log:onNegativeSurface {

@@ -1,242 +1,299 @@
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.core.subcommands
-import com.github.ajalt.clikt.parameters.arguments.argument
-import com.github.ajalt.clikt.parameters.arguments.optional
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
 import com.github.h0tk3y.betterParse.parser.ErrorResult
 import com.github.h0tk3y.betterParse.parser.Parsed
+import parser.VampireQuestionAnsweringResultsParser
 import java.io.File
 import java.util.concurrent.TimeUnit
-
 
 class RdfSurfaceToFol : CliktCommand() {
     override fun run() = Unit
 }
 
-class TransformToNotation3 : CliktCommand(help = "Transform RDF Surface graph to Notation 3") {
-    private val outputFile by option(help = "write output to PATH").file(mustExist = false)
-
-    private val rdfSurfaceGraphFile by argument(help = "Path to the RDF Surface graph").file(
+class Rewrite : CliktCommand(help = "Parse and print RDF Surfaces graph using a Notation 3 sublanguage") {
+    private val output by option("--output", "-o", help = "Write output to PATH").file(mustExist = false)
+    private val input by option("--input", "-i", help = "Path to the RDF Surface graph").file(
         mustExist = true,
         canBeDir = false,
         mustBeReadable = true
-    )
+    ).prompt()
+    private val verbose by option("--verbose", "-v", help = "Display exception details").flag(default = false)
 
-    private val rdfSurfaceToFOLController = RDFSurfaceToFOLController()
 
     override fun run() {
-        val rdfSurfaceGraph = rdfSurfaceGraphFile.readText()
+        try {
+            val rdfSurfaceGraph = input.readText()
 
-        val (parseError, parseResultValue) = rdfSurfaceToFOLController.transformRDFSurfaceGraphToNotation3(
-            rdfSurfaceGraph,
-        )
-        if (parseError) {
-            println("Failed to parse " + rdfSurfaceGraphFile.name + ":\n" + parseResultValue + "\n")
-            return
+            val (parseError, parseResultValue) = RDFSurfaceToFOLController().transformRDFSurfaceGraphToNotation3(
+                rdfSurfaceGraph,
+            )
+            if (parseError) {
+                echo(
+                    "Failed to parse ${input.name}" + if (verbose) ":\n$parseResultValue" else "",
+                    err = true,
+                    trailingNewline = true
+                )
+                throw ProgramResult(1)
+            }
+            output?.writeText(parseResultValue) ?: println(parseResultValue)
+        } catch (exception: ProgramResult) {
+            throw exception
+        } catch (exception: Exception) {
+            echo(exception.toString(), err = true)
+            if (verbose) echo(exception.stackTraceToString(), err = true)
         }
-        outputFile?.writeText(parseResultValue) ?: println(parseResultValue)
     }
 }
 
 
-class Transform : CliktCommand(help = "Transform RDF Surface graph to first-order formula in TPTP format") {
+class Transform : CliktCommand(help = "Transform RDF Surfaces graph to first-order formula in TPTP format") {
     private val ignoreQuerySurface by option("--ignoreQuerySurface", "-iqs").flag(default = false)
-    private val outputFile by option(help = "write output to PATH").file(mustExist = false)
+    private val output by option("--output", "-o", help = "Write output to PATH").file(mustExist = false)
 
-    private val rdfSurfaceGraphFile by argument(help = "Path to the RDF Surface graph").file(
+    private val input by option("--input", "-i", help = "Path to the RDF Surface graph").file(
         mustExist = true,
         canBeDir = false,
         mustBeReadable = true
-    )
-
-    private val rdfSurfaceToFOLController = RDFSurfaceToFOLController()
+    ).prompt()
+    private val verbose by option("--verbose", "-v", help = "Display exception details").flag(default = false)
 
     override fun run() {
-        val rdfSurfaceGraph = rdfSurfaceGraphFile.readText()
 
-        val (parseError, parseResultValue) = rdfSurfaceToFOLController.transformRDFSurfaceGraphToFOL(
-            rdfSurfaceGraph,
-            ignoreQuerySurface
-        )
-        if (parseError) {
-            println("Failed to parse " + rdfSurfaceGraphFile.name + ":\n" + parseResultValue + "\n")
-            return
+        try {
+            val rdfSurfaceGraph = input.readText()
+
+            val (parseError, parseResultValue) = RDFSurfaceToFOLController().transformRDFSurfaceGraphToFOL(
+                rdfSurfaceGraph,
+                ignoreQuerySurface
+            )
+            if (parseError) {
+                echo(
+                    "Failed to parse ${input.name}" + if (verbose) ":\n$parseResultValue" else "",
+                    err = true,
+                    trailingNewline = true
+                )
+                throw ProgramResult(1)
+            }
+            output?.writeText(parseResultValue) ?: println(parseResultValue)
+
+        } catch (exception: ProgramResult) {
+            throw exception
+        } catch (exception: Exception) {
+            echo(exception.toString(), err = true)
+            if (verbose) echo(exception.stackTraceToString(), err = true)
         }
-        outputFile?.writeText(parseResultValue) ?: println(parseResultValue)
     }
 }
 
 class Check : CliktCommand() {
-    private val axiomFile by argument(
-        name = "PATH_TO_RDF_SURFACE_GRAPH",
+    private val input by option(
+        "--input", "-i",
         help = "Path of the file with the RDF Surface graph"
-    ).file()
-    private val conjectureFile by argument(
-        name = "PATH_TO_CONCLUSIONS",
+    ).file().prompt()
+    private val expectedAnswer by option(
+        "--expected-answer", "-ea",
         help = "Path of the file with the expected solution"
-    ).file().optional()
-    private val vampireExecFile by option(help = "Path of the vampire execution file").file()
-        .default(File("/home/rebekka/Programs/Vampire-qa/tmp/build/bin/"))
-    private val short by option("--short", "-s", help = "Short output").flag(default = false)
+    ).file()
+    private val vampireExec by option(help = "Vampire execution file").file()
+        .default(File("/home/rebekka/Programs/Vampire-qa/tmp/build/bin/vampire_z3_rel_qa_6176"))
+    private val quiet by option("--quiet", "-q", help = "Display less output").flag(default = false)
+    private val verbose by option("--verbose", "-v", help = "Display exception details").flag(default = false)
 
     private val rdfSurfaceToFOLController = RDFSurfaceToFOLController()
 
-    val outputFile by option(help = "write transformation output to PATH").file(mustExist = false)
+    private val output by option(
+        "--output",
+        "-o",
+        help = "write transformation output to PATH"
+    ).file(mustExist = false)
 
     override fun run() {
 
-        val computedAnswerFile =
-            conjectureFile ?: File(axiomFile.parentFile.path + "/" + axiomFile.nameWithoutExtension + "-answer.n3s")
+        try {
+            val computedAnswerFile =
+                expectedAnswer ?: File(input.parentFile.path + "/" + input.nameWithoutExtension + "-answer.n3s")
 
-        val graph = axiomFile.readText()
-        val answerGraph = computedAnswerFile.readText()
+            val graph = input.readText()
+            val answerGraph = computedAnswerFile.readText()
 
-        val (parseError, parseResultValue) = rdfSurfaceToFOLController.transformRDFSurfaceGraphToFOL(
-            graph,
-            ignoreQuerySurface = true
-        )
 
-        //TODO("beetle7.n3: fol query?")
-        val (answerParseError, answerParseResultValue) = rdfSurfaceToFOLController.transformRDFSurfaceGraphToFOLConjecture(
-            answerGraph
-        )
+            val (parseError, parseResultValue) = rdfSurfaceToFOLController.transformRDFSurfaceGraphToFOL(
+                graph,
+                ignoreQuerySurface = true
+            )
+            val (answerParseError, answerParseResultValue) = rdfSurfaceToFOLController.transformRDFSurfaceGraphToFOLConjecture(
+                answerGraph
+            )
+            if (parseError or answerParseError) {
+                echo("RDF Surfaces Parser Error", err = true, trailingNewline = true)
+                if (!quiet) {
+                    if (parseError) echo(
+                        "Failed to parse ${input.name}:\n" + if (verbose) parseResultValue else "",
+                        err = true,
+                        trailingNewline = true
+                    )
+                    if (answerParseError) echo(
+                        "Failed to parse ${computedAnswerFile.name}:\n" + if (verbose) answerParseResultValue else "",
+                        err = true,
+                        trailingNewline = true
+                    )
+                }
+                throw ProgramResult(1)
+            }
+            if (!quiet) println("Transformation was successful!")
+            val file = output ?: File("transformationResults/" + input.nameWithoutExtension + ".p")
 
-        val errorMessage =
-            if (parseError) ("Failed to parse " + axiomFile.name + ":\n" + parseResultValue + "\n") else "" + if (answerParseError) ("Failed to parse " + (computedAnswerFile.name) + ":\n" + answerParseResultValue + "\n") else ""
+            file.parentFile.mkdirs()
+            file.createNewFile()
 
-        if (parseError or answerParseError) {
-            if (!short) println(errorMessage)
-            println(axiomFile.name + "  --->  " + "Transforming Error")
-            return
+            file.writeText("$parseResultValue\n$answerParseResultValue")
+            val absolutePath = file.absolutePath
+
+            if (!quiet) {
+                println("Problem output file: " + file.path)
+                println("Starting Vampire...")
+            }
+
+            val vampireProcess = "$vampireExec --output_mode smtcomp $absolutePath".runCommand(
+                File(
+                    System.getProperty(
+                        "user.dir"
+                    )
+                )
+            )
+
+            vampireProcess?.waitFor()
+
+            val vampireResultString = vampireProcess?.inputStream?.reader()?.readText()?.lines()
+
+            if (vampireResultString == null) {
+                echo("Vampire Error", err = true)
+                throw ProgramResult(1)
+            }
+
+            if (!quiet) vampireResultString.drop(1).forEach { println(it) }
+
+            if (quiet) println(
+                vampireResultString.drop(1).dropLastWhile
+                { it.isBlank() }.joinToString(separator = " --- ")
+            )
+        } catch (exception: ProgramResult) {
+            throw exception
+        } catch (exception: Exception) {
+            echo(exception.toString(), err = true)
+            if (verbose) echo(exception.stackTraceToString(), err = true)
         }
-
-        if (!short) println("Transformation was successful!")
-        val file = outputFile ?: File("transformationResults/" + axiomFile.nameWithoutExtension + ".p")
-
-        file.parentFile.mkdirs()
-        file.createNewFile()
-
-        file.writeText("$parseResultValue\n$answerParseResultValue")
-        val absolutePath = file.absolutePath
-
-        if (!short) {
-            println("Problem output file: " + file.path)
-            println("Starting Vampire...")
-        }
-
-        val vampireProcess = "./vampire_z3_rel_qa_6176 --output_mode smtcomp $absolutePath".runCommand(vampireExecFile)
-
-        vampireProcess?.waitFor()
-
-        val vampireResultString = vampireProcess?.inputStream?.reader()?.readText()?.lines()
-
-        if (vampireResultString == null) {
-            println(axiomFile.name + "  --->  " + "Vampire Error")
-            return
-        }
-
-        if (!short) {
-            vampireResultString.drop(1).forEach { println(it) }
-        }
-
-        println(axiomFile.name + "  --->  " + vampireResultString.drop(1).dropLastWhile
-        { it.isBlank() }
-            .joinToString(separator = " --- "))
     }
 }
 
 class CheckWithVampireQuestionAnswering : CliktCommand() {
-    val axiomFile by argument(
-        name = "PATH_TO_RDF_SURFACE_GRAPH",
-        help = "Path of the file with the RDF Surface graph"
-    ).file()
-    val vampireExecFile by option(help = "Path of the vampire execution file").file()
-        .default(File("/home/rebekka/Programs/Vampire-qa/tmp/build/bin/"))
-    val short by option("--short", "-s", help = "Short output").flag(default = false)
+    val input by option(
+        "--input", "-i",
+        help = "RDF Surfaces graph file"
+    ).file().prompt()
+    private val vampireExecFile by option(help = "Path of the vampire execution file").file()
+        .default(File("/home/rebekka/Programs/Vampire-qa/tmp/build/bin/vampire_z3_rel_qa_6176"))
+    private val quiet by option("--quiet", "-q", help = "Display less output").flag(default = false)
 
-    val casc by option("--casc", "-c").flag(default = false)
+    private val casc by option("--casc", "-c").flag(default = false)
 
-    val outputFile by option(help = "write transformation output to PATH").file(mustExist = false)
+    private val output by option(
+        "--output",
+        "-o",
+        help = "write transformation output to PATH"
+    ).file(mustExist = false)
+    private val verbose by option("--verbose", "-v", help = "Display exception details").flag(default = false)
 
-    val rdfSurfaceToFOLController = RDFSurfaceToFOLController()
+
     override fun run() {
+        try {
+            val cascCommand = if (casc) " --mode casc" else ""
 
-        val cascCommand = if (casc) " --mode casc" else ""
+            val graph = input.readText()
 
-        val graph = axiomFile.readText()
-
-        val (parseError, parseResultValue) = rdfSurfaceToFOLController.transformRDFSurfaceGraphToFOL(
-            graph,
-            false
-        )
-
-        val resultString =
-            if (parseError) ("Failed to parse " + axiomFile.name + ":\n" + parseResultValue + "\n") else ""
-
-        if (parseError) {
-            if (!short) println(resultString)
-            println(axiomFile.name + "  --->  " + "Transforming Error")
-            return
-        }
-
-        if (!short) println("Transformation was successful!")
-
-        val file = outputFile ?: File("transformationResults/" + axiomFile.nameWithoutExtension + ".p")
-
-        file.parentFile.mkdirs()
-        file.createNewFile()
-
-        file.writeText("$parseResultValue")
-        val absolutePath = file.absolutePath
-
-        if (!short) {
-            println("Problem output file: " + file.path)
-            println("Starting Vampire...")
-        }
-
-        val vampireProcess =
-        //    "./vampire_z3_rel_qa_6176 -av off$cascCommand -qa answer_literal $absolutePath".runCommand(vampireExecFile)
-            // "./vampire_z3_rel_qa_6176 -av off -qa answer_literal -gs on -gsem off -inw on -lcm reverse -lwlo on -nm 64 -nwc 1 -sos all -sac on -thi all -uwa all -updr off -uhcvi on -sp frequency -qa answer_literal $absolutePath"
-            "./vampire_z3_rel_qa_6176 -av off$cascCommand -qa answer_literal $absolutePath -t 2m".runCommand(
-                vampireExecFile
+            val (parseError, parseResultValue) = RDFSurfaceToFOLController().transformRDFSurfaceGraphToFOL(
+                graph,
+                false
             )
 
-        vampireProcess?.waitFor(70, TimeUnit.SECONDS)
+            if (parseError) {
+                echo("Transforming Error", err = true, trailingNewline = true)
+                if (verbose) echo(
+                    "Failed to parse " + input.name + ":\n" + parseResultValue,
+                    err = true,
+                    trailingNewline = true
+                )
+                throw ProgramResult(1)
+            }
 
-        val vampireParsingResult = vampireProcess?.inputStream?.reader()?.useLines { vampireOutput ->
-            val result = mutableSetOf<String>()
-            val orResult = mutableSetOf<String>()
-            vampireOutput.forEach { vampireOutputLine ->
-                if (vampireOutputLine.startsWith("% SZS answers Tuple")) {
-                    val rawVampireOutputLine =
-                        vampireOutputLine.trimStart { char -> (char != '[') }.trimEnd { char -> char != ']' }
-                    when (val parserResult =
-                        VampireQuestionAnsweringResultsParser.tryParseToEnd(rawVampireOutputLine)) {
-                        is Parsed -> {
-                            result.addAll(parserResult.value.first)
-                            orResult.addAll(parserResult.value.second)
+            if (!quiet) println("Transformation was successful!")
+
+            val file = output ?: File("transformationResults/" + input.nameWithoutExtension + ".p")
+
+            file.parentFile.mkdirs()
+            file.createNewFile()
+
+            file.writeText(parseResultValue)
+            val absolutePath = file.absolutePath
+
+            if (!quiet) {
+                println("Problem output file: " + file.path)
+                println("Starting Vampire...")
+            }
+
+            val vampireProcess =
+//                "$vampireExecFile -av off$cascCommand -sa discount -s 1 -add large -afp 4000 -afq 1.0 -anc none -gs on -gsem off -inw on -lcm reverse -lwlo on -nm 64 -nwc 1 -sas z3 -sos all -sac on -thi all -uwa all -updr off -uhcvi on -to lpo -qa answer_literal $absolutePath -t 2m".runCommand(
+//                    File(
+//                        System.getProperty(
+//                            "user.dir"
+//                        )
+//                    )
+//                )
+                "$vampireExecFile -av off$cascCommand -qa answer_literal $absolutePath".runCommand(
+                    File(
+                        System.getProperty(
+                            "user.dir"
+                        )
+                    )
+                )
+
+            vampireProcess?.waitFor(30, TimeUnit.SECONDS)
+
+            val vampireParsingResult = vampireProcess?.inputStream?.reader()?.useLines { vampireOutput ->
+                val result = mutableSetOf<String>()
+                val orResult = mutableSetOf<String>()
+                vampireOutput.forEach { vampireOutputLine ->
+                    if (vampireOutputLine.startsWith("% SZS answers Tuple")) {
+                        val rawVampireOutputLine =
+                            vampireOutputLine.trimStart { char -> (char != '[') }.trimEnd { char -> char != ']' }
+                        when (val parserResult =
+                            VampireQuestionAnsweringResultsParser.tryParseToEnd(rawVampireOutputLine)) {
+                            is Parsed -> {
+                                result.addAll(parserResult.value.first)
+                                orResult.addAll(parserResult.value.second)
+                            }
+
+                            is ErrorResult -> println("Error: $vampireOutputLine")
                         }
-
-                        is ErrorResult -> println("Error: $vampireOutputLine")
                     }
                 }
-            }
-            if (result.isEmpty() and orResult.isEmpty()) return@useLines "No solutions"
-            orResult.let { set ->
-                return@let if (set.isEmpty()) "" else set.joinToString(
-                    separator = "\n  -  ",
-                    prefix = "Or Results:\n  -  "
-                )
-            } + result.let { set ->
-                return@let if (set.isEmpty()) "" else set.joinToString(
-                    separator = "\n  -  ",
-                    prefix = "\nResults:\n  -  "
+                if (result.isEmpty()) return@useLines "No solutions"
+                result.joinToString(
+                    separator = "\n- ",
+                    prefix = "\n- "
                 )
             }
+            println(vampireParsingResult)
+        } catch (exception: ProgramResult) {
+            throw exception
+        } catch (exception: Exception) {
+            echo(exception.toString(), err = true)
+            if (verbose) echo(exception.stackTraceToString(), err = true)
         }
-        println(vampireParsingResult)
     }
 }
 
@@ -248,4 +305,5 @@ fun String.runCommand(workingDir: File): Process? {
 }
 
 fun main(args: Array<String>) =
-    RdfSurfaceToFol().subcommands(Transform(), Check(), CheckWithVampireQuestionAnswering(), TransformToNotation3()).main(args)
+    RdfSurfaceToFol().subcommands(Transform(), Check(), CheckWithVampireQuestionAnswering(), Rewrite())
+        .main(args)

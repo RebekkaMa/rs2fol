@@ -5,8 +5,8 @@ RE=0
 for f in $FILES
 do
   if [[ $f = *answer.n3s ]]; then continue ; fi
-  # echo "Processing $f file..."
-  ./bin/untitled1 check -s $f
+  echo -n "Processing $f file...  -   "
+  ./bin/untitled1 check -q -i $f
   ((RE++))
 done
 echo "Number of processed files: $RE"

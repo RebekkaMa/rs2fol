@@ -1,73 +1,84 @@
+package parser
+
+import IRIConstants
 import IRIConstants.RDF_TYPE_IRI
-import N3sToFolParser.createBlankNodeId
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.Parser
+import echar
+import pnChars
+import pnCharsU
+import pnLocal
+import pnPrefix
 import rdfSurface.*
 import rdfSurface.Collection
+import uchar
+
+class RDFSurfacesParseException(message: String? = null, cause: Throwable? = null) : Exception(message, cause)
+
 
 object RDFSurfacesParser : Grammar<PositiveRDFSurface>() {
 
     val lineComment by regexToken("^\\s*#.*$".toRegex(RegexOption.MULTILINE), ignore = true) //TODO("skolem")
     val inlineComment by regexToken("\\s#.*$".toRegex(RegexOption.MULTILINE), ignore = true) //TODO("skolem")
 
-    val space by regexToken("\\s+", ignore = true)
+    private val space by regexToken("\\s+", ignore = true)
 
-    var blankNodeCounter = 0
-    val blankNodeTriplesSet = mutableListOf<RdfTriple>()
-    val prefixMap = mutableMapOf<String, String>()
-    var baseIri: String? = null
+    private var blankNodeCounter = 0
+    private val blankNodeTriplesSet = mutableListOf<RdfTriple>()
+    private val prefixMap = mutableMapOf<String, String>()
+    private var baseIri: String? = null
 
-    val varSet = mutableSetOf<BlankNode>()
+    private val varSet = mutableSetOf<BlankNode>()
 
-    val lpar by literalToken("(")
-    val rpar by literalToken(")")
-    val lparcurl by literalToken("{")
-    val rparcurl by literalToken("}")
-    val lparBracket by literalToken("[")
-    val rparBracket by literalToken("]")
-    val dot by literalToken(".")
-    val semicolon by literalToken(";")
-    val comma by literalToken(",")
+    private val lpar by literalToken("(")
+    private val rpar by literalToken(")")
+    private val lparcurl by literalToken("{")
+    private val rparcurl by literalToken("}")
+    private val lparBracket by literalToken("[")
+    private val rparBracket by literalToken("]")
+    private val dot by literalToken(".")
+    private val semicolon by literalToken(";")
+    private val comma by literalToken(",")
     val a by regexToken("\\ba\\b")
 
-    val prefixIdStart by literalToken("@prefix")
-    val baseStart by literalToken("@base")
-    val sparqlBaseStart by literalToken("BASE") //TODO(case-insensitive)
-    val sparqlPrefixStart by literalToken("PREFIX") //TODO(case-insensitive)
+    private val prefixIdStart by literalToken("@prefix")
+    private val baseStart by literalToken("@base")
+    private val sparqlBaseStart by regexToken("\\bBASE\\b".toRegex(RegexOption.IGNORE_CASE)) //TODO(case-insensitive)
+    private val sparqlPrefixStart by regexToken("\\bPREFIX\\b".toRegex(RegexOption.IGNORE_CASE)) //TODO(case-insensitive)
 
-    val iriref by regexToken("<([^\u0000-\u0020<>\"{}|^`\\\\]|((\\\\u([0-9]|[A-F]|[a-f]){4})|(\\\\U([0-9]|[A-F]|[a-f]){8})))*>")
+    private val iriref by regexToken("<([^\u0000-\u0020<>\"{}|^`\\\\]|((\\\\u([0-9]|[A-F]|[a-f]){4})|(\\\\U([0-9]|[A-F]|[a-f]){8})))*>")
 
-    val blankNodeLabelToken by regexToken("_:($pnCharsU|[0-9])(($pnChars|\\.)*$pnChars)?")
+    private val blankNodeLabelToken by regexToken("_:($pnCharsU|[0-9])(($pnChars|\\.)*$pnChars)?")
 
-    val pnameLn by regexToken("$pnPrefix?:$pnLocal")
-    val pnameNs by regexToken("$pnPrefix?:")
-    val prefixedName by pnameLn.use {
+    private val pnameLn by regexToken("$pnPrefix?:$pnLocal")
+    private val pnameNs by regexToken("$pnPrefix?:")
+    private val prefixedName by pnameLn.use {
         val (prefix, local) = this.text.split(':', limit = 2)
-        return@use (prefixMap[prefix] ?: throw Exception("Prefix not found")) + local
+        return@use (prefixMap[prefix] ?: throw RDFSurfacesParseException("Prefix not defined")) + local
     } or pnameNs.use {
-        prefixMap[this.text.trimEnd().dropLast(1)] ?: throw Exception("Prefix not found")
+        prefixMap[this.text.trimEnd().dropLast(1)] ?: throw RDFSurfacesParseException("Prefix not defined")
     } map { IRI(it) }
 
-    val iri by iriref.map {
+    private val iri by iriref.map {
         it.text.removeSurrounding("<", ">").let { rawIriMatch -> IRI((baseIri ?: "") + rawIriMatch) }
     } or prefixedName
 
 
-    val blankNodeLabel by blankNodeLabelToken.use { BlankNode(this.text.drop(2)) }
-    val anon by lparBracket and rparBracket
-    val blankNode by blankNodeLabel or anon.use { BlankNode(createBlankNodeId()) }
+    private val blankNodeLabel by blankNodeLabelToken.use { BlankNode(this.text.drop(2)) }
+    private val anon by lparBracket and rparBracket
+    private val blankNode by blankNodeLabel or anon.use { BlankNode(createBlankNodeId()) }
 
-    val numericLiteralToken by regexToken("(?<!:)\\b((([+-]?([0-9]+\\.[0-9]*([eE][+-]?[0-9]+)))|(\\.[0-9]+([eE][+-]?[0-9]+))|([0-9]+([eE][+-]?[0-9]+)))|([+-]?[0-9]*\\.[0-9]+)|([+-]?[0-9]+))\\b")
-    val numericLiteral by numericLiteralToken use { Literal.fromNumericLiteral(this.text) }
+    private val numericLiteralToken by regexToken("(?<!:)\\b((([+-]?([0-9]+\\.[0-9]*([eE][+-]?[0-9]+)))|(\\.[0-9]+([eE][+-]?[0-9]+))|([0-9]+([eE][+-]?[0-9]+)))|([+-]?[0-9]*\\.[0-9]+)|([+-]?[0-9]+))\\b")
+    private val numericLiteral by numericLiteralToken use { Literal.fromNumericLiteral(this.text) }
 
-    val stringLiteralLongSingleQuote by regexToken("('''(('|(''))?([^'\\\\]|$echar|$uchar))*''')")
-    val stringLiteralLongQuote by regexToken("(\"\"\"((\"|(\"\"))?([^\"\\\\]|$echar|$uchar))*\"\"\")")
-    val stringLiteralQuote by regexToken("(\"([^\u0022\u000A\u000D\\\\]|$echar|$uchar)*\")")
-    val stringLiteralSingleQuote by regexToken("('([^\u0022\u000A\u000D\\\\]|$echar|$uchar)*')")
+    private val stringLiteralLongSingleQuote by regexToken("('''(('|(''))?([^'\\\\]|$echar|$uchar))*''')")
+    private val stringLiteralLongQuote by regexToken("(\"\"\"((\"|(\"\"))?([^\"\\\\]|$echar|$uchar))*\"\"\")")
+    private val stringLiteralQuote by regexToken("(\"([^\u0022\u000A\u000D\\\\]|$echar|$uchar)*\")")
+    private val stringLiteralSingleQuote by regexToken("('([^\u0022\u000A\u000D\\\\]|$echar|$uchar)*')")
 
     val string by stringLiteralLongSingleQuote.use { this.text.removeSurrounding("'''") } or stringLiteralLongQuote.use {
         this.text.removeSurrounding(
@@ -79,29 +90,29 @@ object RDFSurfacesParser : Grammar<PositiveRDFSurface>() {
         )
     }
 
-    val langTagToken by regexToken("@[a-zA-Z]+(-[a-zA-Z0-9]+)*")
-    val langTag by langTagToken use { this.text }
-    val circumflexToken by literalToken("^^")
-    val circumflex by circumflexToken use { this.text }
-    val rdfLiteral by string and optional(langTag or ((circumflex and iri) use {this.t2})) use {
+    private val langTagToken by regexToken("@[a-zA-Z]+(-[a-zA-Z0-9]+)*")
+    private val langTag by langTagToken use { this.text }
+    private val circumflexToken by literalToken("^^")
+    private val circumflex by circumflexToken use { this.text }
+    private val rdfLiteral by string and optional(langTag or ((circumflex and iri) use {this.t2})) use {
         when (val part = this.t2) {
             null -> Literal.fromNonNumericLiteral(this.t1, dataTypeIRI = IRI(IRIConstants.XSD_STRING_IRI))
             is String -> Literal.fromNonNumericLiteral(this.t1, langTag = part)
             is IRI -> Literal.fromNonNumericLiteral(this.t1, dataTypeIRI = part)
-            else -> throw Exception("Internal Error")
+            else -> throw RDFSurfacesParseException("RDF Literal type not supported")
         }
     }
-    val booleanLiteralToken by regexToken("(true)|(false)")
-    val booleanLiteral by booleanLiteralToken use {
+    private val booleanLiteralToken by regexToken("(true)|(false)")
+    private val booleanLiteral by booleanLiteralToken use {
         Literal.fromNonNumericLiteral(
             this.text,
             dataTypeIRI = IRI(IRIConstants.XSD_BOOLEAN_IRI)
         )
     }
 
-    val literal by numericLiteral or rdfLiteral or booleanLiteral
+    private val literal by numericLiteral or rdfLiteral or booleanLiteral
 
-    val blankNodePropertyList: Parser<BlankNode> by -lparBracket and parser(this::predicateObjectList) and -rparBracket map { (pred, objList, semicolonRestList) ->
+    private val blankNodePropertyList: Parser<BlankNode> by -lparBracket and parser(this::predicateObjectList) and -rparBracket map { (pred, objList, semicolonRestList) ->
         val blankNodeSubj = BlankNode(createBlankNodeId())
         varSet.add(blankNodeSubj)
         objList.forEach {
@@ -116,28 +127,28 @@ object RDFSurfacesParser : Grammar<PositiveRDFSurface>() {
         blankNodeSubj
     }
 
-    val collection: Parser<RdfTripleElement> by -lpar and zeroOrMore(parser(this::rdfObject)) and -rpar use {
+    private val collection: Parser<RdfTripleElement> by -lpar and zeroOrMore(parser(this::rdfObject)) and -rpar use {
         Collection(this)
     }
 
     val subject by iri or blankNode.map { varSet.add(it); it } or literal or collection
-    val predicate by iri or blankNode.map { varSet.add(it); it } or literal
-    val rdfObject: Parser<RdfTripleElement> by iri or blankNode.map { varSet.add(it); it } or literal or blankNodePropertyList or collection
+    private val predicate by iri or blankNode.map { varSet.add(it); it } or literal
+    private val rdfObject: Parser<RdfTripleElement> by iri or blankNode.map { varSet.add(it); it } or literal or blankNodePropertyList or collection
 
-    val verb by predicate or a.map { IRI(RDF_TYPE_IRI) }
+    private val verb by predicate or a.map { IRI(RDF_TYPE_IRI) }
 
-    val objectList by rdfObject and zeroOrMore(-comma and rdfObject) use { listOf(this.t1).plus(this.t2) }
-    val predicateObjectList by verb and objectList and zeroOrMore(
+    private val objectList by rdfObject and zeroOrMore(-comma and rdfObject) use { listOf(this.t1).plus(this.t2) }
+    private val predicateObjectList by verb and objectList and zeroOrMore(
         -semicolon and optional(verb and objectList)
     )
 
-    val prefixID by -prefixIdStart and pnameNs and iriref and -dot
-    val base by -baseStart and iriref and -dot
-    val sparqlBase by -sparqlBaseStart and iriref
-    val sparqlPrefix by -sparqlPrefixStart and pnameNs and iriref
+    private val prefixID by -prefixIdStart and pnameNs and iriref and -dot
+    private val base by -baseStart and iriref and -dot
+    private val sparqlBase by -sparqlBaseStart and iriref
+    private val sparqlPrefix by -sparqlPrefixStart and pnameNs and iriref
 
 
-    val triples by (subject and predicateObjectList) or (blankNodePropertyList and optional(predicateObjectList)) map { (subj, predObjList) ->
+    private val triples by (subject and predicateObjectList) or (blankNodePropertyList and optional(predicateObjectList)) map { (subj, predObjList) ->
         val triplesResult = buildList {
             if (predObjList != null) {
                 val (pred, objList, semicolonRestList) = predObjList
@@ -167,11 +178,11 @@ object RDFSurfacesParser : Grammar<PositiveRDFSurface>() {
         Pair(triplesResult, freeVariables)
     }
 
-    val emptyvarList by (lpar and rpar) use { listOf<BlankNode>() }
-    val variableList by emptyvarList or (-lpar and oneOrMore(blankNode) and -rpar)
+    private val emptyVarList by (lpar and rpar) use { listOf<BlankNode>() }
+    private val variableList by emptyVarList or (-lpar and oneOrMore(blankNode) and -rpar)
 
     // Triple(hayesGraph, freeVariables, collectionBlankNodes)
-    val rdfSurfacesParser: Parser<Pair<List<HayesGraphElement>, Set<BlankNode>>> by
+    private val rdfSurfacesParser: Parser<Pair<List<HayesGraphElement>, Set<BlankNode>>> by
     (variableList and
             (iri) and
             -lparcurl and
@@ -195,18 +206,18 @@ object RDFSurfacesParser : Grammar<PositiveRDFSurface>() {
                 IRIConstants.LOG_QUERY_SURFACE_IRI -> this.add(QueryRDFSurface(variableListStrings, hayeGraph))
                 IRIConstants.LOG_NEGATIVE_SURFACE_IRI -> this.add(NegativeRDFSurface(variableListStrings, hayeGraph))
                 IRIConstants.LOG_NEUTRAL_SURFACE_IRI -> this.add(NeutralRDFSurface(variableListStrings, hayeGraph))
-                else -> throw Exception("Surface IRI not supported")
+                else -> throw RDFSurfacesParseException(message = "Surface IRI not supported")
             }
         }
         Pair(newHayeGraph, freeVariables.minus(variableList.toSet()))
     } or triples and -optional(dot)
 
-    val directive by (prefixID or sparqlPrefix).map {
+    private val directive by (prefixID or sparqlPrefix).map {
         prefixMap.put(it.t1.text.dropLast(1), it.t2.text.removeSurrounding("<", ">"))
     } or (base or sparqlBase).map { baseIri = it.text.drop(1).dropLast(1) } use { null }
 
-    val statement by directive or rdfSurfacesParser
-    val turtleDoc by oneOrMore(statement) map {
+    private val statement by directive or rdfSurfacesParser
+    private val turtleDoc by oneOrMore(statement) map {
         val (hayesGraph, freeVariables) = it.filterNotNull().reduceOrNull { acc, pair ->
             Pair(acc.first.plus(pair.first), acc.second.plus(pair.second))
         } ?: Pair(listOf(), setOf())

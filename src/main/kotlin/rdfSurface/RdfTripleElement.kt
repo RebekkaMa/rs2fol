@@ -13,6 +13,12 @@ data class IRI(val iri: String) : RdfTripleElement() {
             else -> false
         }
     }
+
+    override fun hashCode(): Int {
+        return iri.hashCode()
+    }
+
+
 }
 
 data class BlankNode(val blankNodeId: String) : RdfTripleElement() {
@@ -21,6 +27,10 @@ data class BlankNode(val blankNodeId: String) : RdfTripleElement() {
             is BlankNode -> blankNodeId.equals(other.blankNodeId, ignoreCase = true)
             else -> false
         }
+    }
+
+    override fun hashCode(): Int {
+        return blankNodeId.hashCode()
     }
 }
 

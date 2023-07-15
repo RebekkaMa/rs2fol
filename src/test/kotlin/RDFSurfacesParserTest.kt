@@ -1,7 +1,7 @@
 import com.github.h0tk3y.betterParse.grammar.parseToEnd
-import com.github.h0tk3y.betterParse.parser.parseToEnd
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
+import parser.RDFSurfacesParser
 import java.io.File
 
 class RDFSurfacesParserTest : ShouldSpec(
@@ -158,18 +158,6 @@ class RDFSurfacesParserTest : ShouldSpec(
         should("transform example28.n3 without exception") {
             val file = File("src/test/resources/turtle/example28.n3")
             println(Transformer().transformToFOL(RDFSurfacesParser.parseToEnd(file.readText())))
-        }
-
-        context("Literals") {
-            should("not throw exception") {
-                println(N3sToFolParser.iri.parseToEnd(N3sToFolParser.tokenizer.tokenize("show:123")))
-            }
-            should("not throw exception"){
-                println(N3sToFolParser.literal.parseToEnd(N3sToFolParser.tokenizer.tokenize("2")))
-            }
-            should("not throw exception") {
-                println(N3sToFolParser.literal.parseToEnd(N3sToFolParser.tokenizer.tokenize("2")))
-            }
         }
 
         context("ownExamples") {

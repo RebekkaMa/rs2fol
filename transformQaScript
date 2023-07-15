@@ -1,12 +1,12 @@
 #!/bin/bash
 # NOTE : Quote it else use array to avoid problems #
-FILES="/home/rebekka/Programs/EyeReasoner/eye/reasoning/blogic/*.n3"
+FILES="/home/rebekka/Programs/EyeReasoner/eye/reasoning/blogic/*.n3s"
 RE=0
 for f in $FILES
 do
-  if [[ $f = *answer.n3 ]]; then continue ; fi
-  # echo "Processing $f file..."
-  ./bin/untitled1 transform --path $f
+  if [[ $f = *answer.n3s ]]; then continue ; fi
+  echo -n "Processing $f file...  -   "
+  ./bin/untitled1 check-with-vampire-question-answering -q -i $f
   ((RE++))
 done
 echo "Number of processed files: $RE"

@@ -52,7 +52,7 @@ object IRIConstants {
 
     const val RDF_LANG_STRING_IRI = RDF_IRI + "langString"
 
-    const val RDF_TYPE_IRI = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+    const val RDF_TYPE_IRI = RDF_IRI + "type"
 
     const val RDF_NIL_IRI = RDF_IRI + "nil"
     const val RDF_REST_IRI = RDF_IRI + "rest"
