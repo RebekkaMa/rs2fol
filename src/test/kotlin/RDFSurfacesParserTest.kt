@@ -186,11 +186,14 @@ class RDFSurfacesParserTest : ShouldSpec(
                 Transformer().transformToFOL(RDFSurfacesParser.parseToEnd(file.readText()),true) shouldBeEqualComparingTo solutionFile.readText()
 
             }
+
+        }
+        context("lists"){
             should("transform blogic lists.n3") {
-                val file = File("/home/rebekka/Nextcloud/Studium/SS23/untitled1/src/test/resources/lists/lists.n3")
+                val file = File("src/test/resources/lists/lists.n3")
+                val solutionFile = File("src/test/resources/lists/lists.p")
 
-                println(Transformer().transformToFOL(RDFSurfacesParser.parseToEnd(file.readText()),true))
+                Transformer().transformToFOL(RDFSurfacesParser.parseToEnd(file.readText()),true) shouldBeEqualComparingTo solutionFile.readText()
             }
-
         }
     })

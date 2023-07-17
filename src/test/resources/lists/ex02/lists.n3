@@ -17,7 +17,7 @@
 
 #------------------
 
-# with constraint
+# with constraint - there exists
 # vampire:
 #    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> [sK1(X0,X1),X0]
 #    - @prefix r: <http://www.example.org#>. -- > [sK1(X0,X1),X0]
@@ -29,10 +29,10 @@
 #    - @prefix r: <http://www.example.org#>. --> finds nothing !!!!!!!!!
 
 (_:first _:rest) log:onNegativeSurface {
-	(_:A) log:onNegativeSurface {
-		_:A r:first _:first.
-		_:A r:rest _:rest.
-	}.
+   (_:A) log:onNegativeSurface {
+      _:A r:first _:first.
+      _:A r:rest _:rest.
+   }.
 }.
 
 (_:A _:B) log:onQuerySurface {

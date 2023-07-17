@@ -1,0 +1,43 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+#@prefix r: <http://www.example.org#>.
+ @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix : <http://example.org/ns#>.
+
+
+# without constraint
+# eye:
+#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds (_:sk_0(_:sk_0
+#    - @prefix r: <http://www.example.org#>. --> finds nothing
+
+# vampire - first rest chains:
+#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> ???
+#    - @prefix r: <http://www.example.org#>. --> ???
+
+# vampire - functions:
+#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds nothing
+#    - @prefix r: <http://www.example.org#>. --> finds nothing
+
+#------------------
+
+# with constraint
+# vampire:
+#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> ???
+#    - @prefix r: <http://www.example.org#>. -- > ???
+# vampire - functions:
+#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds - [sK1(X0,X1),X0,X1]
+#    - @prefix r: <http://www.example.org#>. --> finds - [sK1(X0,X1),X0,X1]
+# eye:
+#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds (_:sk_3(_:sk_3
+#    - @prefix r: <http://www.example.org#>. --> finds nothing !!!!!!!!!!!
+
+(_:first _:rest) log:onNegativeSurface {
+	(_:A) log:onNegativeSurface {
+		_:A r:first _:first.
+		_:A r:rest _:rest.
+	}.
+}.
+
+(_:A _:B _:C) log:onQuerySurface {
+    _:A r:first _:B.
+    _:A r:rest _:C.
+}.

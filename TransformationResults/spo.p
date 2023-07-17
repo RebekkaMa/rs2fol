@@ -1,2 +1,0 @@
-fof(axiom,axiom,((triple('http://example.org/ns#s','http://example.org/ns#p','http://example.org/ns#o')))).
-fof(conjecture,conjecture,(triple('http://example.org/ns#s','http://example.org/ns#p','http://example.org/ns#o'))).

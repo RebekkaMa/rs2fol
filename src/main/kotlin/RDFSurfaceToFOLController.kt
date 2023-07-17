@@ -3,6 +3,7 @@ import com.github.h0tk3y.betterParse.parser.ErrorResult
 import com.github.h0tk3y.betterParse.parser.ParseException
 import com.github.h0tk3y.betterParse.parser.Parsed
 import parser.RDFSurfacesParser
+import parser.RDFSurfacesParserRDFLists
 
 class RDFSurfaceToFOLController {
 
@@ -13,9 +14,10 @@ class RDFSurfaceToFOLController {
      * @param ignoreQuerySurface
      * @return parseError, parseResultValue
      */
-    fun transformRDFSurfaceGraphToFOL(rdfSurfaceGraph: String, ignoreQuerySurface: Boolean): Pair<Boolean, String> {
+    fun transformRDFSurfaceGraphToFOL(rdfSurfaceGraph: String, ignoreQuerySurface: Boolean, rdfLists: Boolean = false): Pair<Boolean, String> {
+        val parser = if (rdfLists) RDFSurfacesParserRDFLists else RDFSurfacesParser
         return when (
-            val parserResult = RDFSurfacesParser.tryParseToEnd(rdfSurfaceGraph)) {
+            val parserResult = parser.tryParseToEnd(rdfSurfaceGraph)) {
             is Parsed -> {
                 false to  Transformer().transformToFOL(parserResult.value, ignoreQuerySurface)
             }
@@ -31,9 +33,10 @@ class RDFSurfaceToFOLController {
      * @param rdfSurfaceGraph
      * @return parseError, parseResultValue
      */
-    fun transformRDFSurfaceGraphToFOLConjecture(rdfSurfaceGraph: String): Pair<Boolean, String> {
+    fun transformRDFSurfaceGraphToFOLConjecture(rdfSurfaceGraph: String, rdfLists: Boolean = false): Pair<Boolean, String> {
+        val parser = if (rdfLists) RDFSurfacesParserRDFLists else RDFSurfacesParser
         return when (
-            val answerParserResult = RDFSurfacesParser.tryParseToEnd(rdfSurfaceGraph)) {
+            val answerParserResult = parser.tryParseToEnd(rdfSurfaceGraph)) {
             is Parsed -> {
                 false to Transformer().transformToFOL(answerParserResult.value,false, "conjecture","conjecture")
             }
@@ -43,9 +46,10 @@ class RDFSurfaceToFOLController {
         }
     }
 
-    fun transformRDFSurfaceGraphToNotation3(rdfSurfaceGraph: String): Pair<Boolean,String>{
+    fun transformRDFSurfaceGraphToNotation3(rdfSurfaceGraph: String, rdfLists: Boolean = false): Pair<Boolean,String>{
+        val parser = if (rdfLists) RDFSurfacesParserRDFLists else RDFSurfacesParser
         return when (
-            val parserResult = RDFSurfacesParser.tryParseToEnd(rdfSurfaceGraph)) {
+            val parserResult = parser.tryParseToEnd(rdfSurfaceGraph)) {
             is Parsed -> {
                 false to Transformer().printRDFSurfaceGraphUsingNotation3(parserResult.value)
             }

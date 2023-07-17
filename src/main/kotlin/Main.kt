@@ -22,6 +22,7 @@ class Rewrite : CliktCommand(help = "Parse and print RDF Surfaces graph using a 
         mustBeReadable = true
     ).prompt()
     private val verbose by option("--verbose", "-v", help = "Display exception details").flag(default = false)
+    private val rdfList by option("--rdf-list", "-r", help = "Use first-rest chains").flag(default = false)
 
 
     override fun run() {
@@ -29,7 +30,7 @@ class Rewrite : CliktCommand(help = "Parse and print RDF Surfaces graph using a 
             val rdfSurfaceGraph = input.readText()
 
             val (parseError, parseResultValue) = RDFSurfaceToFOLController().transformRDFSurfaceGraphToNotation3(
-                rdfSurfaceGraph,
+                rdfSurfaceGraph, rdfList
             )
             if (parseError) {
                 echo(
@@ -50,8 +51,8 @@ class Rewrite : CliktCommand(help = "Parse and print RDF Surfaces graph using a 
 }
 
 
-class Transform : CliktCommand(help = "Transform RDF Surfaces graph to first-order formula in TPTP format") {
-    private val ignoreQuerySurface by option("--ignoreQuerySurface", "-iqs").flag(default = false)
+class Transform : CliktCommand(help = "Transform RDF Surfaces graph to FOL formula in TPTP format") {
+    private val ignoreQuerySurface by option("--ignoreQuerySurface").flag(default = false)
     private val output by option("--output", "-o", help = "Write output to PATH").file(mustExist = false)
 
     private val input by option("--input", "-i", help = "Path to the RDF Surface graph").file(
@@ -61,6 +62,9 @@ class Transform : CliktCommand(help = "Transform RDF Surfaces graph to first-ord
     ).prompt()
     private val verbose by option("--verbose", "-v", help = "Display exception details").flag(default = false)
 
+    private val rdfList by option("--rdf-list", "-r", help = "Use first-rest chains").flag(default = false)
+
+
     override fun run() {
 
         try {
@@ -68,7 +72,8 @@ class Transform : CliktCommand(help = "Transform RDF Surfaces graph to first-ord
 
             val (parseError, parseResultValue) = RDFSurfaceToFOLController().transformRDFSurfaceGraphToFOL(
                 rdfSurfaceGraph,
-                ignoreQuerySurface
+                ignoreQuerySurface,
+                rdfLists = rdfList
             )
             if (parseError) {
                 echo(
@@ -111,6 +116,9 @@ class Check : CliktCommand() {
         help = "write transformation output to PATH"
     ).file(mustExist = false)
 
+    private val rdfList by option("--rdf-list", "-r", help = "Use first-rest chains").flag(default = false)
+
+
     override fun run() {
 
         try {
@@ -123,10 +131,12 @@ class Check : CliktCommand() {
 
             val (parseError, parseResultValue) = rdfSurfaceToFOLController.transformRDFSurfaceGraphToFOL(
                 graph,
-                ignoreQuerySurface = true
+                ignoreQuerySurface = true,
+                rdfLists = rdfList
             )
             val (answerParseError, answerParseResultValue) = rdfSurfaceToFOLController.transformRDFSurfaceGraphToFOLConjecture(
-                answerGraph
+                answerGraph,
+                rdfLists = rdfList
             )
             if (parseError or answerParseError) {
                 echo("RDF Surfaces Parser Error", err = true, trailingNewline = true)
@@ -208,6 +218,7 @@ class CheckWithVampireQuestionAnswering : CliktCommand() {
     ).file(mustExist = false)
     private val verbose by option("--verbose", "-v", help = "Display exception details").flag(default = false)
 
+    private val rdfList by option("--rdf-list", "-r", help = "Use first-rest chains").flag(default = false)
 
     override fun run() {
         try {
@@ -217,7 +228,8 @@ class CheckWithVampireQuestionAnswering : CliktCommand() {
 
             val (parseError, parseResultValue) = RDFSurfaceToFOLController().transformRDFSurfaceGraphToFOL(
                 graph,
-                false
+                false,
+                rdfLists = rdfList
             )
 
             if (parseError) {

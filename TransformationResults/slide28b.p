@@ -1,2 +1,0 @@
-fof(axiom,axiom, ? [S] : (triple('http://example.org/ns#Ghent','http://www.w3.org/1999/02/22-rdf-syntax-ns#type','http://example.org/ns#City') & ~(triple(S,'http://www.w3.org/1999/02/22-rdf-syntax-ns#type','http://example.org/ns#City') & ~(triple(S,'http://www.w3.org/1999/02/22-rdf-syntax-ns#type','http://example.org/ns#HumanCommunity'))))).
-fof(conjecture,conjecture,(triple('http://example.org/ns#Ghent','http://www.w3.org/1999/02/22-rdf-syntax-ns#type','http://example.org/ns#City'))).

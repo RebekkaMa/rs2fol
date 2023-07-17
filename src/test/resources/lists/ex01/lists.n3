@@ -5,16 +5,18 @@
 
 
 # eye:
-# with constraints
+# eye --quiet --blogic /home/rebekka/Nextcloud/Studium/SS23/untitled1/src/test/resources/lists/ex01/lists.n3 --nope
+# with and without constraints:
 #    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds only 'pre:c' solution
 #    - @prefix r: <http://www.example.org#>. --> finds only 'pre:c' solution
+# no contradiction with () log:onNegativeSurface {
+                  #       :a r:type :cat.
+                  #      }.
 
 # vampire - first-rest-chains:
 # with constraints
 #    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds 'pre:a' and 'pre:c' solution
-#    - @prefix r: <http://www.example.org#>. --> finds only 'pre:c' solution ???
 # without constraints
-#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds 'pre:a' and 'pre:c' solution
 #    - @prefix r: <http://www.example.org#>. --> finds only 'pre:c' solution ???
 //TODO()
 
@@ -42,10 +44,22 @@
     _:A r:first _:first; r:first _:first1.
 }.
 
+# r:first is functional - _:first as predicate
+(_:A _:S _:O _:first _:first1) log:onNegativeSurface {
+    () log:negativeTriple {
+    _:S _:first1 _:O .
+    }.
+    _:S _:first _:O .
+    _:A r:first _:first; r:first _:first1.
+}.
+
 _:t :predicate ( :a :b :c ) .
 _:BN_1 r:first :c .
 :c r:type :cat.
 
+#() log:onNegativeSurface {
+# :a r:type :cat.
+#}
 
 (_:A) log:onQuerySurface {
     _:A r:type :cat.

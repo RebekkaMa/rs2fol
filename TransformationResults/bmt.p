@@ -1,2 +1,0 @@
-fof(axiom,axiom,(! [R,D0,D1,D2,D3,D4,D5,D6,D7,D8,D9] : ~(~(triple(R,'http://eulersharp.sourceforge.net/2007/07test/graph#cycle',list10(D0,D1,D2,D3,D4,D5,D6,D7,D8,D9))) & triple(D0,R,D1) & triple(D1,R,D2) & triple(D2,R,D3) & triple(D3,R,D4) & triple(D4,R,D5) & triple(D5,R,D6) & triple(D6,R,D7) & triple(D7,R,D8) & triple(D8,R,D9) & triple(D9,R,D0)))).
-fof(question,question,? [R,C] : (triple(R,'http://eulersharp.sourceforge.net/2007/07test/graph#cycle',C))).

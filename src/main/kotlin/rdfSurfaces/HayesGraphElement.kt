@@ -1,0 +1,3 @@
+package rdfSurfaces
+
+abstract class HayesGraphElement

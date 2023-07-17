@@ -8,7 +8,7 @@
 @prefix : <http://example.org/ns#>.
 @prefix r: <http://example.org/lists#>.
 
-# eye --quiet --blogic /home/rebekka/Nextcloud/Studium/SS23/untitled1/src/test/resources/lists/ex04/peano-problem1.n3 --nope
+# eye --quiet --blogic /home/rebekka/Nextcloud/Studium/SS23/untitled1/src/test/resources/lists/ex04/peano-problem2.n3 --nope
 # --> kein Ergebnis
 
 (_:A) log:onNegativeSurface {

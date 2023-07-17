@@ -1,2 +1,0 @@
-fof(axiom,axiom,(~(triple('urn:example:A','http://www.w3.org/1999/02/22-rdf-syntax-ns#type','urn:example:AA') & ~(triple('urn:example:B','http://www.w3.org/1999/02/22-rdf-syntax-ns#type','urn:example:BB') & ~(triple('urn:example:A','http://www.w3.org/1999/02/22-rdf-syntax-ns#type','urn:example:AA')))))).
-fof(conjecture,conjecture,(~(triple('urn:example:A','http://www.w3.org/1999/02/22-rdf-syntax-ns#type','urn:example:AA')))).

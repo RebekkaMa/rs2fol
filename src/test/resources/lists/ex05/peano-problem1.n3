@@ -1,0 +1,61 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+
+# ./bin/untitled1 check -i /home/rebekka/Nextcloud/Studium/SS23/untitled1/src/test/resources/lists/ex05/peano-problem1.n3 -ea /home/rebekka/Nextcloud/Studium/SS23/untitled1/src/test/resources/lists/ex05/peano-problem1-answer.n3
+# with "lists as objects and subjects" --> unsat
+# without "lists as objects and subjects" --> unsat
+
+# list as Subject
+(_:A _:B _:first _:rest _:p _:o) log:onNegativeSurface {
+    () log:negativeTriple {
+    _:B _:p _:o.
+    }.
+    _:A _:p _:o.
+
+    _:A rdf:first _:first; rdf:rest _:rest.
+    _:B rdf:first _:first; rdf:rest _:rest.
+}.
+
+# list as Object
+(_:A _:B _:first _:rest _:p _:s) log:onNegativeSurface {
+    () log:negativeTriple {
+    _:s _:p _:B.
+    }.
+    _:s _:p _:A.
+
+    _:A rdf:first _:first; rdf:rest _:rest.
+    _:B rdf:first _:first; rdf:rest _:rest.
+}.
+
+# lists as objects and subjects
+(_:A _:B _:A1 _:B1 _:first _:rest _:p _:first1 _:rest1) log:onNegativeSurface {
+    () log:negativeTriple {
+    _:B1 _:p _:B.
+    }.
+    _:A1 _:p _:A.
+
+    _:A rdf:first _:first; rdf:rest _:rest.
+    _:B rdf:first _:first; rdf:rest _:rest.
+
+    _:A1 rdf:first _:first1; rdf:rest _:rest1.
+    _:B1 rdf:first _:first1; rdf:rest _:rest1.
+}.
+
+(_:A _:B) log:onNegativeSurface {
+    _:A :p _:B .
+    _:A :p2 _:B .
+    (_:C) log:onNegativeSurface {
+        _:C :result :triple.
+    }.
+}.
+
+#(:a :b) :p (:c :d).
+#(:a :b) :p2 (:c :d).
+
+(:a) :p (:b).
+(:a) :p2 (:b).
+
+(_:A) log:onQuerySurface {
+    _:A :result :triple.
+}

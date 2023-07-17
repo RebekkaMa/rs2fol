@@ -1,5 +1,5 @@
-import rdfSurface.*
-import rdfSurface.Collection
+import rdfSurfaces.*
+import rdfSurfaces.Collection
 
 class TransformerException(message: String? = null, cause: Throwable? = null) : Exception(message, cause)
 
