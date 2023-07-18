@@ -231,7 +231,7 @@ object RDFSurfacesParserRDFLists : Grammar<PositiveRDFSurface>() {
                 IRIConstants.LOG_QUERY_SURFACE_IRI -> this.add(QueryRDFSurface(variableListStrings, hayeGraph))
                 IRIConstants.LOG_NEGATIVE_SURFACE_IRI -> this.add(NegativeRDFSurface(variableListStrings, hayeGraph))
                 IRIConstants.LOG_NEUTRAL_SURFACE_IRI -> this.add(NeutralRDFSurface(variableListStrings, hayeGraph))
-                else -> throw Exception("Surface IRI not supported")
+                else -> throw RDFSurfacesParseException(message = "Surface IRI not supported")
             }
         }
         Triple(newHayeGraph, freeVariables.minus(variableList.toSet()), setOf<BlankNode>())
@@ -243,7 +243,9 @@ object RDFSurfacesParserRDFLists : Grammar<PositiveRDFSurface>() {
 
     private val statement by directive or rdfSurfacesParser
     private val turtleDoc by oneOrMore(statement) map {
-        val (hayesGraph, freeVariables, collectionBlankNodes) = it.filterNotNull().reduceOrNull { acc, triple ->
+        val (hayesGraph, freeVariables, collectionBlankNodes) = it.reduceOrNull { acc, triple ->
+            if (acc == null) return@reduceOrNull triple
+            if (triple == null) return@reduceOrNull acc
             Triple(acc.first.plus(triple.first), acc.second.plus(triple.second), acc.third.plus(triple.third))
         } ?: Triple(listOf(), setOf(), setOf())
         if ((hayesGraph.size == 1) && (hayesGraph.first() is PositiveRDFSurface)) hayesGraph.first() as PositiveRDFSurface else PositiveRDFSurface(

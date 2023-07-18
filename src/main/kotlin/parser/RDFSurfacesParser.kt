@@ -88,7 +88,7 @@ object RDFSurfacesParser : Grammar<PositiveRDFSurface>() {
     private val langTag by langTagToken use { this.text }
     private val circumflexToken by literalToken("^^")
     private val circumflex by circumflexToken use { this.text }
-    private val rdfLiteral by string and optional(langTag or ((circumflex and iri) use {this.t2})) use {
+    private val rdfLiteral by string and optional(langTag or ((circumflex and iri) use { this.t2 })) use {
         when (val part = this.t2) {
             null -> Literal.fromNonNumericLiteral(this.t1, dataTypeIRI = IRI(IRIConstants.XSD_STRING_IRI))
             is String -> Literal.fromNonNumericLiteral(this.t1, langTag = part)
@@ -125,7 +125,7 @@ object RDFSurfacesParser : Grammar<PositiveRDFSurface>() {
         Collection(this)
     }
 
-    val subject by iri or blankNode.map { varSet.add(it); it } or literal or collection
+    private val subject by iri or blankNode.map { varSet.add(it); it } or literal or collection
     private val predicate by iri or blankNode.map { varSet.add(it); it } or literal
     private val rdfObject: Parser<RdfTripleElement> by iri or blankNode.map { varSet.add(it); it } or literal or blankNodePropertyList or collection
 
@@ -197,6 +197,7 @@ object RDFSurfacesParser : Grammar<PositiveRDFSurface>() {
                         hayeGraph
                     )
                 )
+
                 IRIConstants.LOG_QUERY_SURFACE_IRI -> this.add(QueryRDFSurface(variableListStrings, hayeGraph))
                 IRIConstants.LOG_NEGATIVE_SURFACE_IRI -> this.add(NegativeRDFSurface(variableListStrings, hayeGraph))
                 IRIConstants.LOG_NEUTRAL_SURFACE_IRI -> this.add(NeutralRDFSurface(variableListStrings, hayeGraph))
@@ -212,7 +213,9 @@ object RDFSurfacesParser : Grammar<PositiveRDFSurface>() {
 
     private val statement by directive or rdfSurfacesParser
     private val turtleDoc by oneOrMore(statement) map {
-        val (hayesGraph, freeVariables) = it.filterNotNull().reduceOrNull { acc, pair ->
+        val (hayesGraph, freeVariables) = it.reduceOrNull { acc, pair ->
+            if (acc == null) return@reduceOrNull pair
+            if (pair == null) return@reduceOrNull acc
             Pair(acc.first.plus(pair.first), acc.second.plus(pair.second))
         } ?: Pair(listOf(), setOf())
         if ((hayesGraph.size == 1) && (hayesGraph.first() is PositiveRDFSurface)) hayesGraph.first() as PositiveRDFSurface else PositiveRDFSurface(
@@ -230,7 +233,7 @@ object RDFSurfacesParser : Grammar<PositiveRDFSurface>() {
     }
 
 
-    fun createBlankNodeId(): String {
+    private fun createBlankNodeId(): String {
         blankNodeCounter++
         return "BN_$blankNodeCounter"
     }

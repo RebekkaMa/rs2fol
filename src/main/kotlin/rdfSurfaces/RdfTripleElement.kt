@@ -39,7 +39,7 @@ data class Collection(val list: List<RdfTripleElement>): RdfTripleElement()
 class Literal(val lexicalValue: Any, val xsdDatatype: BaseDatatype) : RdfTripleElement() {
 
     companion object {
-        fun fromNonNumericLiteral(lexicalValue: String, dataTypeIRI: IRI): Literal {
+        fun fromNonNumericLiteral(lexicalValueString: String, dataTypeIRI: IRI): Literal {
             val xsdDatatype = when {
                 dataTypeIRI.iri.startsWith(IRIConstants.XSD_IRI) -> when (dataTypeIRI.iri.removePrefix(IRIConstants.XSD_IRI)) {
                     "string" -> XSDDatatype.XSDstring
@@ -87,7 +87,7 @@ class Literal(val lexicalValue: Any, val xsdDatatype: BaseDatatype) : RdfTripleE
             }
             //TODO(Catch exceptions)
             // https://jena.apache.org/documentation/javadoc/jena/org.apache.jena.core/org/apache/jena/datatypes/xsd/XSDDatatype.html#XSDnegativeInteger
-            val lexicalValue = xsdDatatype.parse(lexicalValue)
+            val lexicalValue = xsdDatatype.parse(lexicalValueString)
             return Literal(lexicalValue, xsdDatatype)
         }
 
