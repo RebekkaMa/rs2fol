@@ -4,7 +4,7 @@ import rdfSurfaces.Collection
 class TransformerException(message: String? = null, cause: Throwable? = null) : Exception(message, cause)
 
 class Transformer {
-    fun printRDFSurfaceGraphUsingNotation3(defaultPositiveSurface: PositiveRDFSurface): String {
+    fun printUsingNotation3(defaultPositiveSurface: PositiveRDFSurface): String {
         val spaceBase = "   "
 
         fun transform(blankNode: BlankNode) = "_:${blankNode.blankNodeId}"
@@ -183,9 +183,5 @@ class Transformer {
             prefix = "\n",
             separator = "\n"
         ) else ""
-    }
-
-    fun transformQuestionAnsweringResultToRDFSurfaces(){
-
     }
 }

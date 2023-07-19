@@ -28,10 +28,10 @@
 #    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds (_:sk_3
 #    - @prefix r: <http://www.example.org#>. --> finds nothing !!!!!!!!!
 
-(_:first _:rest) log:onNegativeSurface {
+(_:First _:Rest) log:onNegativeSurface {
    (_:A) log:onNegativeSurface {
-      _:A r:first _:first.
-      _:A r:rest _:rest.
+      _:A r:first _:First.
+      _:A r:rest _:Rest.
    }.
 }.
 

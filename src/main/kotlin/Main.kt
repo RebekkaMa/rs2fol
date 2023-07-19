@@ -12,7 +12,7 @@ import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
 import com.github.h0tk3y.betterParse.parser.ErrorResult
 import com.github.h0tk3y.betterParse.parser.Parsed
 import parser.VampireQuestionAnsweringResultsParser
-import parser.VampireQuestionAnsweringResultsParser.lists
+import rdfSurfaces.RdfTripleElement
 import java.io.File
 import java.util.concurrent.TimeUnit
 
@@ -243,7 +243,7 @@ class CheckWithQuestionAnswering :
 
             val graph = input.readText()
 
-            val (parseError, parseResultValue) = RDFSurfaceToFOLController().transformRDFSurfaceGraphToFOL(
+            val (parseError, parseResultValue, querySurfaces) = RDFSurfaceToFOLController().transformRDFSurfaceGraphToFOL(
                 graph,
                 false,
                 rdfLists = commonOptions.rdfList
@@ -293,32 +293,34 @@ class CheckWithQuestionAnswering :
                     )
                 }
 
-
-
             vampireProcess?.waitFor(30, TimeUnit.SECONDS)
 
             val vampireParsingResult = vampireProcess?.inputStream?.reader()?.useLines { vampireOutput ->
-                val result = mutableSetOf<String>()
-                val orResult = mutableSetOf<String>()
-                vampireOutput.forEach { vampireOutputLine ->
-                    if (vampireOutputLine.startsWith("% SZS answers Tuple")) {
+                val result = mutableSetOf<List<RdfTripleElement>>()
+                val orResult = mutableSetOf<List<List<RdfTripleElement>>>()
+                vampireOutput.forEach {
+                    if (it.startsWith("% SZS answers Tuple")) {
                         val rawVampireOutputLine =
-                            vampireOutputLine.trimStart { char -> (char != '[') }.trimEnd { char -> char != ']' }
+                            it.trimStart { char -> (char != '[') }.trimEnd { char -> char != ']' }
                         when (val parserResult =
                             VampireQuestionAnsweringResultsParser.tryParseToEnd(rawVampireOutputLine)) {
                             is Parsed -> {
                                 result.addAll(parserResult.value.first)
                                 orResult.addAll(parserResult.value.second)
                             }
-                            is ErrorResult -> println("Error: $vampireOutputLine")
+
+                            is ErrorResult -> println("Error: $it + $parserResult")
                         }
                     }
                 }
+
                 if (result.isEmpty()) return@useLines "No solutions"
-                result.joinToString(
-                    separator = "\n- ",
-                    prefix = "\n- "
-                )
+                return@useLines querySurfaces?.let {
+                    RDFSurfaceToFOLController().transformQuestionAnsweringResult(
+                        result,
+                        it.first()
+                    )
+                } ?: result.joinToString(prefix = "- ")
             }
             println(vampireParsingResult)
         } catch (exception: CliktError) {

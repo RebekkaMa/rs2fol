@@ -4,12 +4,16 @@ import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
-import com.github.h0tk3y.betterParse.parser.Parser
+import rdfSurfaces.BlankNode
+import rdfSurfaces.Collection
+import rdfSurfaces.IRI
+import rdfSurfaces.RdfTripleElement
 
-object VampireQuestionAnsweringResultsParser : Grammar<Pair<List<String>,List<String>>>() {
+object VampireQuestionAnsweringResultsParser :
+    Grammar<Pair<List<List<RdfTripleElement>>, List<List<List<RdfTripleElement>>>>>() {
 
-    val results = mutableListOf<String>()
-    val orResults = mutableListOf<String>()
+    val results = mutableListOf<List<RdfTripleElement>>()
+    val orResults = mutableListOf<List<List<RdfTripleElement>>>()
 
     val space by regexToken("\\s+", ignore = true)
 
@@ -20,16 +24,37 @@ object VampireQuestionAnsweringResultsParser : Grammar<Pair<List<String>,List<St
     val comma by literalToken(",")
     val verticalBar by literalToken("|")
     val underscore by literalToken("_")
-    val iri by regexToken("'([^\\s'\\[\\](),|])+'")
-    val lists by regexToken("list([^\\s\\[\\]])+")
-    val sk by regexToken("sK\\d+([^\\s\\[\\]])+")
-    val bn by regexToken("([^\\s'\\[\\](),|])+")
+    val listLiteral by literalToken("list")
+    val variableToken by regexToken("([^\\s'\\[\\](),|])+")
+    val variable by variableToken use { BlankNode(this.text) }
+    val iriToken by regexToken("'([^\\s'\\[\\](),|])+'")
+    val iri by iriToken use { IRI(this.text.removeSurrounding("'")) }
+    val list by -listLiteral and -lpar and (variable or iri) and zeroOrMore(-comma and (variable or iri)) and -rpar use {
+        Collection(
+            this.t2.plus(this.t1)
+        )
+    }
+    val skToken by regexToken("sK\\d+\\(([^\\s)\\[\\]])+\\)")
+    val plainSkToken by regexToken("sK\\d+")
+    val sk by skToken or plainSkToken use { IRI(this.text) }
 
-    val variableList = lparBracket and ((iri or lists or bn or sk) and zeroOrMore(comma and (iri or lists or bn or sk))) and rparBracket use {this.t1.text + this.t2.t1.text + this.t2.t2.joinToString(separator = ""){it.t1.text + (it.t2.text) } + this.t3.text}
-    val multipleVariableList = lpar and (variableList and oneOrMore(verticalBar and variableList)) and rpar use {this.t1.text + this.t2.t1 + this.t2.t2.joinToString(separator = ""){it.t1.text + it.t2} + this.t3.text}
-    val resultValue by -lparBracket and optional((variableList.map{ results.add(it)} or multipleVariableList.map{ orResults.add(it)}) and zeroOrMore(-comma and (variableList.map{ results.add(it)} or multipleVariableList.map{ orResults.add(it)}))) and -verticalBar and -underscore and -rparBracket
+    private val variableList by
+    -lparBracket and ((sk or list or iri or variable) and zeroOrMore(-comma and (sk or list or iri or variable))) and -rparBracket use {
+        //TODO(Performance)
+        listOf(this.t1).plus(this.t2)
+    }
 
-    override val rootParser: Parser<Pair<List<String>, List<String>>> by resultValue use {
+    private val multipleVariableList by (-lpar and (variableList and oneOrMore(-verticalBar and variableList)) and -rpar) use {
+        listOf(this.t1).plus(this.t2)
+    }
+
+    private val resultValue by -lparBracket and optional((variableList.map { results.add(it) } or multipleVariableList.map {
+        orResults.add(
+            it
+        )
+    }) and zeroOrMore(-comma and (variableList.map { results.add(it) } or multipleVariableList.map { orResults.add(it) }))) and -verticalBar and -underscore and -rparBracket
+
+    override val rootParser by resultValue use {
         try {
             results.toList() to orResults.toList()
         } finally {
