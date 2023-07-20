@@ -30,4 +30,5 @@ kotlin {
 
 application {
     mainClass.set("MainKt")
+    applicationDefaultJvmArgs = setOf("-Xss1g")
 }

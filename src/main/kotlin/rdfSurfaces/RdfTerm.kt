@@ -34,14 +34,16 @@ data class BlankNode(val blankNodeId: String) : RdfTripleElement() {
     }
 }
 
-data class Collection(val list: List<RdfTripleElement>): RdfTripleElement()
+data class Collection(val list: List<RdfTripleElement>) : RdfTripleElement()
 
-class Literal(val lexicalValue: Any, val xsdDatatype: BaseDatatype) : RdfTripleElement() {
+open class Literal(val literalValue: Any, val datatype: BaseDatatype) : RdfTripleElement() {
 
+    //TODO(support: http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral + http://www.w3.org/1999/02/22-rdf-syntax-ns#HTML
+    // || see:https://www.w3.org/TR/rdf11-concepts/#datatype-iris)
     companion object {
-        fun fromNonNumericLiteral(lexicalValueString: String, dataTypeIRI: IRI): Literal {
+        fun fromNonNumericLiteral(lexicalForm: String, datatypeIRI: IRI): Literal {
             val xsdDatatype = when {
-                dataTypeIRI.iri.startsWith(IRIConstants.XSD_IRI) -> when (dataTypeIRI.iri.removePrefix(IRIConstants.XSD_IRI)) {
+                datatypeIRI.iri.startsWith(IRIConstants.XSD_IRI) -> when (datatypeIRI.iri.removePrefix(IRIConstants.XSD_IRI)) {
                     "string" -> XSDDatatype.XSDstring
                     "boolean" -> XSDDatatype.XSDboolean
                     "decimal" -> XSDDatatype.XSDdecimal
@@ -80,20 +82,17 @@ class Literal(val lexicalValue: Any, val xsdDatatype: BaseDatatype) : RdfTripleE
                     "NMTOKEN" -> XSDDatatype.XSDNMTOKEN
                     "Name" -> XSDDatatype.XSDName
                     "NCName" -> XSDDatatype.XSDNCName
-                    else -> XSDDatatype(dataTypeIRI.iri)
+                    else -> XSDDatatype(datatypeIRI.iri)
                 }
 
-                else -> BaseDatatype(dataTypeIRI.iri)
+                else -> BaseDatatype(datatypeIRI.iri)
             }
-            //TODO(Catch exceptions)
-            // https://jena.apache.org/documentation/javadoc/jena/org.apache.jena.core/org/apache/jena/datatypes/xsd/XSDDatatype.html#XSDnegativeInteger
-            val lexicalValue = xsdDatatype.parse(lexicalValueString)
-            return Literal(lexicalValue, xsdDatatype)
+            //TODO(Catch exceptions?)
+            return Literal(xsdDatatype.parse(lexicalForm), xsdDatatype)
         }
 
-        fun fromNonNumericLiteral(lexicalValue: String, langTag: String): Literal =
-            Literal(Pair(lexicalValue, langTag.lowercase()), BaseDatatype(IRIConstants.RDF_LANG_STRING_IRI))
-
+        fun fromNonNumericLiteral(lexicalValue: String, langTag: String): LanguageTaggedString =
+            LanguageTaggedString(Pair(lexicalValue, langTag.lowercase()))
 
         fun fromNumericLiteral(numericLiteral: String): Literal {
             return when {
@@ -111,4 +110,10 @@ class Literal(val lexicalValue: Any, val xsdDatatype: BaseDatatype) : RdfTripleE
             }
         }
     }
+
+}
+
+class LanguageTaggedString(lexicalValue: Pair<String,String>) : Literal(literalValue = lexicalValue, datatype = BaseDatatype(IRIConstants.RDF_LANG_STRING_IRI)) {
+    val lexicalForm = lexicalValue.first
+    val languageTag = lexicalValue.second
 }

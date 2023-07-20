@@ -6,7 +6,7 @@ for f in $FILES
 do
   if [[ $f = *answer.n3s ]]; then continue ; fi
   echo -n "Processing $f file...  -   "
-  ./bin/untitled1 check -q -i $f
+  ./bin/untitled1 check -q -i $f --vampire-option 1 --rdf-list
   ((RE++))
 done
 echo "Number of processed files: $RE"

@@ -9,13 +9,6 @@ import rdfSurfaces.RdfTripleElement
 
 class RDFSurfaceToFOLController {
 
-    /**
-     * Transform RDF Surface graph to first-order logic axiom (and optional question) in TPTP format
-     *
-     * @param rdfSurfaceGraph
-     * @param ignoreQuerySurface
-     * @return parseError, parseResultValue
-     */
     fun transformRDFSurfaceGraphToFOL(
         rdfSurfaceGraph: String,
         ignoreQuerySurface: Boolean,
@@ -38,12 +31,6 @@ class RDFSurfaceToFOLController {
         }
     }
 
-    /**
-     * Transform RDF Surface graph into first-order logic conjecture in TPTP format
-     *
-     * @param rdfSurfaceGraph
-     * @return parseError, parseResultValue
-     */
     fun transformRDFSurfaceGraphToFOLConjecture(
         rdfSurfaceGraph: String,
         rdfLists: Boolean = false
@@ -66,7 +53,7 @@ class RDFSurfaceToFOLController {
         return when (
             val parserResult = parser.tryParseToEnd(rdfSurfaceGraph)) {
             is Parsed -> {
-                false to Transformer().printUsingNotation3(parserResult.value)
+                false to Transformer().toNotation3Sublanguage(parserResult.value)
             }
 
             is ErrorResult -> {
@@ -76,6 +63,6 @@ class RDFSurfaceToFOLController {
     }
 
     fun transformQuestionAnsweringResult(resultList: Set<List<RdfTripleElement>>, queryRDFSurface: QueryRDFSurface) =
-        queryRDFSurface.replaceBlankNodes(resultList).let { Transformer().printUsingNotation3(it) }
+        queryRDFSurface.replaceBlankNodes(resultList).let { Transformer().toNotation3Sublanguage(it) }
 
 }

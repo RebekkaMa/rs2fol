@@ -6,18 +6,14 @@ import java.io.File
 
 class RDFSurfacesParserTest : ShouldSpec(
     {
-
         afterTest {
             RDFSurfacesParser.resetAll()
         }
-
         should("transform example2.n3 without exception") {
             val file = File("src/test/resources/turtle/example2.n3")
             val solutionFile = File("src/test/resources/turtle-fol/example2.p")
-            println(Transformer().transformToFOL(RDFSurfacesParser.parseToEnd(file.readText())))
             (Transformer().transformToFOL(RDFSurfacesParser.parseToEnd(file.readText()))) shouldBeEqualComparingTo solutionFile.readText()
         }
-
         should("transform example3.n3 without exception") {
             val file = File("src/test/resources/turtle/example3.n3")
             val solutionFile = File("src/test/resources/turtle-fol/example3.p")
@@ -63,13 +59,11 @@ class RDFSurfacesParserTest : ShouldSpec(
         should("transform example11.n3 without exception") {
             val file = File("src/test/resources/turtle/example11.n3")
             val solutionFile = File("src/test/resources/turtle-fol/example11.p")
-            println((Transformer().transformToFOL(RDFSurfacesParser.parseToEnd(file.readText()))))
             (Transformer().transformToFOL(RDFSurfacesParser.parseToEnd(file.readText()))) shouldBeEqualComparingTo solutionFile.readText()
         }
         should("transform example12.n3 without exception") {
             val file = File("src/test/resources/turtle/example12.n3")
             val solutionFile = File("src/test/resources/turtle-fol/example12.p")
-            println((Transformer().transformToFOL(RDFSurfacesParser.parseToEnd(file.readText()))))
             (Transformer().transformToFOL(RDFSurfacesParser.parseToEnd(file.readText()))) shouldBeEqualComparingTo solutionFile.readText()
         }
         should("transform example13.n3 without exception") {
@@ -91,7 +85,6 @@ class RDFSurfacesParserTest : ShouldSpec(
             val file = File("src/test/resources/turtle/example16.n3")
             val solutionFile = File("src/test/resources/turtle-fol/example16.p")
             (Transformer().transformToFOL(RDFSurfacesParser.parseToEnd(file.readText()))) shouldBeEqualComparingTo solutionFile.readText()
-
         }
         should("transform example17.n3 without exception") {
             val file = File("src/test/resources/turtle/example17.n3")
@@ -166,7 +159,6 @@ class RDFSurfacesParserTest : ShouldSpec(
             println(
                 (Transformer().transformToFOL(RDFSurfacesParser.parseToEnd(file.readText())))
             )
-
         }
 
         context("blogic") {
@@ -176,7 +168,6 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 println(Transformer().transformToFOL(RDFSurfacesParser.parseToEnd(file.readText()),true))
                 Transformer().transformToFOL(RDFSurfacesParser.parseToEnd(file.readText()),true) shouldBeEqualComparingTo solutionFile.readText()
-
             }
             should("transform blogic abcd.n3") {
                 val file = File("src/test/resources/blogic/abcd.n3")
@@ -184,9 +175,7 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 println(Transformer().transformToFOL(RDFSurfacesParser.parseToEnd(file.readText()), true))
                 Transformer().transformToFOL(RDFSurfacesParser.parseToEnd(file.readText()),true) shouldBeEqualComparingTo solutionFile.readText()
-
             }
-
         }
         context("lists"){
             should("transform blogic lists.n3") {

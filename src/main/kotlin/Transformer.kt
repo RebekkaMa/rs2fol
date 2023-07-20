@@ -4,26 +4,29 @@ import rdfSurfaces.Collection
 class TransformerException(message: String? = null, cause: Throwable? = null) : Exception(message, cause)
 
 class Transformer {
-    fun printUsingNotation3(defaultPositiveSurface: PositiveRDFSurface): String {
+    fun toNotation3Sublanguage(defaultPositiveSurface: PositiveRDFSurface): String {
         val spaceBase = "   "
+        //TODO()
+        val prefixMap = mutableMapOf<String, String>()
 
         fun transform(blankNode: BlankNode) = "_:${blankNode.blankNodeId}"
 
         fun transform(iri: IRI) = when {
             iri.iri.startsWith(IRIConstants.LOG_IRI) -> "log:${iri.iri.removePrefix(IRIConstants.LOG_IRI)}"
             iri.iri.startsWith(IRIConstants.RDF_IRI) -> "rdf:${iri.iri.removePrefix(IRIConstants.RDF_IRI)}"
+            iri.iri.startsWith(IRIConstants.XSD_IRI) -> "xsd:${iri.iri.removePrefix(IRIConstants.XSD_IRI)}"
             else -> "<${iri.iri}>"
         }
 
-        fun transform(literal: Literal) =
-            when (literal.xsdDatatype.uri) {
-                IRIConstants.RDF_LANG_STRING_IRI -> {
-                    val (lexVal, langTag) = literal.lexicalValue as Pair<*, *>
-                    "\"$lexVal\"$langTag"
-                }
-                IRIConstants.XSD_INTEGER,IRIConstants.XSD_DOUBLE, IRIConstants.XSD_BOOLEAN_IRI -> literal.lexicalValue.toString()
-                else -> "\"${literal.lexicalValue}\"^^<${literal.xsdDatatype.uri}>"
+        fun transform(literal: Literal): String {
+            if (literal is LanguageTaggedString) return "\"${literal.lexicalForm}\"@${literal.languageTag}"
+            return when (literal.datatype.uri) {
+                IRIConstants.XSD_INTEGER, IRIConstants.XSD_DOUBLE, IRIConstants.XSD_BOOLEAN_IRI -> literal.literalValue.toString()
+                else -> "\"${literal.literalValue}\"^^${transform(IRI(literal.datatype.uri))}"
+                //TODO(${transform(IRI(literal.datatype.uri))})
             }
+        }
+
 
         fun transform(graffitiList: List<BlankNode>) = graffitiList.joinToString(
             prefix = "(",
@@ -78,7 +81,8 @@ class Transformer {
 
         val rdfSurfacesGraphString = StringBuilder()
         rdfSurfacesGraphString.append("@prefix log: <${IRIConstants.LOG_IRI}>.\n")
-        rdfSurfacesGraphString.append("@prefix rdf: <${IRIConstants.RDF_IRI}>.\n\n")
+        rdfSurfacesGraphString.append("@prefix rdf: <${IRIConstants.RDF_IRI}>.\n")
+        rdfSurfacesGraphString.append("@prefix xsd: <${IRIConstants.XSD_IRI}>.\n")
 
         val graffitiListString = transform(defaultPositiveSurface.graffiti)
         val hayesGraphString =
@@ -108,13 +112,9 @@ class Transformer {
 
         fun transform(iri: IRI) = "'${iri.iri}'"
 
-        fun transform(literal: Literal) = "'" + when (literal.xsdDatatype.uri) {
-            IRIConstants.RDF_LANG_STRING_IRI -> {
-                val (lexVal, langTag) = literal.lexicalValue as Pair<*, *>
-                "\"" + lexVal + "\"" + langTag
-            }
-
-            else -> "\"${literal.lexicalValue}\"^^${literal.xsdDatatype.uri}"
+        fun transform(literal: Literal) = "'" + when (literal) {
+            is LanguageTaggedString -> "\"${literal.lexicalForm}\"@${literal.languageTag}"
+            else -> "\"${literal.literalValue}\"^^${literal.datatype.uri}"
         } + "'"
 
         fun transform(rdfTripleElement: RdfTripleElement) : String = when (rdfTripleElement) {

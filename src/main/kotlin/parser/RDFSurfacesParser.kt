@@ -90,9 +90,9 @@ object RDFSurfacesParser : Grammar<PositiveRDFSurface>() {
     private val circumflex by circumflexToken use { this.text }
     private val rdfLiteral by string and optional(langTag or ((circumflex and iri) use { this.t2 })) use {
         when (val part = this.t2) {
-            null -> Literal.fromNonNumericLiteral(this.t1, dataTypeIRI = IRI(IRIConstants.XSD_STRING_IRI))
-            is String -> Literal.fromNonNumericLiteral(this.t1, langTag = part)
-            is IRI -> Literal.fromNonNumericLiteral(this.t1, dataTypeIRI = part)
+            null -> Literal.fromNonNumericLiteral(this.t1, datatypeIRI = IRI(IRIConstants.XSD_STRING_IRI))
+            is String -> Literal.fromNonNumericLiteral(this.t1, langTag = part.drop(1))
+            is IRI -> Literal.fromNonNumericLiteral(this.t1, datatypeIRI = part)
             else -> throw RDFSurfacesParseException("RDF Literal type not supported")
         }
     }
@@ -100,7 +100,7 @@ object RDFSurfacesParser : Grammar<PositiveRDFSurface>() {
     private val booleanLiteral by booleanLiteralToken use {
         Literal.fromNonNumericLiteral(
             this.text,
-            dataTypeIRI = IRI(IRIConstants.XSD_BOOLEAN_IRI)
+            datatypeIRI = IRI(IRIConstants.XSD_BOOLEAN_IRI)
         )
     }
 
