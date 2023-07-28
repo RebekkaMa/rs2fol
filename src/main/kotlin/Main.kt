@@ -11,7 +11,7 @@ import com.github.ajalt.clikt.parameters.types.int
 import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
 import com.github.h0tk3y.betterParse.parser.ErrorResult
 import com.github.h0tk3y.betterParse.parser.Parsed
-import parser.VampireQuestionAnsweringResultsParser
+import parser.TPTPTupleAnswerParser
 import rdfSurfaces.RdfTripleElement
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -312,16 +312,17 @@ class TransformWithQA :
 
             vampireProcess?.waitFor(60, TimeUnit.SECONDS)
 
+            //TODO(Generalization: https://www.tptp.org/TPTP/Proposals/AnswerExtraction.html)
             val vampireParsingResult = vampireProcess?.inputStream?.reader()?.useLines { vampireOutput ->
                 val parsedResult = mutableSetOf<List<RdfTripleElement>>()
                 val rawResult = mutableSetOf<String>()
                 val orResult = mutableSetOf<List<List<RdfTripleElement>>>()
                 vampireOutput.forEach {
-                    if (it.startsWith("% SZS answers Tuple")) {
+                    if (it.contains("SZS answers Tuple")) {
                         val rawVampireOutputLine =
                             it.trimStart { char -> (char != '[') }.trimEnd { char -> char != ']' }
                         when (val parserResult =
-                            VampireQuestionAnsweringResultsParser.tryParseToEnd(rawVampireOutputLine)) {
+                            TPTPTupleAnswerParser.tryParseToEnd(rawVampireOutputLine)) {
                             is Parsed -> {
                                 parsedResult.addAll(parserResult.value.first)
                                 orResult.addAll(parserResult.value.second)
@@ -332,7 +333,7 @@ class TransformWithQA :
                     }
                 }
 
-                if (parsedResult.isEmpty() && rawResult.isEmpty()) return@useLines "No solutions"
+                if (parsedResult.isEmpty() && rawResult.isEmpty() && !quiet) return@useLines "No solutions"
                 val answerRDFSurfacesGraph = if (parsedResult.isNotEmpty()) (querySurfaces?.let {
                     RDFSurfaceToFOLController().transformQuestionAnsweringResult(
                         parsedResult,

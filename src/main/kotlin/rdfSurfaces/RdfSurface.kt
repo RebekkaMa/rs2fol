@@ -5,6 +5,9 @@ abstract class RDFSurface(
     val hayesGraph: List<HayesGraphElement>
 ) : HayesGraphElement()
 
+//TODO(" check leanness ")
+//TODO(" isomorphic check ")
+
 class PositiveRDFSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
     RDFSurface(graffiti, hayesGraph) {
     fun getQuerySurfaces(): List<QueryRDFSurface> = hayesGraph.filterIsInstance(QueryRDFSurface::class.java)

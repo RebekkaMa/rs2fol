@@ -20,7 +20,7 @@ class RDFSurfaceToFOLController {
             is Parsed -> {
                 Triple(
                     false,
-                    Transformer().transformToFOL(parserResult.value, ignoreQuerySurface),
+                    Transformer().toFOL(parserResult.value, ignoreQuerySurface),
                     parserResult.value.getQuerySurfaces()
                 )
             }
@@ -39,7 +39,7 @@ class RDFSurfaceToFOLController {
         return when (
             val answerParserResult = parser.tryParseToEnd(rdfSurfaceGraph)) {
             is Parsed -> {
-                false to Transformer().transformToFOL(answerParserResult.value, false, "conjecture", "conjecture")
+                false to Transformer().toFOL(answerParserResult.value, false, "conjecture", "conjecture")
             }
 
             is ErrorResult -> {

@@ -1,7 +1,0 @@
-@prefix : <example:> .
-@prefix log: <log:> .
-
-(_:X) log:onNegativeSurface {
-    _:X a :Person .
-    _:X :knows (:Alice) .
-} .

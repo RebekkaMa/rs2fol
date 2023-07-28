@@ -50,13 +50,13 @@ object RDFSurfacesParserRDFLists : Grammar<PositiveRDFSurface>() {
     private val pnameNs by regexToken("$pnPrefix?:")
     private val prefixedName by pnameLn.use {
         val (prefix, local) = this.text.split(':', limit = 2)
-        return@use (prefixMap[prefix] ?: throw RDFSurfacesParseException("Prefix not defined")) + local
+        return@use (prefixMap[prefix] ?: throw RDFSurfacesParseException("Prefix not defined")) + replaceReservedCharacterEscapes(local)
     } or pnameNs.use {
         prefixMap[this.text.trimEnd().dropLast(1)] ?: throw RDFSurfacesParseException("Prefix not defined")
     } map { IRI(it) }
 
     private val iri by iriref.map {
-        it.text.removeSurrounding("<", ">").let { rawIriMatch -> IRI((baseIri ?: "") + rawIriMatch) }
+        it.text.removeSurrounding("<", ">").let { rawIriMatch -> IRI((baseIri ?: "") + replaceNumericEscapeSequences(rawIriMatch)) }
     } or prefixedName
 
 
@@ -88,9 +88,19 @@ object RDFSurfacesParserRDFLists : Grammar<PositiveRDFSurface>() {
     private val circumflex by circumflexToken use { this.text }
     private val rdfLiteral by string and optional(langTag or ((circumflex and iri) use { this.t2 })) use {
         when (val part = this.t2) {
-            null -> Literal.fromNonNumericLiteral(this.t1, datatypeIRI = IRI(IRIConstants.XSD_STRING_IRI))
+            null -> Literal.fromNonNumericLiteral(
+                replaceStringEscapes(replaceNumericEscapeSequences(this.t1)),
+                datatypeIRI = IRI(IRIConstants.XSD_STRING_IRI)
+            )
+
             is String -> Literal.fromNonNumericLiteral(this.t1, langTag = part.drop(1))
-            is IRI -> Literal.fromNonNumericLiteral(this.t1, datatypeIRI = part)
+            is IRI -> {
+                val literalValue = this.t1.takeUnless { part == IRIConstants.XSD_STRING_IRI } ?: replaceStringEscapes(
+                    replaceNumericEscapeSequences(this.t1)
+                )
+                Literal.fromNonNumericLiteral(literalValue, datatypeIRI = part)
+            }
+
             else -> throw RDFSurfacesParseException("RDF Literal type not supported")
         }
     }
@@ -238,8 +248,8 @@ object RDFSurfacesParserRDFLists : Grammar<PositiveRDFSurface>() {
     } or triples and -optional(dot)
 
     private val directive by (prefixID or sparqlPrefix).map {
-        prefixMap.put(it.t1.text.dropLast(1), it.t2.text.removeSurrounding("<", ">"))
-    } or (base or sparqlBase).map { baseIri = it.text.drop(1).dropLast(1) } use { null }
+        prefixMap.put(it.t1.text.dropLast(1), replaceNumericEscapeSequences(it.t2.text.removeSurrounding("<", ">")))
+    } or (base or sparqlBase).map { baseIri = replaceNumericEscapeSequences(it.text.drop(1).dropLast(1))} use { null }
 
     private val statement by directive or rdfSurfacesParser
     private val turtleDoc by oneOrMore(statement) map {
@@ -278,4 +288,24 @@ object RDFSurfacesParserRDFLists : Grammar<PositiveRDFSurface>() {
         blankNodeTriplesSet.clear()
         collectionTripleSet.clear()
     }
+
+    fun replaceNumericEscapeSequences(string: String) = string.replace("\\\\u[0-9A-Fa-f]{4}".toRegex()) {
+        Integer.parseInt(it.value.removePrefix("\\u"), 16).toChar().toString()
+    }.replace("\\\\U[0-9A-Fa-f]{8}".toRegex()) {
+        Integer.parseInt(it.value.removePrefix("\\U"), 16).toChar().toString()
+    }
+
+    fun replaceReservedCharacterEscapes(string: String) = string.replace("\\\\[~.!$&'()*+,;=/?#@%_-]".toRegex()) {
+        it.value.removePrefix("\\")
+    }
+
+    fun replaceStringEscapes(string: String) = string
+        .replace("\\t", "\u0009")
+        .replace("\\b", "\u0008")
+        .replace("\\n", "\u000A")
+        .replace("\\r", "\u000D")
+        .replace("\\f", "\u000C")
+        .replace("\\\"", "\u0022")
+        .replace("\\'", "\u0027")
+        .replace("\\\\'", "\u005C")
 }

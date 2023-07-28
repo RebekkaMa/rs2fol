@@ -1,5 +1,9 @@
 @prefix log: <http://www.w3.org/2000/10/swap/log#>.
 @prefix : <http://example.org/ns#>.
+@prefix or: <http://example.org/or#>.
+@prefix de: <http://example.org/de#>.
+
+
 
 # beetle is a car
 :beetle a :Car.
@@ -8,10 +12,10 @@
 (_:A) log:onNegativeSurface {
     _:A a :Car.
     () log:onNegativeSurface {
-        _:A :is :green.
+        _:A or:is :green.
     }.
     () log:onNegativeSurface {
-        _:A :is :blue.
+        _:A de:is :blue.
     }.
 }.
 

@@ -7,15 +7,13 @@ import org.apache.jena.datatypes.xsd.XSDDatatype
 abstract class RdfTripleElement
 
 data class IRI(val iri: String) : RdfTripleElement() {
-    override fun equals(other: Any?): Boolean {
-        return when (other) {
-            is IRI -> iri == other.iri
-            else -> false
-        }
+
+    fun getFragment(): String? {
+        return iri.substringAfterLast('#').takeIf { it.length != iri.length }
     }
 
-    override fun hashCode(): Int {
-        return iri.hashCode()
+    fun getIRIWithoutFragment(): String {
+        return iri.substringBeforeLast('#').let { if (it.length == iri.length) it else "$it#" }
     }
 
 
@@ -42,8 +40,8 @@ open class Literal(val literalValue: Any, val datatype: BaseDatatype) : RdfTripl
     // || see:https://www.w3.org/TR/rdf11-concepts/#datatype-iris)
     companion object {
         fun fromNonNumericLiteral(lexicalForm: String, datatypeIRI: IRI): Literal {
-            val xsdDatatype = when {
-                datatypeIRI.iri.startsWith(IRIConstants.XSD_IRI) -> when (datatypeIRI.iri.removePrefix(IRIConstants.XSD_IRI)) {
+            val datatype = when {
+                datatypeIRI.iri.startsWith(IRIConstants.XSD_IRI) -> when (datatypeIRI.getFragment()) {
                     "string" -> XSDDatatype.XSDstring
                     "boolean" -> XSDDatatype.XSDboolean
                     "decimal" -> XSDDatatype.XSDdecimal
@@ -87,8 +85,9 @@ open class Literal(val literalValue: Any, val datatype: BaseDatatype) : RdfTripl
 
                 else -> BaseDatatype(datatypeIRI.iri)
             }
+
             //TODO(Catch exceptions?)
-            return Literal(xsdDatatype.parse(lexicalForm), xsdDatatype)
+            return Literal(lexicalForm.takeUnless { datatype is XSDDatatype } ?: datatype.parse(lexicalForm), datatype)
         }
 
         fun fromNonNumericLiteral(lexicalValue: String, langTag: String): LanguageTaggedString =
@@ -113,7 +112,8 @@ open class Literal(val literalValue: Any, val datatype: BaseDatatype) : RdfTripl
 
 }
 
-class LanguageTaggedString(lexicalValue: Pair<String,String>) : Literal(literalValue = lexicalValue, datatype = BaseDatatype(IRIConstants.RDF_LANG_STRING_IRI)) {
+class LanguageTaggedString(lexicalValue: Pair<String, String>) :
+    Literal(literalValue = lexicalValue, datatype = BaseDatatype(IRIConstants.RDF_LANG_STRING_IRI)) {
     val lexicalForm = lexicalValue.first
     val languageTag = lexicalValue.second
 }
