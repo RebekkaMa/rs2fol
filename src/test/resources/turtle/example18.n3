@@ -1,5 +1,7 @@
 #collections
 @prefix : <http://example.org/foo> .
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+
 # the object of this triple is the RDF collection blank node
 _:t :predicate ( :a :b :c ) .
 

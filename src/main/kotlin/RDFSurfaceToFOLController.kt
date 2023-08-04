@@ -1,9 +1,9 @@
-import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
 import com.github.h0tk3y.betterParse.parser.ErrorResult
 import com.github.h0tk3y.betterParse.parser.ParseException
 import com.github.h0tk3y.betterParse.parser.Parsed
 import parser.RDFSurfacesParser
 import parser.RDFSurfacesParserRDFLists
+import parser.tryParseToEnd
 import rdfSurfaces.QueryRDFSurface
 import rdfSurfaces.RdfTripleElement
 

@@ -1,6 +1,8 @@
-@prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+#@prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix log: <http://www.w3.org/2000/10/swap/log#>.
-# @prefix r: <http://www.example.org#>.
+@prefix r: <http://www.example.org#>.
+@prefix : <http://example.org/ns#>.
+
 
 # without constraint
 # eye:
@@ -32,9 +34,32 @@
    (_:A) log:onNegativeSurface {
       _:A r:first _:First.
       _:A r:rest _:Rest.
+      _:A r:type r:List.
    }.
+   _:Rest r:type r:List.
+}.
+r:nil r:type r:List.
+
+
+#(_:First _:Rest) log:onNegativeSurface {
+#   (_:A) log:onNegativeSurface {
+#      _:A r:first _:First.
+#      _:A r:rest _:Rest.
+#   }.
+#}.
+
+
+#:a :b :c.
+
+#(_:A) log:onQuerySurface {
+#    _:A r:first :b.
+#    _:A r:rest :c.
+#}.
+
+(_:A) log:onQuerySurface {
+    _:A r:type r:List.
 }.
 
-(_:A _:B) log:onQuerySurface {
-    _:A r:first _:B.
-}.
+#(_:A _:B) log:onQuerySurface {
+#    _:A r:first _:B.
+#}.

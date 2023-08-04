@@ -13,10 +13,37 @@ class PositiveRDFSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphE
     fun getQuerySurfaces(): List<QueryRDFSurface> = hayesGraph.filterIsInstance(QueryRDFSurface::class.java)
     //.mapNotNull { if (it is QueryRDFSurface) it else null}
 
+    override fun equals(other: Any?): Boolean {
+        return when {
+            other === this -> true
+            other is PositiveRDFSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
+            else -> false
+        }
+    }
+
+    override fun hashCode(): Int {
+        var result = graffiti.hashCode()
+        result = 31 * result + hayesGraph.hashCode()
+        return result
+    }
 }
 
 class NegativeRDFSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
-    RDFSurface(graffiti, hayesGraph)
+    RDFSurface(graffiti, hayesGraph) {
+    override fun equals(other: Any?): Boolean {
+        return when {
+            other === this -> true
+            other is NegativeRDFSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
+            else -> false
+        }
+    }
+
+    override fun hashCode(): Int {
+        var result = graffiti.hashCode()
+        result = 31 * result + hayesGraph.hashCode()
+        return result
+    }
+}
 
 class QueryRDFSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
     RDFSurface(graffiti, hayesGraph) {
@@ -45,16 +72,58 @@ class QueryRDFSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElem
                                 ?: map[hayesGraphElement.rdfObject] ?: hayesGraphElement.rdfObject,
                         )
 
-                        else -> throw Exception("Not supported yet")
+                        else -> throw Exception("Nested Surfaces on the query surface are not supported yet")
                     }
                 }
             }
         )
     }
+
+    override fun equals(other: Any?): Boolean {
+        return when {
+            other === this -> true
+            other is QueryRDFSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
+            else -> false
+        }
+    }
+
+    override fun hashCode(): Int {
+        var result = graffiti.hashCode()
+        result = 31 * result + hayesGraph.hashCode()
+        return result
+    }
 }
 
 class NeutralRDFSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
-    RDFSurface(graffiti, hayesGraph)
+    RDFSurface(graffiti, hayesGraph) {
+    override fun equals(other: Any?): Boolean {
+        return when {
+            other === this -> true
+            other is NeutralRDFSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
+            else -> false
+        }
+    }
+
+    override fun hashCode(): Int {
+        var result = graffiti.hashCode()
+        result = 31 * result + hayesGraph.hashCode()
+        return result
+    }
+}
 
 class NegativeTripleRDFSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
-    RDFSurface(graffiti, hayesGraph)
+    RDFSurface(graffiti, hayesGraph) {
+    override fun equals(other: Any?): Boolean {
+        return when {
+            other === this -> true
+            other is NegativeRDFSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
+            else -> false
+        }
+    }
+
+    override fun hashCode(): Int {
+        var result = graffiti.hashCode()
+        result = 31 * result + hayesGraph.hashCode()
+        return result
+    }
+}

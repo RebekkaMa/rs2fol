@@ -21,6 +21,10 @@
    }.
 }.
 
+:a :b :c.
+
+
+# (_:l011 0) :add 0
 (_:l01 _:l02 _:l011 _:l012) log:onQuerySurface {
       _:l01 r:first _:l011; r:rest _:l02 .
       _:l02 r:first 0; r:rest r:nil .

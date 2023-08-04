@@ -1,5 +1,5 @@
-@prefix : <pre:> .
-@prefix rdf: <rdf:> .
+@prefix : <http://example.org/ns#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns> .
 @prefix log: <http://www.w3.org/2000/10/swap/log#>.
 
 _:t :predicate ( :a :b :c ) .

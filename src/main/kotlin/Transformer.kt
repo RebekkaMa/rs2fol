@@ -1,3 +1,5 @@
+import org.apache.jena.datatypes.BaseDatatype
+import org.apache.jena.datatypes.xsd.XSDDatatype
 import parser.stringLiteralLongQuote
 import parser.stringLiteralLongSingleQuote
 import parser.stringLiteralQuote
@@ -11,7 +13,7 @@ class Transformer {
     fun toNotation3Sublanguage(defaultPositiveSurface: PositiveRDFSurface): String {
         val spaceBase = "   "
 
-        var prefixCounter = -1
+        var prefixCounter = 0
         val prefixMap = mutableMapOf<String, String>()
 
         fun transform(blankNode: BlankNode) = "_:${blankNode.blankNodeId}"
@@ -19,29 +21,29 @@ class Transformer {
         fun transform(iri: IRI) = when (val iriWithoutFragment = iri.getIRIWithoutFragment()) {
             IRIConstants.LOG_IRI -> {
                 prefixMap.putIfAbsent(IRIConstants.LOG_IRI, "log")
-                "log:${iri.getFragment() ?: ""}"
+                "log:${iri.fragment.orEmpty()}"
             }
 
             IRIConstants.RDF_IRI -> {
                 prefixMap.putIfAbsent(IRIConstants.RDF_IRI, "rdf")
-                "rdf:${iri.getFragment() ?: ""}"
+                "rdf:${iri.fragment.orEmpty()}"
             }
 
             IRIConstants.XSD_IRI -> {
                 prefixMap.putIfAbsent(IRIConstants.XSD_IRI, "xsd")
-                "xsd:${iri.getFragment() ?: ""}"
+                "xsd:${iri.fragment.orEmpty()}"
             }
 
             IRIConstants.RDFS_IRI -> {
-                prefixMap.putIfAbsent(IRIConstants.RDF_IRI, "rdfs")
-                "rdfs:${iri.getFragment() ?: ""}"
+                prefixMap.putIfAbsent(IRIConstants.RDFS_IRI, "rdfs")
+                "rdfs:${iri.fragment.orEmpty()}"
             }
 
             else -> {
-                val fragment = iri.getFragment()
-                if (fragment == null) "<${iri.iri}>" else {
+                val fragment = iri.fragment
+                if (fragment.isNullOrBlank()) "<${iri.iri}>" else {
                     val prefix = prefixMap.getOrPut(iriWithoutFragment) {
-                        when (++prefixCounter) {
+                        when (prefixCounter++) {
                             0 -> ""
                             1 -> "ex"
                             else -> "ex$prefixCounter"
@@ -58,7 +60,7 @@ class Transformer {
             if (literal is LanguageTaggedString) return "\"${literal.lexicalForm}\"@${literal.languageTag}"
             return when (literal.datatype.uri) {
                 //TODO()
-                IRIConstants.XSD_INTEGER, IRIConstants.XSD_DOUBLE, IRIConstants.XSD_BOOLEAN_IRI -> literal.literalValue.toString()
+                //IRIConstants.XSD_INTEGER, IRIConstants.XSD_DOUBLE, IRIConstants.XSD_BOOLEAN_IRI, IRIConstants.XSD_DECIMAL
                 IRIConstants.XSD_STRING_IRI -> {
                     val rawLiteral = literal.literalValue.toString()
                     when {
@@ -70,8 +72,8 @@ class Transformer {
                     }
                 }
 
-                else -> "\"${literal.literalValue}\"^^${transform(IRI(literal.datatype.uri))}"
-                //TODO(${transform(IRI(literal.datatype.uri))})
+                else -> "\"${literal.literalValue}\"^^${transform(IRI.fromFullString(literal.datatype.uri))}"
+                //TODO(${transform(IRI.fromFullString(literal.datatype.uri))})
             }
         }
 
@@ -166,22 +168,24 @@ class Transformer {
         val spaceBase = "   "
         val doubleSpaceBase = spaceBase.repeat(2)
 
+        //TODO(make collision safe)
         fun transform(blankNode: BlankNode) = blankNode.blankNodeId.replaceFirstChar { it.uppercaseChar() }
 
-        fun transform(iri: IRI) = "'${iri.iri}'"
+        fun transform(iri: IRI) = "'${encodeToValidTPTPLiteral(iri.iri)}'"
 
-        fun transform(literal: Literal) = "'" + when (literal) {
-            is LanguageTaggedString -> "\"${encode(literal.lexicalForm)}\"@${literal.languageTag}"
-            else -> "\"${encode(literal.literalValue.toString())}\"^^${literal.datatype.uri}"
-        } + "'"
+        fun transform(literal: Literal) = "'" + encodeToValidTPTPLiteral(
+            when (literal) {
+                is LanguageTaggedString -> "\"${literal.lexicalForm}\"@${literal.languageTag}"
+                else -> "\"${literal.literalValue}\"^^${literal.datatype.uri}"
+            }
+        ) + "'"
 
         fun transform(rdfTripleElement: RdfTripleElement): String = when (rdfTripleElement) {
             is BlankNode -> transform(rdfTripleElement)
             is Literal -> transform(rdfTripleElement)
             is IRI -> transform(rdfTripleElement)
-            is Collection -> if (rdfTripleElement.list.isEmpty()) "list" else ("list(" + rdfTripleElement.list.joinToString(
-                ","
-            ) { transform(it) } + ")")
+            is Collection -> "list".takeIf { rdfTripleElement.list.isEmpty() }
+                ?: ("list(" + rdfTripleElement.list.joinToString(",") { transform(it) } + ")")
 
             else -> throw TransformerException("RDF triple element type not supported")
         }
@@ -196,9 +200,8 @@ class Transformer {
                 is RDFSurface -> {
                     val fofVariableList = transform(hayesGraphElement.graffiti)
                     when (hayesGraphElement) {
-                        is PositiveRDFSurface -> if (hayesGraphElement.hayesGraph.isEmpty()) "\$true"
-                        else {
-                            if (hayesGraphElement.graffiti.isEmpty()) {
+                        is PositiveRDFSurface -> "\$true".takeIf { hayesGraphElement.hayesGraph.isEmpty() }
+                            ?: if (hayesGraphElement.graffiti.isEmpty()) {
                                 hayesGraphElement.hayesGraph.joinToString(
                                     prefix = "",
                                     separator = "\n$newDepthSpace& ",
@@ -211,10 +214,10 @@ class Transformer {
                                     postfix = "\n$newDepthSpace)"
                                 ) { transform(it, depth + 1) }
                             }
-                        }
 
-                        is NegativeRDFSurface, is QueryRDFSurface, is NegativeTripleRDFSurface -> if (hayesGraphElement.hayesGraph.isEmpty()) "\$false" else
-                            if (hayesGraphElement.graffiti.isEmpty()) {
+
+                        is NegativeRDFSurface, is QueryRDFSurface, is NegativeTripleRDFSurface -> "\$false".takeIf { hayesGraphElement.hayesGraph.isEmpty() }
+                            ?: if (hayesGraphElement.graffiti.isEmpty()) {
                                 hayesGraphElement.hayesGraph.joinToString(
                                     prefix = "~(\n$nextDepthSpace",
                                     separator = "\n$nextDepthSpace& ",
@@ -289,24 +292,39 @@ class Transformer {
         ) else ""
     }
 
-    fun encode(string: String) = buildString {
-        string.codePoints().forEach {
-            if (isPrintableAscii(it)) {
-                this.append(it.toChar())
-
+    fun encodeToValidTPTPLiteral(string: String) = buildString {
+        string.toCharArray().forEach { c ->
+            if (isPrintableAscii(c) && c != '\\' && c != '\'') {
+                this.append(c)
             } else {
-                val hexValue = Integer.toHexString(it)
-                if (hexValue.length <= 4) this.append("\\\\u${hexValue.padStart(4, '0').toUpperCase()};") else
-                    this.append("\\\\U${hexValue.padStart(8, '0').toUpperCase()};")
+                val hexValue = Integer.toHexString(c.code)
+                this.append("\\\\u${hexValue.padStart(4, '0').uppercase()}")
             }
         }
     }
 
-    fun decode(string: String) = string.replace("\\\\\\\\[Uu][0-9A-Fa-f]+;".toRegex()) {
-        Integer.parseInt(it.value.drop(3).removeSuffix(";"),16).toChar().toString()
+    fun encodeToValidTPTPVariable(string: String): String {
+        return buildString {
+            string.toCharArray().forEachIndexed { index, c ->
+                if ((isPrintableAscii(c) && c != 'U') && (index != 0 || c.isUpperCase())) {
+                    this.append(c)
+                } else {
+                    val hexValue = Integer.toHexString(c.code)
+                    this.append("U${hexValue.padStart(4, '0').uppercase()}")
+                }
+            }
+        }
     }
 
-    fun isPrintableAscii(char: Int) = char in 32..127 && char != 39 && char != 92 && char != ';'.code
+    fun decodeValidTPTPVariable(string: String) = string.replace("U[0-9A-Fa-f]{4}".toRegex()) {
+        Integer.parseInt(it.value.drop(1), 16).toChar().toString()
+    }
+
+    fun decodeValidTPTPLiteral(string: String) = string.replace("\\\\\\\\u[0-9A-Fa-f]{4}".toRegex()) {
+        Integer.parseInt(it.value.drop(3), 16).toChar().toString()
+    }
+
+    private fun isPrintableAscii(char: Char) = char.code in 32..127
 
 }
 

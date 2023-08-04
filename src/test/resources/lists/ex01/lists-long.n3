@@ -1,19 +1,19 @@
 @prefix log: <http://www.w3.org/2000/10/swap/log#>.
-@prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
-# @prefix r: <http://www.example.org#>.
+@prefix : <http://www.example.org/ns#> .
+#@prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+ @prefix r: <http://www.example.org#>.
 
 # eye:
-# eye --quiet --blogic /home/rebekka/Nextcloud/Studium/SS23/untitled1/src/test/resources/lists/ex01/lists-long.n3 --nope
-#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds only 'pre:c' solution
-#          - no contradiction with: () log:onNegativeSurface {<pre:a> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <pre:cat>.}.
-#    - @prefix r: <http://www.example.org#>. --> finds 'pre:a' and 'pre:c' solution
+#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds only ':c a :cat.'
+#          - no contradiction with: () log:onNegativeSurface {:a a :cat.}.
+#    - @prefix r: <http://www.example.org#>. --> finds ':c a :cat.' and ':a a :cat.'
+#          --> contradiction with: () log:onNegativeSurface {:a a :cat.}.
 
-# vampire - functions:
-#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds 'pre:a' and 'pre:c' solution
-#    - @prefix r: <http://www.example.org#>. --> finds 'pre:a' and 'pre:c' solution
+# vampire:
+#    - @prefix r: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>. --> finds ':a rdf:type :cat.' and ':c rdf:type :cat'.
+#    - @prefix r: <http://www.example.org#>. --> finds ':a rdf:type :cat.' and ':c rdf:type :cat'.
 
-# both: without the additional constraints --> finds only 'pre:c' solution
-
+# both: without the additional constraints --> find only ':c' solution
 
 # ----> eye doesn't have the functional rdf:first restriction
 
@@ -49,26 +49,18 @@
       _:A r:first _:first1.
    }.
 
-   _:t <pre:predicate> _:BN_1.
-
    # ( :a :b :c )
-   _:BN_1 r:first <pre:a>.
+   _:BN_1 r:first :a.
    _:BN_1 r:rest _:BN_2.
-   _:BN_2 r:first <pre:b>.
+   _:BN_2 r:first :b.
    _:BN_2 r:rest _:BN_3.
-   _:BN_3 r:first <pre:c>.
+   _:BN_3 r:first :c.
    _:BN_3 r:rest r:nil.
 
-   _:BN_1 r:first <pre:c>.
+   _:BN_1 r:first :c.
 
-   <pre:c> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <pre:cat>.
-   #<pre:a> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <pre:dog>.
-
+   :c <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> :cat.
 }.
-
-#() log:onNegativeSurface {
-#   <pre:a> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <pre:cat>.
-#}.
 
 (_:A _:B) log:onQuerySurface {
     _:A <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> _:B.

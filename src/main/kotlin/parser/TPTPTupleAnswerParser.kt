@@ -29,7 +29,7 @@ object TPTPTupleAnswerParser :
     private val variableToken by regexToken("[A-Z]([^\\s'\\[\\](),|])*")
     private val variable by variableToken use { BlankNode(this.text) }
     private val iriToken by regexToken("'([^\\s'\\[\\](),|])+'")
-    private val iri by iriToken use { IRI(this.text.removeSurrounding("'")) }
+    private val iri by iriToken use { IRI.fromFullString(this.text.removeSurrounding("'")) }
     val list by -listLiteral and -lpar and (variable or iri) and zeroOrMore(-comma and (variable or iri)) and -rpar use {
         Collection(
             this.t2.plus(this.t1)

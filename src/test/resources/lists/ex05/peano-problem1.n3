@@ -50,12 +50,9 @@
     }.
 }.
 
-#(:a :b) :p (:c :d).
-#(:a :b) :p2 (:c :d).
-
 (:a) :p (:b).
 (:a) :p2 (:b).
 
 (_:A) log:onQuerySurface {
     _:A :result :triple.
-}
+}.
