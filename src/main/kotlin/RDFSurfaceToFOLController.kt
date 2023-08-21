@@ -2,9 +2,7 @@ import com.github.h0tk3y.betterParse.parser.ErrorResult
 import com.github.h0tk3y.betterParse.parser.ParseException
 import com.github.h0tk3y.betterParse.parser.Parsed
 import parser.RDFSurfacesParser
-import parser.RDFSurfacesParserRDFLists
-import parser.tryParseToEnd
-import rdfSurfaces.QueryRDFSurface
+import rdfSurfaces.QuerySurface
 import rdfSurfaces.RdfTripleElement
 
 class RDFSurfaceToFOLController {
@@ -13,10 +11,9 @@ class RDFSurfaceToFOLController {
         rdfSurfaceGraph: String,
         ignoreQuerySurface: Boolean,
         rdfLists: Boolean = false
-    ): Triple<Boolean, String, List<QueryRDFSurface>?> {
-        val parser = if (rdfLists) RDFSurfacesParserRDFLists else RDFSurfacesParser
+    ): Triple<Boolean, String, List<QuerySurface>?> {
         return when (
-            val parserResult = parser.tryParseToEnd(rdfSurfaceGraph)) {
+            val parserResult = RDFSurfacesParser(rdfLists).tryParseToEnd(rdfSurfaceGraph)) {
             is Parsed -> {
                 Triple(
                     false,
@@ -35,9 +32,8 @@ class RDFSurfaceToFOLController {
         rdfSurfaceGraph: String,
         rdfLists: Boolean = false
     ): Pair<Boolean, String> {
-        val parser = if (rdfLists) RDFSurfacesParserRDFLists else RDFSurfacesParser
         return when (
-            val answerParserResult = parser.tryParseToEnd(rdfSurfaceGraph)) {
+            val answerParserResult = RDFSurfacesParser(rdfLists).tryParseToEnd(rdfSurfaceGraph)) {
             is Parsed -> {
                 false to Transformer().toFOL(answerParserResult.value, false, "conjecture", "conjecture")
             }
@@ -49,9 +45,8 @@ class RDFSurfaceToFOLController {
     }
 
     fun transformRDFSurfaceGraphToNotation3(rdfSurfaceGraph: String, rdfLists: Boolean = false): Pair<Boolean, String> {
-        val parser = if (rdfLists) RDFSurfacesParserRDFLists else RDFSurfacesParser
         return when (
-            val parserResult = parser.tryParseToEnd(rdfSurfaceGraph)) {
+            val parserResult = RDFSurfacesParser(rdfLists).tryParseToEnd(rdfSurfaceGraph)) {
             is Parsed -> {
                 false to Transformer().toNotation3Sublanguage(parserResult.value)
             }
@@ -62,7 +57,7 @@ class RDFSurfaceToFOLController {
         }
     }
 
-    fun transformQuestionAnsweringResult(resultList: Set<List<RdfTripleElement>>, queryRDFSurface: QueryRDFSurface) =
-        queryRDFSurface.replaceBlankNodes(resultList).let { Transformer().toNotation3Sublanguage(it) }
+    fun transformQuestionAnsweringResult(resultList: Set<List<RdfTripleElement>>, querySurface: QuerySurface) =
+        querySurface.replaceBlankNodes(resultList).let { Transformer().toNotation3Sublanguage(it) }
 
 }

@@ -1,5 +1,3 @@
-import org.apache.jena.datatypes.BaseDatatype
-import org.apache.jena.datatypes.xsd.XSDDatatype
 import parser.stringLiteralLongQuote
 import parser.stringLiteralLongSingleQuote
 import parser.stringLiteralQuote
@@ -10,7 +8,7 @@ import rdfSurfaces.Collection
 class TransformerException(message: String? = null, cause: Throwable? = null) : Exception(message, cause)
 
 class Transformer {
-    fun toNotation3Sublanguage(defaultPositiveSurface: PositiveRDFSurface): String {
+    fun toNotation3Sublanguage(defaultPositiveSurface: PositiveSurface): String {
         val spaceBase = "   "
 
         var prefixCounter = 0
@@ -72,7 +70,7 @@ class Transformer {
                     }
                 }
 
-                else -> "\"${literal.literalValue}\"^^${transform(IRI.fromFullString(literal.datatype.uri))}"
+                else -> "\"${literal.literalValue}\"^^${transform(IRI.from(literal.datatype.uri))}"
                 //TODO(${transform(IRI.fromFullString(literal.datatype.uri))})
             }
         }
@@ -102,11 +100,11 @@ class Transformer {
             return when (hayesGraphElement) {
                 is RDFSurface -> {
                     val surfaceNameString = when (hayesGraphElement) {
-                        is PositiveRDFSurface -> "log:onPositiveSurface"
-                        is NegativeRDFSurface -> "log:onNegativeSurface"
-                        is QueryRDFSurface -> "log:onQuerySurface"
-                        is NegativeTripleRDFSurface -> "log:negativeTriple"
-                        is NeutralRDFSurface -> "log:onNeutralSurface"
+                        is PositiveSurface -> "log:onPositiveSurface"
+                        is NegativeSurface -> "log:onNegativeSurface"
+                        is QuerySurface -> "log:onQuerySurface"
+                        is NegativeTripleSurface -> "log:negativeTriple"
+                        is NeutralSurface -> "log:onNeutralSurface"
                         else -> throw TransformerException("Surface-type is not supported")
                     }
                     val graffitiStringList = transform(hayesGraphElement.graffiti)
@@ -159,7 +157,7 @@ class Transformer {
     }
 
     fun toFOL(
-        defaultPositiveSurface: PositiveRDFSurface,
+        defaultPositiveSurface: PositiveSurface,
         ignoreQuerySurfaces: Boolean = false,
         tptpName: String = "axiom",
         formulaRole: String = "axiom"
@@ -200,7 +198,7 @@ class Transformer {
                 is RDFSurface -> {
                     val fofVariableList = transform(hayesGraphElement.graffiti)
                     when (hayesGraphElement) {
-                        is PositiveRDFSurface -> "\$true".takeIf { hayesGraphElement.hayesGraph.isEmpty() }
+                        is PositiveSurface -> "\$true".takeIf { hayesGraphElement.hayesGraph.isEmpty() }
                             ?: if (hayesGraphElement.graffiti.isEmpty()) {
                                 hayesGraphElement.hayesGraph.joinToString(
                                     prefix = "",
@@ -216,7 +214,7 @@ class Transformer {
                             }
 
 
-                        is NegativeRDFSurface, is QueryRDFSurface, is NegativeTripleRDFSurface -> "\$false".takeIf { hayesGraphElement.hayesGraph.isEmpty() }
+                        is NegativeSurface, is QuerySurface, is NegativeTripleSurface -> "\$false".takeIf { hayesGraphElement.hayesGraph.isEmpty() }
                             ?: if (hayesGraphElement.graffiti.isEmpty()) {
                                 hayesGraphElement.hayesGraph.joinToString(
                                     prefix = "~(\n$nextDepthSpace",
@@ -245,7 +243,7 @@ class Transformer {
 
         val fofVariableList = transform(defaultPositiveSurface.graffiti)
 
-        val (querySurfaces, otherSurfaces) = defaultPositiveSurface.hayesGraph.partition { it is QueryRDFSurface }
+        val (querySurfaces, otherSurfaces) = defaultPositiveSurface.hayesGraph.partition { it is QuerySurface }
 
         val fofQuantifiedFormula = otherSurfaces.let {
             val fofFormula = if (it.isEmpty()) "\$true" else {
@@ -267,7 +265,7 @@ class Transformer {
         }
 
         val fofQuantifiedFormulaQuestion = querySurfaces.mapIndexed { index, surface ->
-            val querySurface = surface as QueryRDFSurface
+            val querySurface = surface as QuerySurface
             val fofFormula = if (querySurface.hayesGraph.isEmpty()) "\$true" else {
                 if (querySurface.graffiti.isEmpty()) {
                     querySurface.hayesGraph.joinToString(

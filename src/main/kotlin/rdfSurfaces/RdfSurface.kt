@@ -8,15 +8,15 @@ abstract class RDFSurface(
 //TODO(" check leanness ")
 //TODO(" isomorphic check ")
 
-class PositiveRDFSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
+class PositiveSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
     RDFSurface(graffiti, hayesGraph) {
-    fun getQuerySurfaces(): List<QueryRDFSurface> = hayesGraph.filterIsInstance(QueryRDFSurface::class.java)
-    //.mapNotNull { if (it is QueryRDFSurface) it else null}
+    fun getQuerySurfaces(): List<QuerySurface> = hayesGraph.filterIsInstance(QuerySurface::class.java)
+    //.mapNotNull { if (it is QuerySurface) it else null}
 
     override fun equals(other: Any?): Boolean {
         return when {
             other === this -> true
-            other is PositiveRDFSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
+            other is PositiveSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
             else -> false
         }
     }
@@ -28,12 +28,12 @@ class PositiveRDFSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphE
     }
 }
 
-class NegativeRDFSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
+class NegativeSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
     RDFSurface(graffiti, hayesGraph) {
     override fun equals(other: Any?): Boolean {
         return when {
             other === this -> true
-            other is NegativeRDFSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
+            other is NegativeSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
             else -> false
         }
     }
@@ -45,10 +45,10 @@ class NegativeRDFSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphE
     }
 }
 
-class QueryRDFSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
+class QuerySurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
     RDFSurface(graffiti, hayesGraph) {
 
-    fun replaceBlankNodes(list: Set<List<RdfTripleElement>>): PositiveRDFSurface {
+    fun replaceBlankNodes(list: Set<List<RdfTripleElement>>): PositiveSurface {
         val maps = list.map {
             //TODO()
             if (graffiti.size != it.size) throw IllegalArgumentException()
@@ -58,7 +58,7 @@ class QueryRDFSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElem
                 }
             }
         }
-        return PositiveRDFSurface(
+        return PositiveSurface(
             listOf(),
             maps.flatMap { map ->
                 hayesGraph.map { hayesGraphElement ->
@@ -82,7 +82,7 @@ class QueryRDFSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElem
     override fun equals(other: Any?): Boolean {
         return when {
             other === this -> true
-            other is QueryRDFSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
+            other is QuerySurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
             else -> false
         }
     }
@@ -94,12 +94,12 @@ class QueryRDFSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElem
     }
 }
 
-class NeutralRDFSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
+class NeutralSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
     RDFSurface(graffiti, hayesGraph) {
     override fun equals(other: Any?): Boolean {
         return when {
             other === this -> true
-            other is NeutralRDFSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
+            other is NeutralSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
             else -> false
         }
     }
@@ -111,12 +111,12 @@ class NeutralRDFSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphEl
     }
 }
 
-class NegativeTripleRDFSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
+class NegativeTripleSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
     RDFSurface(graffiti, hayesGraph) {
     override fun equals(other: Any?): Boolean {
         return when {
             other === this -> true
-            other is NegativeRDFSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
+            other is NegativeSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
             else -> false
         }
     }

@@ -4,7 +4,6 @@ import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
-import org.apache.jena.atlas.iterator.Iter.takeWhile
 import rdfSurfaces.BlankNode
 import rdfSurfaces.Collection
 import rdfSurfaces.IRI
@@ -29,7 +28,7 @@ object TPTPTupleAnswerParser :
     private val variableToken by regexToken("[A-Z]([^\\s'\\[\\](),|])*")
     private val variable by variableToken use { BlankNode(this.text) }
     private val iriToken by regexToken("'([^\\s'\\[\\](),|])+'")
-    private val iri by iriToken use { IRI.fromFullString(this.text.removeSurrounding("'")) }
+    private val iri by iriToken use { IRI.from(this.text.removeSurrounding("'")) }
     val list by -listLiteral and -lpar and (variable or iri) and zeroOrMore(-comma and (variable or iri)) and -rpar use {
         Collection(
             this.t2.plus(this.t1)

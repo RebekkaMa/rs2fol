@@ -1,7 +1,6 @@
 package rdfSurfaces
 
 import IRIConstants
-import org.apache.commons.lang3.StringUtils.substring
 import org.apache.jena.datatypes.BaseDatatype
 import org.apache.jena.datatypes.xsd.XSDDatatype
 
@@ -19,8 +18,8 @@ data class IRI(
 
     companion object {
         //TODO()
-        fun fromFullString(iri: String): IRI {
-            return "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?".toRegex().matchEntire(iri)
+        fun from(fullIRI: String): IRI {
+            return "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?".toRegex().matchEntire(fullIRI)
                 ?.let { matchResult ->
                     IRI(
                         if (matchResult.destructured.component1()
@@ -37,7 +36,7 @@ data class IRI(
                                 .isEmpty()
                         ) null else matchResult.destructured.component9(),
                     )
-                } ?: IRI(path = iri)
+                } ?: IRI(path = fullIRI)
         }
 
         fun componentRecomposition(
@@ -45,7 +44,7 @@ data class IRI(
             authority: String? = null,
             path: String,
             query: String? = null,
-            fragment: String? = null
+            fragment: String? = null,
         ) =
             buildString {
                 if (scheme != null) append("$scheme:")
@@ -241,21 +240,21 @@ open class Literal(val literalValue: Any, val datatype: BaseDatatype) : RdfTripl
         fun fromNonNumericLiteral(lexicalValue: String, langTag: String): LanguageTaggedString =
             LanguageTaggedString(Pair(lexicalValue, langTag.lowercase()))
 
-        fun fromNumericLiteral(numericLiteral: String): Literal {
-            return when {
+        fun fromNumericLiteral(numericLiteral: String): Literal =
+            when {
                 numericLiteral.contains("E", ignoreCase = true) -> fromNonNumericLiteral(
                     numericLiteral,
-                    IRI.fromFullString(IRIConstants.XSD_DOUBLE)
+                    IRI.from(IRIConstants.XSD_DOUBLE)
                 )
 
                 numericLiteral.contains(".", ignoreCase = true) -> fromNonNumericLiteral(
                     numericLiteral,
-                    IRI.fromFullString(IRIConstants.XSD_DECIMAL)
+                    IRI.from(IRIConstants.XSD_DECIMAL)
                 )
 
-                else -> fromNonNumericLiteral(numericLiteral, IRI.fromFullString(IRIConstants.XSD_INTEGER))
+                else -> fromNonNumericLiteral(numericLiteral, IRI.from(IRIConstants.XSD_INTEGER))
             }
-        }
+
     }
 
     override fun equals(other: Any?): Boolean {

@@ -1,32 +1,28 @@
-import com.github.h0tk3y.betterParse.grammar.parseToEnd
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.ShouldSpec
-import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.shouldBe
 import org.apache.jena.datatypes.xsd.XSDDatatype
+import parser.RDFSurfacesParseException
 import parser.RDFSurfacesParser
-import parser.tryParseToEnd
 import rdfSurfaces.*
 import rdfSurfaces.Collection
 import java.io.File
-import java.math.BigDecimal
 
 class RDFSurfacesParserTest : ShouldSpec(
     {
-        afterTest {
-            RDFSurfacesParser.resetAll()
-        }
+
         context("selected Turtle examples") {
             should("transform example2.n3 without exception") {
                 val file = File("src/test/resources/turtle/example2.n3")
 
-                val iri1 = IRI.fromFullString("http://example.org/#spiderman")
-                val iri2 = IRI.fromFullString("http://www.perceive.net/schemas/relationship/enemyOf")
-                val iri3 = IRI.fromFullString("http://example.org/#green-goblin")
+                val iri1 = IRI.from("http://example.org/#spiderman")
+                val iri2 = IRI.from("http://www.perceive.net/schemas/relationship/enemyOf")
+                val iri3 = IRI.from("http://example.org/#green-goblin")
 
                 val rdfTriple = RdfTriple(iri1, iri2, iri3)
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple)
                 )
@@ -35,17 +31,17 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("transform example3.n3 without exception") {
                 val file = File("src/test/resources/turtle/example3.n3")
 
-                val iri1 = IRI.fromFullString("http://example.org/#spiderman")
-                val iri2 = IRI.fromFullString("http://www.perceive.net/schemas/relationship/enemyOf")
-                val iri3 = IRI.fromFullString("http://example.org/#green-goblin")
-                val iri4 = IRI.fromFullString("http://xmlns.com/foaf/0.1/name")
+                val iri1 = IRI.from("http://example.org/#spiderman")
+                val iri2 = IRI.from("http://www.perceive.net/schemas/relationship/enemyOf")
+                val iri3 = IRI.from("http://example.org/#green-goblin")
+                val iri4 = IRI.from("http://xmlns.com/foaf/0.1/name")
                 val literal = Literal("Spiderman", XSDDatatype.XSDstring)
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, iri3)
                 val rdfTriple2 = RdfTriple(iri1, iri4, literal)
 
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2)
                 )
@@ -54,16 +50,16 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("transform example4.n3 without exception") {
                 val file = File("src/test/resources/turtle/example4.n3")
 
-                val iri1 = IRI.fromFullString("http://example.org/#spiderman")
-                val iri2 = IRI.fromFullString("http://www.perceive.net/schemas/relationship/enemyOf")
-                val iri3 = IRI.fromFullString("http://example.org/#green-goblin")
-                val iri4 = IRI.fromFullString("http://xmlns.com/foaf/0.1/name")
+                val iri1 = IRI.from("http://example.org/#spiderman")
+                val iri2 = IRI.from("http://www.perceive.net/schemas/relationship/enemyOf")
+                val iri3 = IRI.from("http://example.org/#green-goblin")
+                val iri4 = IRI.from("http://xmlns.com/foaf/0.1/name")
                 val literal = Literal("Spiderman", XSDDatatype.XSDstring)
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, iri3)
                 val rdfTriple2 = RdfTriple(iri1, iri4, literal)
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2)
                 )
@@ -72,8 +68,8 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("transform example5.n3 without exception") {
                 val file = File("src/test/resources/turtle/example5.n3")
 
-                val iri1 = IRI.fromFullString("http://example.org/#spiderman")
-                val iri2 = IRI.fromFullString("http://xmlns.com/foaf/0.1/name")
+                val iri1 = IRI.from("http://example.org/#spiderman")
+                val iri2 = IRI.from("http://xmlns.com/foaf/0.1/name")
                 val literal1 = Literal("Spiderman", XSDDatatype.XSDstring)
                 val literal2 = LanguageTaggedString("Человек-паук" to "ru")
 
@@ -81,7 +77,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
                 val rdfTriple2 = RdfTriple(iri1, iri2, literal2)
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2)
                 )
@@ -89,8 +85,8 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("transform example6.n3 without exception") {
                 val file = File("src/test/resources/turtle/example6.n3")
 
-                val iri1 = IRI.fromFullString("http://example.org/#spiderman")
-                val iri2 = IRI.fromFullString("http://xmlns.com/foaf/0.1/name")
+                val iri1 = IRI.from("http://example.org/#spiderman")
+                val iri2 = IRI.from("http://xmlns.com/foaf/0.1/name")
                 val literal1 = Literal("Spiderman", XSDDatatype.XSDstring)
                 val literal2 = LanguageTaggedString("Человек-паук" to "ru")
 
@@ -98,7 +94,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
                 val rdfTriple2 = RdfTriple(iri1, iri2, literal2)
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2)
                 )
@@ -106,13 +102,13 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("transform example7.n3 without exception") {
                 val file = File("src/test/resources/turtle/example7.n3")
 
-                val iri1 = IRI.fromFullString("http://example.org/#green-goblin")
-                val iri2 = IRI.fromFullString("http://www.perceive.net/schemas/relationship/enemyOf")
-                val iri3 = IRI.fromFullString("http://example.org/#spiderman")
+                val iri1 = IRI.from("http://example.org/#green-goblin")
+                val iri2 = IRI.from("http://www.perceive.net/schemas/relationship/enemyOf")
+                val iri3 = IRI.from("http://example.org/#spiderman")
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, iri3)
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1)
                 )
@@ -121,13 +117,13 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("transform example8.n3 without exception") {
                 val file = File("src/test/resources/turtle/example8.n3")
 
-                val iri1 = IRI.fromFullString("http://example.org/#green-goblin")
-                val iri2 = IRI.fromFullString("http://www.perceive.net/schemas/relationship/enemyOf")
-                val iri3 = IRI.fromFullString("http://example.org/#spiderman")
+                val iri1 = IRI.from("http://example.org/#green-goblin")
+                val iri2 = IRI.from("http://www.perceive.net/schemas/relationship/enemyOf")
+                val iri3 = IRI.from("http://example.org/#spiderman")
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, iri3)
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1)
                 )
@@ -136,26 +132,26 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("transform example9.n3 without exception") {
                 val file = File("src/test/resources/turtle/example9.n3")
 
-                val iri1 = IRI.fromFullString("http://one.example/subject1")
-                val iri2 = IRI.fromFullString("http://one.example/predicate1")
-                val iri3 = IRI.fromFullString("http://one.example/object1")
-                val iri4 = IRI.fromFullString("http://one.example/subject2")
-                val iri5 = IRI.fromFullString("http://one.example/predicate2")
-                val iri6 = IRI.fromFullString("http://one.example/object2")
-                val iri7 = IRI.fromFullString("http://two.example/subject3")
-                val iri8 = IRI.fromFullString("http://two.example/predicate3")
-                val iri9 = IRI.fromFullString("http://two.example/object3")
-                val iri10 = IRI.fromFullString("http://one.example/path/subject4")
-                val iri11 = IRI.fromFullString("http://one.example/path/predicate4")
-                val iri12 = IRI.fromFullString("http://one.example/path/object4")
-                val iri13 = IRI.fromFullString("http://another.example/subject5")
-                val iri14 = IRI.fromFullString("http://another.example/predicate5")
-                val iri15 = IRI.fromFullString("http://another.example/object5")
-                val iri16 = IRI.fromFullString("http://another.example/subject6")
-                val iri17 = IRI.fromFullString("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
-                val iri18 = IRI.fromFullString("http://another.example/subject7")
-                val iri19 = IRI.fromFullString("http://伝言.example/?user=أكرم&amp;channel=R%26D")
-                val iri20 = IRI.fromFullString("http://another.example/subject8")
+                val iri1 = IRI.from("http://one.example/subject1")
+                val iri2 = IRI.from("http://one.example/predicate1")
+                val iri3 = IRI.from("http://one.example/object1")
+                val iri4 = IRI.from("http://one.example/subject2")
+                val iri5 = IRI.from("http://one.example/predicate2")
+                val iri6 = IRI.from("http://one.example/object2")
+                val iri7 = IRI.from("http://two.example/subject3")
+                val iri8 = IRI.from("http://two.example/predicate3")
+                val iri9 = IRI.from("http://two.example/object3")
+                val iri10 = IRI.from("http://one.example/path/subject4")
+                val iri11 = IRI.from("http://one.example/path/predicate4")
+                val iri12 = IRI.from("http://one.example/path/object4")
+                val iri13 = IRI.from("http://another.example/subject5")
+                val iri14 = IRI.from("http://another.example/predicate5")
+                val iri15 = IRI.from("http://another.example/object5")
+                val iri16 = IRI.from("http://another.example/subject6")
+                val iri17 = IRI.from("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+                val iri18 = IRI.from("http://another.example/subject7")
+                val iri19 = IRI.from("http://伝言.example/?user=أكرم&amp;channel=R%26D")
+                val iri20 = IRI.from("http://another.example/subject8")
 
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, iri3)
@@ -169,7 +165,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple9 = RdfTriple(iri19, iri17, iri20)
 
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(
                         rdfTriple1,
@@ -188,9 +184,9 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("transform example10.n3 without exception") {
                 val file = File("src/test/resources/turtle/example10.n3")
 
-                val iri1 = IRI.fromFullString("http://example.org/#green-goblin")
-                val iri2 = IRI.fromFullString("http://xmlns.com/foaf/0.1/name")
-                val iri3 = IRI.fromFullString("http://example.org/#spiderman")
+                val iri1 = IRI.from("http://example.org/#green-goblin")
+                val iri2 = IRI.from("http://xmlns.com/foaf/0.1/name")
+                val iri3 = IRI.from("http://example.org/#spiderman")
 
                 val literal1 = Literal("Green Goblin", XSDDatatype.XSDstring)
                 val literal2 = Literal("Spiderman", XSDDatatype.XSDstring)
@@ -198,19 +194,18 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
                 val rdfTriple2 = RdfTriple(iri3, iri2, literal2)
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2)
                 )
             }
-            //TODO("Multiline Support, multiple ' in TPTP Format")
             should("transform example11.n3 without exception") {
                 val file = File("src/test/resources/turtle/example11.n3")
 
-                val iri1 = IRI.fromFullString("http://example.org/vocab/show/218")
-                val iri2 = IRI.fromFullString("http://www.w3.org/2000/01/rdf-schema#label")
-                val iri3 = IRI.fromFullString("http://example.org/vocab/show/localName")
-                val iri4 = IRI.fromFullString("http://example.org/vocab/show/blurb")
+                val iri1 = IRI.from("http://example.org/vocab/show/218")
+                val iri2 = IRI.from("http://www.w3.org/2000/01/rdf-schema#label")
+                val iri3 = IRI.from("http://example.org/vocab/show/localName")
+                val iri4 = IRI.from("http://example.org/vocab/show/blurb")
 
                 val literal1 = Literal("That Seventies Show", XSDDatatype.XSDstring)
                 val literal2 = LanguageTaggedString("That Seventies Show" to "en")
@@ -231,7 +226,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple7 = RdfTriple(iri1, iri4, literal5)
 
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2, rdfTriple3, rdfTriple4, rdfTriple5, rdfTriple6, rdfTriple7)
                 )
@@ -239,10 +234,10 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("transform example12.n3 without exception") {
                 val file = File("src/test/resources/turtle/example12.n3")
 
-                val iri1 = IRI.fromFullString("http://en.wikipedia.org/wiki/Helium")
-                val iri2 = IRI.fromFullString("http://example.org/elementsatomicNumber")
-                val iri3 = IRI.fromFullString("http://example.org/elementsatomicMass")
-                val iri4 = IRI.fromFullString("http://example.org/elementsspecificGravity")
+                val iri1 = IRI.from("http://en.wikipedia.org/wiki/Helium")
+                val iri2 = IRI.from("http://example.org/elementsatomicNumber")
+                val iri3 = IRI.from("http://example.org/elementsatomicMass")
+                val iri4 = IRI.from("http://example.org/elementsspecificGravity")
 
                 val literal1 = Literal(2, XSDDatatype.XSDinteger)
                 val literal2 = Literal(XSDDatatype.XSDdecimal.parse("4.002602"), XSDDatatype.XSDdecimal)
@@ -252,7 +247,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple2 = RdfTriple(iri1, iri3, literal2)
                 val rdfTriple3 = RdfTriple(iri1, iri4, literal3)
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2, rdfTriple3)
                 )
@@ -261,14 +256,14 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("transform example13.n3 without exception") {
                 val file = File("src/test/resources/turtle/example13.n3")
 
-                val iri1 = IRI.fromFullString("http://somecountry.example/census2007")
-                val iri2 = IRI.fromFullString("http://example.org/statsisLandlocked")
+                val iri1 = IRI.from("http://somecountry.example/census2007")
+                val iri2 = IRI.from("http://example.org/statsisLandlocked")
 
                 val literal1 = Literal(false, XSDDatatype.XSDboolean)
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1)
                 )
@@ -277,7 +272,7 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("transform example14.n3 without exception") {
                 val file = File("src/test/resources/turtle/example14.n3")
 
-                val iri1 = IRI.fromFullString("http://xmlns.com/foaf/0.1/knows")
+                val iri1 = IRI.from("http://xmlns.com/foaf/0.1/knows")
                 val bn1 = BlankNode("alice")
                 val bn2 = BlankNode("bob")
 
@@ -286,7 +281,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple2 = RdfTriple(bn2, iri1, bn1)
 
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(
                         bn1,
                         bn2
@@ -296,8 +291,8 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("transform example15.n3 without exception") {
                 val file = File("src/test/resources/turtle/example15.n3")
 
-                val iri1 = IRI.fromFullString("http://xmlns.com/foaf/0.1/knows")
-                val iri2 = IRI.fromFullString("http://xmlns.com/foaf/0.1/name")
+                val iri1 = IRI.from("http://xmlns.com/foaf/0.1/knows")
+                val iri2 = IRI.from("http://xmlns.com/foaf/0.1/name")
 
 
                 val bn1 = BlankNode("BN_1")
@@ -310,7 +305,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple2 = RdfTriple(bn2, iri2, literal)
 
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(
                         bn1,
                         bn2
@@ -320,10 +315,10 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("transform example16.n3 without exception") {
                 val file = File("src/test/resources/turtle/example16.n3")
 
-                val iri1 = IRI.fromFullString("http://xmlns.com/foaf/0.1/knows")
-                val iri2 = IRI.fromFullString("http://xmlns.com/foaf/0.1/name")
-                val iri3 = IRI.fromFullString("http://xmlns.com/foaf/0.1/mbox")
-                val iri4 = IRI.fromFullString("bob@example.com")
+                val iri1 = IRI.from("http://xmlns.com/foaf/0.1/knows")
+                val iri2 = IRI.from("http://xmlns.com/foaf/0.1/name")
+                val iri3 = IRI.from("http://xmlns.com/foaf/0.1/mbox")
+                val iri4 = IRI.from("bob@example.com")
 
                 val bn1 = BlankNode("BN_1")
                 val bn2 = BlankNode("BN_2")
@@ -343,7 +338,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple6 = RdfTriple(bn3, iri3, iri4)
 
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(
                         bn1,
                         bn2,
@@ -354,10 +349,10 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("transform example17.n3 without exception") {
                 val file = File("src/test/resources/turtle/example17.n3")
 
-                val iri1 = IRI.fromFullString("http://xmlns.com/foaf/0.1/knows")
-                val iri2 = IRI.fromFullString("http://xmlns.com/foaf/0.1/name")
-                val iri3 = IRI.fromFullString("http://xmlns.com/foaf/0.1/mbox")
-                val iri4 = IRI.fromFullString("bob@example.com")
+                val iri1 = IRI.from("http://xmlns.com/foaf/0.1/knows")
+                val iri2 = IRI.from("http://xmlns.com/foaf/0.1/name")
+                val iri3 = IRI.from("http://xmlns.com/foaf/0.1/mbox")
+                val iri4 = IRI.from("bob@example.com")
 
                 val bn1 = BlankNode("a")
                 val bn2 = BlankNode("b")
@@ -377,7 +372,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple6 = RdfTriple(bn2, iri3, iri4)
 
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(
                         bn1,
                         bn2,
@@ -389,13 +384,13 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("transform example18.n3 without exception") {
                 val file = File("src/test/resources/turtle/example18.n3")
 
-                val iri1 = IRI.fromFullString("http://example.org/foopredicate")
-                val iri2 = IRI.fromFullString("http://example.org/fooa")
-                val iri3 = IRI.fromFullString("http://example.org/foob")
-                val iri4 = IRI.fromFullString("http://example.org/fooc")
+                val iri1 = IRI.from("http://example.org/foopredicate")
+                val iri2 = IRI.from("http://example.org/fooa")
+                val iri3 = IRI.from("http://example.org/foob")
+                val iri4 = IRI.from("http://example.org/fooc")
 
-                val iri5 = IRI.fromFullString("http://example.org/foosubject")
-                val iri6 = IRI.fromFullString("http://example.org/foopredicate2")
+                val iri5 = IRI.from("http://example.org/foosubject")
+                val iri6 = IRI.from("http://example.org/foopredicate2")
 
                 val bn1 = BlankNode("t")
 
@@ -406,17 +401,17 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple1 = RdfTriple(bn1, iri1, collection1)
                 val rdfTriple2 = RdfTriple(iri5, iri6, collection2)
 
-                val positiveSurface2 = PositiveRDFSurface(listOf(bn1), listOf(rdfTriple2))
+                val positiveSurface2 = PositiveSurface(listOf(bn1), listOf(rdfTriple2))
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(bn1), listOf(rdfTriple1, positiveSurface2)
                 )
             }
             should("transform example20.n3 without exception") {
                 val file = File("src/test/resources/turtle/example20.n3")
 
-                val iri1 = IRI.fromFullString("http://example.org/stuff/1.0/a")
-                val iri2 = IRI.fromFullString("http://example.org/stuff/1.0/b")
+                val iri1 = IRI.from("http://example.org/stuff/1.0/a")
+                val iri2 = IRI.from("http://example.org/stuff/1.0/b")
 
                 val literal1 = Literal("apple", XSDDatatype.XSDstring)
                 val literal2 = Literal("banana", XSDDatatype.XSDstring)
@@ -426,7 +421,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple1 = RdfTriple(iri1, iri2, collection1)
 
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(), listOf(rdfTriple1)
                 )
 
@@ -434,11 +429,11 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("transform example21.n3 without exception") {
                 val file = File("src/test/resources/turtle/example21.n3")
 
-                val iri1 = IRI.fromFullString("http://example.org/stuff/1.0/a")
-                val iri2 = IRI.fromFullString("http://example.org/stuff/1.0/b")
-                val iri3 = IRI.fromFullString("http://www.w3.org/1999/02/22-rdf-syntax-ns#first")
-                val iri4 = IRI.fromFullString("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest")
-                val iri5 = IRI.fromFullString("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil")
+                val iri1 = IRI.from("http://example.org/stuff/1.0/a")
+                val iri2 = IRI.from("http://example.org/stuff/1.0/b")
+                val iri3 = IRI.from("http://www.w3.org/1999/02/22-rdf-syntax-ns#first")
+                val iri4 = IRI.from("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest")
+                val iri5 = IRI.from("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil")
 
                 val bn1 = BlankNode("BN_1")
                 val bn2 = BlankNode("BN_2")
@@ -454,29 +449,29 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple5 = RdfTriple(bn2, iri4, bn1)
 
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(bn1, bn2), listOf(rdfTriple1, rdfTriple2, rdfTriple3, rdfTriple4, rdfTriple5)
                 )
             }
             should("transform example22.n3 without exception") {
                 val file = File("src/test/resources/turtle/example22.n3")
 
-                val iri1 = IRI.fromFullString("http://example.org/stuff/1.0/a")
-                val iri2 = IRI.fromFullString("http://example.org/stuff/1.0/b")
+                val iri1 = IRI.from("http://example.org/stuff/1.0/a")
+                val iri2 = IRI.from("http://example.org/stuff/1.0/b")
 
                 val literal1 = Literal("The first line\nThe second line\n  more", XSDDatatype.XSDstring)
 
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(), listOf(rdfTriple1, rdfTriple1)
                 )
             }
             should("transform example23.n3 without exception") {
                 val file = File("src/test/resources/turtle/example23.n3")
 
-                val iri1 = IRI.fromFullString("http://example.org/stuff/1.0/p")
+                val iri1 = IRI.from("http://example.org/stuff/1.0/p")
 
                 val literal1 = Literal("w", XSDDatatype.XSDstring)
                 val literal2 = Literal(1, XSDDatatype.XSDinteger)
@@ -488,17 +483,17 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val rdfTriple1 = RdfTriple(collection1, iri1, literal1)
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(), listOf(rdfTriple1)
                 )
             }
             should("transform example24.n3 without exception") {
                 val file = File("src/test/resources/turtle/example24.n3")
 
-                val iri1 = IRI.fromFullString("http://example.org/stuff/1.0/p")
-                val iri2 = IRI.fromFullString("http://www.w3.org/1999/02/22-rdf-syntax-ns#first")
-                val iri3 = IRI.fromFullString("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest")
-                val iri4 = IRI.fromFullString("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil")
+                val iri1 = IRI.from("http://example.org/stuff/1.0/p")
+                val iri2 = IRI.from("http://www.w3.org/1999/02/22-rdf-syntax-ns#first")
+                val iri3 = IRI.from("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest")
+                val iri4 = IRI.from("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil")
 
                 val bn0 = BlankNode("b0")
                 val bn1 = BlankNode("b1")
@@ -517,7 +512,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple6 = RdfTriple(bn2, iri3, iri4)
                 val rdfTriple7 = RdfTriple(bn0, iri1, literal1)
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(bn0, bn1, bn2),
                     listOf(rdfTriple1, rdfTriple2, rdfTriple3, rdfTriple4, rdfTriple5, rdfTriple6, rdfTriple7)
                 )
@@ -525,10 +520,10 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("transform example25.n3 without exception") {
                 val file = File("src/test/resources/turtle/example25.n3")
 
-                val iri1 = IRI.fromFullString("http://example.org/stuff/1.0/p")
-                val iri2 = IRI.fromFullString("http://example.org/stuff/1.0/q")
-                val iri3 = IRI.fromFullString("http://example.org/stuff/1.0/p2")
-                val iri4 = IRI.fromFullString("http://example.org/stuff/1.0/q2")
+                val iri1 = IRI.from("http://example.org/stuff/1.0/p")
+                val iri2 = IRI.from("http://example.org/stuff/1.0/q")
+                val iri3 = IRI.from("http://example.org/stuff/1.0/p2")
+                val iri4 = IRI.from("http://example.org/stuff/1.0/q2")
 
 
                 val bn0 = BlankNode("BN_1")
@@ -543,7 +538,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple2 = RdfTriple(bn0, iri1, iri2)
 
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(bn0),
                     listOf(rdfTriple1, rdfTriple2)
                 )
@@ -552,11 +547,11 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val file = File("src/test/resources/turtle/example26.n3")
 
 
-                val iri1 = IRI.fromFullString("http://example.org/stuff/1.0/p")
-                val iri2 = IRI.fromFullString("http://www.w3.org/1999/02/22-rdf-syntax-ns#first")
-                val iri3 = IRI.fromFullString("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest")
-                val iri4 = IRI.fromFullString("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil")
-                val iri5 = IRI.fromFullString("http://example.org/stuff/1.0/q")
+                val iri1 = IRI.from("http://example.org/stuff/1.0/p")
+                val iri2 = IRI.from("http://www.w3.org/1999/02/22-rdf-syntax-ns#first")
+                val iri3 = IRI.from("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest")
+                val iri4 = IRI.from("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil")
+                val iri5 = IRI.from("http://example.org/stuff/1.0/q")
 
 
                 val bn0 = BlankNode("b0")
@@ -580,7 +575,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple9 = RdfTriple(bn3, iri3, iri4)
 
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(bn0, bn1, bn2, bn3, bn4),
                     listOf(
                         rdfTriple1,
@@ -602,11 +597,11 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("transform blogic abc.n3") {
                 val file = File("src/test/resources/blogic/abc.n3")
 
-                val iri1 = IRI.fromFullString("http://example.org/ns#i")
-                val iri2 = IRI.fromFullString("http://example.org/ns#A")
-                val iri3 = IRI.fromFullString("http://example.org/ns#B")
-                val iri4 = IRI.fromFullString("http://example.org/ns#C")
-                val iri5 = IRI.fromFullString("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+                val iri1 = IRI.from("http://example.org/ns#i")
+                val iri2 = IRI.from("http://example.org/ns#A")
+                val iri3 = IRI.from("http://example.org/ns#B")
+                val iri4 = IRI.from("http://example.org/ns#C")
+                val iri5 = IRI.from("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
 
                 val bnS = BlankNode("S")
                 val bnC = BlankNode("C")
@@ -618,14 +613,14 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple5 = RdfTriple(bnS, iri5, iri4)
                 val rdfTriple6 = RdfTriple(bnS, iri5, bnC)
 
-                val negativeSurface1 = NegativeRDFSurface(listOf(), listOf(rdfTriple2))
-                val negativeSurface21 = NegativeRDFSurface(listOf(), listOf(rdfTriple4))
-                val negativeSurface22 = NegativeRDFSurface(listOf(), listOf(rdfTriple5))
+                val negativeSurface1 = NegativeSurface(listOf(), listOf(rdfTriple2))
+                val negativeSurface21 = NegativeSurface(listOf(), listOf(rdfTriple4))
+                val negativeSurface22 = NegativeSurface(listOf(), listOf(rdfTriple5))
                 val negativeSurface2 =
-                    NegativeRDFSurface(listOf(bnS), listOf(rdfTriple3, negativeSurface21, negativeSurface22))
-                val querySurface = QueryRDFSurface(listOf(bnS, bnC), listOf(rdfTriple6))
+                    NegativeSurface(listOf(bnS), listOf(rdfTriple3, negativeSurface21, negativeSurface22))
+                val querySurface = QuerySurface(listOf(bnS, bnC), listOf(rdfTriple6))
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, negativeSurface1, negativeSurface2, querySurface)
                 )
@@ -633,13 +628,13 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("transform blogic abcd.n3") {
                 val file = File("src/test/resources/blogic/abcd.n3")
 
-                val iri1 = IRI.fromFullString("http://example.org/ns#i")
-                val iri2 = IRI.fromFullString("http://example.org/ns#A")
-                val iri3 = IRI.fromFullString("http://example.org/ns#B")
-                val iri4 = IRI.fromFullString("http://example.org/ns#C")
-                val iri5 = IRI.fromFullString("http://example.org/ns#D")
+                val iri1 = IRI.from("http://example.org/ns#i")
+                val iri2 = IRI.from("http://example.org/ns#A")
+                val iri3 = IRI.from("http://example.org/ns#B")
+                val iri4 = IRI.from("http://example.org/ns#C")
+                val iri5 = IRI.from("http://example.org/ns#D")
 
-                val iri6 = IRI.fromFullString("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+                val iri6 = IRI.from("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
 
                 val bnS = BlankNode("S")
                 val bnC = BlankNode("C")
@@ -653,24 +648,52 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple7 = RdfTriple(bnS, iri6, iri5)
                 val rdfTriple8 = RdfTriple(bnS, iri6, bnC)
 
-                val negativeSurface1 = NegativeRDFSurface(listOf(), listOf(rdfTriple2))
-                val negativeSurface211 = NegativeRDFSurface(listOf(), listOf(rdfTriple3))
-                val negativeSurface21 = NegativeRDFSurface(listOf(), listOf(negativeSurface211))
-                val negativeSurface2 = NegativeRDFSurface(listOf(), listOf(negativeSurface21))
+                val negativeSurface1 = NegativeSurface(listOf(), listOf(rdfTriple2))
+                val negativeSurface211 = NegativeSurface(listOf(), listOf(rdfTriple3))
+                val negativeSurface21 = NegativeSurface(listOf(), listOf(negativeSurface211))
+                val negativeSurface2 = NegativeSurface(listOf(), listOf(negativeSurface21))
 
-                val negativeSurface31 = NegativeRDFSurface(listOf(), listOf(rdfTriple5))
-                val negativeSurface32 = NegativeRDFSurface(listOf(), listOf(rdfTriple6))
-                val negativeSurface33 = NegativeRDFSurface(listOf(), listOf(rdfTriple7))
-                val negativeSurface3 = NegativeRDFSurface(
+                val negativeSurface31 = NegativeSurface(listOf(), listOf(rdfTriple5))
+                val negativeSurface32 = NegativeSurface(listOf(), listOf(rdfTriple6))
+                val negativeSurface33 = NegativeSurface(listOf(), listOf(rdfTriple7))
+                val negativeSurface3 = NegativeSurface(
                     listOf(bnS),
                     listOf(rdfTriple4, negativeSurface31, negativeSurface32, negativeSurface33)
                 )
-                val querySurface = QueryRDFSurface(listOf(bnS, bnC), listOf(rdfTriple8))
+                val querySurface = QuerySurface(listOf(bnS, bnC), listOf(rdfTriple8))
 
-                RDFSurfacesParser.parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveRDFSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, negativeSurface1, negativeSurface2, negativeSurface3, querySurface)
                 )
             }
         }
+        context("duplicated Blank Nodes") {
+            should("change Blank Nodes Base") {
+                val testStr = "@prefix : <http://example.org#> . _:BN_12 _:BN_043 _:BN_0023. (:a _:BN_23 []) :b :c."
+                val rdfSurfaceParser = RDFSurfacesParser(true)
+
+                rdfSurfaceParser.parseToEnd(testStr).graffiti.size shouldBe 8
+            }
+            should("throw an exeption") {
+                val testStr = "@prefix : <http://example.org#> . _:BN_12 _:BN_043 _:BN_0000000000000023. (:a _:BN_23 []) :b :c."
+                val rdfSurfaceParser = RDFSurfacesParser(true)
+                shouldThrow<RDFSurfacesParseException> { rdfSurfaceParser.parseToEnd(testStr) }
+            }
+
+        }
+        context("case insensitive base") {
+            should("accept case insensitive 'base' and 'prefix'") {
+                val testStr = "BaSe <http://example.org#> \n prEfix : <http://example.de#> \n  <#prefix> :a \"base\""
+                val rdfSurfaceParser = RDFSurfacesParser(false)
+
+                val iri1 = IRI.from("http://example.org#prefix")
+                val iri2 = IRI.from("http://example.de#a")
+
+                val literal = Literal.fromNonNumericLiteral("base", IRI.from(IRIConstants.XSD_STRING_IRI))
+
+                rdfSurfaceParser.parseToEnd(testStr) shouldBeEqualToComparingFields PositiveSurface(listOf(), listOf(RdfTriple(iri1,iri2,literal)))
+            }
+        }
+
     })

@@ -1,10 +1,7 @@
-import com.github.h0tk3y.betterParse.grammar.parseToEnd
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
-import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.shouldBe
 import org.apache.jena.datatypes.xsd.XSDDatatype
-import parser.RDFSurfacesParser
 import rdfSurfaces.*
 import rdfSurfaces.Collection
 import java.io.File
@@ -18,15 +15,15 @@ class TransformerTest
         context("toNotation3SublanguageTest") {
             should("transform example2.n3 without exception") {
 
-                val iri1 = IRI.fromFullString("http://example.org/#spiderman")
-                val iri2 = IRI.fromFullString("http://www.perceive.net/schemas/relationship/enemyOf")
-                val iri3 = IRI.fromFullString("http://example.org/#green-goblin")
+                val iri1 = IRI.from("http://example.org/#spiderman")
+                val iri2 = IRI.from("http://www.perceive.net/schemas/relationship/enemyOf")
+                val iri3 = IRI.from("http://example.org/#green-goblin")
 
                 val rdfTriple = RdfTriple(iri1, iri2, iri3)
 
                 println(
                     transformer.toNotation3Sublanguage(
-                        PositiveRDFSurface(
+                        PositiveSurface(
                             listOf(),
                             listOf(rdfTriple)
                         )
@@ -36,10 +33,10 @@ class TransformerTest
 
 
             should("transform example11.n3 without exception") {
-                val iri1 = IRI.fromFullString("http://example.org/vocab/show/218")
-                val iri2 = IRI.fromFullString("http://www.w3.org/2000/01/rdf-schema#label")
-                val iri3 = IRI.fromFullString("http://example.org/vocab/show/localName")
-                val iri4 = IRI.fromFullString("http://example.org/vocab/show/blurb")
+                val iri1 = IRI.from("http://example.org/vocab/show/218")
+                val iri2 = IRI.from("http://www.w3.org/2000/01/rdf-schema#label")
+                val iri3 = IRI.from("http://example.org/vocab/show/localName")
+                val iri4 = IRI.from("http://example.org/vocab/show/blurb")
 
                 val literal1 = Literal("That Seventies Show", XSDDatatype.XSDstring)
                 val literal2 = LanguageTaggedString("That Seventies Show" to "en")
@@ -62,7 +59,7 @@ class TransformerTest
 
                 println(
                     transformer.toNotation3Sublanguage(
-                        PositiveRDFSurface(
+                        PositiveSurface(
                             listOf(),
                             listOf(rdfTriple1, rdfTriple2, rdfTriple3, rdfTriple4, rdfTriple5, rdfTriple6, rdfTriple7)
                         )
@@ -72,13 +69,13 @@ class TransformerTest
 
             should("transform example18.n3 without exception") {
 
-                val iri1 = IRI.fromFullString("http://example.org/foopredicate")
-                val iri2 = IRI.fromFullString("http://example.org/fooa")
-                val iri3 = IRI.fromFullString("http://example.org/foob")
-                val iri4 = IRI.fromFullString("http://example.org/fooc")
+                val iri1 = IRI.from("http://example.org/foopredicate")
+                val iri2 = IRI.from("http://example.org/fooa")
+                val iri3 = IRI.from("http://example.org/foob")
+                val iri4 = IRI.from("http://example.org/fooc")
 
-                val iri5 = IRI.fromFullString("http://example.org/foosubject")
-                val iri6 = IRI.fromFullString("http://example.org/foopredicate2")
+                val iri5 = IRI.from("http://example.org/foosubject")
+                val iri6 = IRI.from("http://example.org/foopredicate2")
 
                 val bn1 = BlankNode("t")
 
@@ -89,11 +86,11 @@ class TransformerTest
                 val rdfTriple1 = RdfTriple(bn1, iri1, collection1)
                 val rdfTriple2 = RdfTriple(iri5, iri6, collection2)
 
-                val positiveSurface2 = PositiveRDFSurface(listOf(bn1), listOf(rdfTriple2))
+                val positiveSurface2 = PositiveSurface(listOf(bn1), listOf(rdfTriple2))
 
                 println(
                     transformer.toNotation3Sublanguage(
-                        PositiveRDFSurface(
+                        PositiveSurface(
                             listOf(bn1), listOf(rdfTriple1, positiveSurface2)
                         )
                     )
@@ -101,7 +98,7 @@ class TransformerTest
             }
 
             should("transform example23.n3 without exception") {
-                val iri1 = IRI.fromFullString("http://example.org/stuff/1.0/p")
+                val iri1 = IRI.from("http://example.org/stuff/1.0/p")
 
                 val literal1 = Literal("w", XSDDatatype.XSDstring)
                 val literal2 = Literal(1, XSDDatatype.XSDinteger)
@@ -115,7 +112,7 @@ class TransformerTest
 
                 println(
                     transformer.toNotation3Sublanguage(
-                        PositiveRDFSurface(
+                        PositiveSurface(
                             listOf(), listOf(rdfTriple1)
                         )
                     )
@@ -127,14 +124,14 @@ class TransformerTest
             should("transform example2.n3 without exception") {
                 val solutionFile = File("src/test/resources/turtle-fol/example2.p")
 
-                val iri1 = IRI.fromFullString("http://example.org/#spiderman")
-                val iri2 = IRI.fromFullString("http://www.perceive.net/schemas/relationship/enemyOf")
-                val iri3 = IRI.fromFullString("http://example.org/#green-goblin")
+                val iri1 = IRI.from("http://example.org/#spiderman")
+                val iri2 = IRI.from("http://www.perceive.net/schemas/relationship/enemyOf")
+                val iri3 = IRI.from("http://example.org/#green-goblin")
 
                 val rdfTriple = RdfTriple(iri1, iri2, iri3)
 
                 transformer.toFOL(
-                    PositiveRDFSurface(
+                    PositiveSurface(
                         listOf(),
                         listOf(rdfTriple)
                     )
@@ -146,10 +143,10 @@ class TransformerTest
             should("transform example11.n3 without exception") {
                 val solutionFile = File("src/test/resources/turtle-fol/example11.p")
 
-                val iri1 = IRI.fromFullString("http://example.org/vocab/show/218")
-                val iri2 = IRI.fromFullString("http://www.w3.org/2000/01/rdf-schema#label")
-                val iri3 = IRI.fromFullString("http://example.org/vocab/show/localName")
-                val iri4 = IRI.fromFullString("http://example.org/vocab/show/blurb")
+                val iri1 = IRI.from("http://example.org/vocab/show/218")
+                val iri2 = IRI.from("http://www.w3.org/2000/01/rdf-schema#label")
+                val iri3 = IRI.from("http://example.org/vocab/show/localName")
+                val iri4 = IRI.from("http://example.org/vocab/show/blurb")
 
                 val literal1 = Literal("That Seventies Show", XSDDatatype.XSDstring)
                 val literal2 = LanguageTaggedString("That Seventies Show" to "en")
@@ -170,7 +167,7 @@ class TransformerTest
                 val rdfTriple7 = RdfTriple(iri1, iri4, literal5)
 
                 transformer.toFOL(
-                    PositiveRDFSurface(
+                    PositiveSurface(
                         listOf(),
                         listOf(rdfTriple1, rdfTriple2, rdfTriple3, rdfTriple4, rdfTriple5, rdfTriple6, rdfTriple7)
                     )
@@ -181,7 +178,7 @@ class TransformerTest
             should("transform example23.n3 without exception") {
                 val solutionFile = File("src/test/resources/turtle-fol/example23.p")
 
-                val iri1 = IRI.fromFullString("http://example.org/stuff/1.0/p")
+                val iri1 = IRI.from("http://example.org/stuff/1.0/p")
 
                 val literal1 = Literal("w", XSDDatatype.XSDstring)
                 val literal2 = Literal(1, XSDDatatype.XSDinteger)
@@ -194,7 +191,7 @@ class TransformerTest
                 val rdfTriple1 = RdfTriple(collection1, iri1, literal1)
 
                 transformer.toFOL(
-                    PositiveRDFSurface(
+                    PositiveSurface(
                         listOf(), listOf(rdfTriple1)
                     )
                 ).replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
@@ -204,11 +201,11 @@ class TransformerTest
                 should("transform blogic abc.n3") {
                     val solutionFile = File("src/test/resources/blogic-fol/abc-fol.p")
 
-                    val iri1 = IRI.fromFullString("http://example.org/ns#i")
-                    val iri2 = IRI.fromFullString("http://example.org/ns#A")
-                    val iri3 = IRI.fromFullString("http://example.org/ns#B")
-                    val iri4 = IRI.fromFullString("http://example.org/ns#C")
-                    val iri5 = IRI.fromFullString("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+                    val iri1 = IRI.from("http://example.org/ns#i")
+                    val iri2 = IRI.from("http://example.org/ns#A")
+                    val iri3 = IRI.from("http://example.org/ns#B")
+                    val iri4 = IRI.from("http://example.org/ns#C")
+                    val iri5 = IRI.from("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
 
                     val bnS = BlankNode("S")
                     val bnC = BlankNode("C")
@@ -220,15 +217,15 @@ class TransformerTest
                     val rdfTriple5 = RdfTriple(bnS, iri5, iri4)
                     val rdfTriple6 = RdfTriple(bnS, iri5, bnC)
 
-                    val negativeSurface1 = NegativeRDFSurface(listOf(), listOf(rdfTriple2))
-                    val negativeSurface21 = NegativeRDFSurface(listOf(), listOf(rdfTriple4))
-                    val negativeSurface22 = NegativeRDFSurface(listOf(), listOf(rdfTriple5))
+                    val negativeSurface1 = NegativeSurface(listOf(), listOf(rdfTriple2))
+                    val negativeSurface21 = NegativeSurface(listOf(), listOf(rdfTriple4))
+                    val negativeSurface22 = NegativeSurface(listOf(), listOf(rdfTriple5))
                     val negativeSurface2 =
-                        NegativeRDFSurface(listOf(bnS), listOf(rdfTriple3, negativeSurface21, negativeSurface22))
-                    val querySurface = QueryRDFSurface(listOf(bnS, bnC), listOf(rdfTriple6))
+                        NegativeSurface(listOf(bnS), listOf(rdfTriple3, negativeSurface21, negativeSurface22))
+                    val querySurface = QuerySurface(listOf(bnS, bnC), listOf(rdfTriple6))
 
                     transformer.toFOL(
-                        PositiveRDFSurface(
+                        PositiveSurface(
                             listOf(),
                             listOf(rdfTriple1, negativeSurface1, negativeSurface2, querySurface)
                         )
@@ -238,13 +235,13 @@ class TransformerTest
                 should("transform blogic abcd.n3") {
                     val solutionFile = File("src/test/resources/blogic-fol/abcd-fol.p")
 
-                    val iri1 = IRI.fromFullString("http://example.org/ns#i")
-                    val iri2 = IRI.fromFullString("http://example.org/ns#A")
-                    val iri3 = IRI.fromFullString("http://example.org/ns#B")
-                    val iri4 = IRI.fromFullString("http://example.org/ns#C")
-                    val iri5 = IRI.fromFullString("http://example.org/ns#D")
+                    val iri1 = IRI.from("http://example.org/ns#i")
+                    val iri2 = IRI.from("http://example.org/ns#A")
+                    val iri3 = IRI.from("http://example.org/ns#B")
+                    val iri4 = IRI.from("http://example.org/ns#C")
+                    val iri5 = IRI.from("http://example.org/ns#D")
 
-                    val iri6 = IRI.fromFullString("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+                    val iri6 = IRI.from("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
 
                     val bnS = BlankNode("S")
                     val bnC = BlankNode("C")
@@ -258,24 +255,24 @@ class TransformerTest
                     val rdfTriple7 = RdfTriple(bnS, iri6, iri5)
                     val rdfTriple8 = RdfTriple(bnS, iri6, bnC)
 
-                    val negativeSurface1 = NegativeRDFSurface(listOf(), listOf(rdfTriple2))
-                    val negativeSurface211 = NegativeRDFSurface(listOf(), listOf(rdfTriple3))
-                    val negativeSurface21 = NegativeRDFSurface(listOf(), listOf(negativeSurface211))
-                    val negativeSurface2 = NegativeRDFSurface(listOf(), listOf(negativeSurface21))
+                    val negativeSurface1 = NegativeSurface(listOf(), listOf(rdfTriple2))
+                    val negativeSurface211 = NegativeSurface(listOf(), listOf(rdfTriple3))
+                    val negativeSurface21 = NegativeSurface(listOf(), listOf(negativeSurface211))
+                    val negativeSurface2 = NegativeSurface(listOf(), listOf(negativeSurface21))
 
 
-                    val negativeSurface31 = NegativeRDFSurface(listOf(), listOf(rdfTriple5))
-                    val negativeSurface32 = NegativeRDFSurface(listOf(), listOf(rdfTriple6))
-                    val negativeSurface33 = NegativeRDFSurface(listOf(), listOf(rdfTriple7))
-                    val negativeSurface3 = NegativeRDFSurface(
+                    val negativeSurface31 = NegativeSurface(listOf(), listOf(rdfTriple5))
+                    val negativeSurface32 = NegativeSurface(listOf(), listOf(rdfTriple6))
+                    val negativeSurface33 = NegativeSurface(listOf(), listOf(rdfTriple7))
+                    val negativeSurface3 = NegativeSurface(
                         listOf(bnS),
                         listOf(rdfTriple4, negativeSurface31, negativeSurface32, negativeSurface33)
                     )
-                    val querySurface = QueryRDFSurface(listOf(bnS, bnC), listOf(rdfTriple8))
+                    val querySurface = QuerySurface(listOf(bnS, bnC), listOf(rdfTriple8))
 
 
                     transformer.toFOL(
-                        PositiveRDFSurface(
+                        PositiveSurface(
                             listOf(),
                             listOf(rdfTriple1, negativeSurface1, negativeSurface2, negativeSurface3, querySurface)
                         )

@@ -10,7 +10,7 @@ import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.Parser
 import rdfSurfaces.*
 
-object RDFSurfacesParserRDFLists : Grammar<PositiveRDFSurface>() {
+object RDFSurfacesParserRDFLists : Grammar<PositiveSurface>() {
 
     val lineComment by regexToken("^\\s*#.*$".toRegex(RegexOption.MULTILINE), ignore = true)
     val inlineComment by regexToken("\\s#.*$".toRegex(RegexOption.MULTILINE), ignore = true)
@@ -19,9 +19,10 @@ object RDFSurfacesParserRDFLists : Grammar<PositiveRDFSurface>() {
 
     private var blankNodeCounter = 0
     private val blankNodeTriplesSet = mutableListOf<RdfTriple>()
-    private val collectionTripleSet = mutableListOf<RdfTriple>()
     private val prefixMap = mutableMapOf<String, String>()
-    private var baseIri: IRI = IRI.fromFullString("") //TODO()
+    private var baseIri: IRI = IRI.from("") //TODO()
+
+    private val collectionTripleSet = mutableListOf<RdfTriple>()
     private val blankNodeToDirectParentSet = mutableListOf<BlankNode>()
 
     private val varSet = mutableSetOf<BlankNode>()
@@ -39,8 +40,8 @@ object RDFSurfacesParserRDFLists : Grammar<PositiveRDFSurface>() {
 
     private val prefixIdStart by literalToken("@prefix")
     private val baseStart by literalToken("@base")
-    private val sparqlBaseStart by regexToken("\\bBASE\\b".toRegex(RegexOption.IGNORE_CASE)) //TODO(case-insensitive - test)
-    private val sparqlPrefixStart by regexToken("\\bPREFIX\\b".toRegex(RegexOption.IGNORE_CASE)) //TODO(case-insensitive - test)
+    private val sparqlBaseStart by regexToken("\\bBASE\\b".toRegex(RegexOption.IGNORE_CASE))
+    private val sparqlPrefixStart by regexToken("\\bPREFIX\\b".toRegex(RegexOption.IGNORE_CASE))
 
     private val irirefToken by regexToken("<([^\u0000-\u0020<>\"{}|^`\\\\]|((\\\\u([0-9]|[A-F]|[a-f]){4})|(\\\\U([0-9]|[A-F]|[a-f]){8})))*>")
     private val iriref by irirefToken use { replaceNumericEscapeSequences(text.removeSurrounding("<", ">")) }
@@ -55,10 +56,10 @@ object RDFSurfacesParserRDFLists : Grammar<PositiveRDFSurface>() {
             ?: throw RDFSurfacesParseException("Prefix not defined")) + replaceReservedCharacterEscapes(local)
     } or pnameNs.use {
         prefixMap[text.trimEnd().dropLast(1)] ?: throw RDFSurfacesParseException("Prefix not defined")
-    } map { IRI.fromFullString(it) }
+    } map { IRI.from(it) }
 
     private val iri by iriref.map { iriString ->
-        IRI.fromFullString(iriString).let {
+        IRI.from(iriString).let {
             it.takeUnless { it.isRelativeReference() } ?: IRI.transformReference(R = it, B = baseIri)
         }
     } or prefixedName
@@ -89,7 +90,7 @@ object RDFSurfacesParserRDFLists : Grammar<PositiveRDFSurface>() {
         when (val part = this.t2) {
             null -> Literal.fromNonNumericLiteral(
                 replaceStringEscapes(replaceNumericEscapeSequences(this.t1)),
-                datatypeIRI = IRI.fromFullString(IRIConstants.XSD_STRING_IRI)
+                datatypeIRI = IRI.from(IRIConstants.XSD_STRING_IRI)
             )
 
             is String -> Literal.fromNonNumericLiteral(this.t1, langTag = part.drop(1))
@@ -107,7 +108,7 @@ object RDFSurfacesParserRDFLists : Grammar<PositiveRDFSurface>() {
     private val booleanLiteral by booleanLiteralToken use {
         Literal.fromNonNumericLiteral(
             text,
-            datatypeIRI = IRI.fromFullString(IRIConstants.XSD_BOOLEAN_IRI)
+            datatypeIRI = IRI.from(IRIConstants.XSD_BOOLEAN_IRI)
         )
     }
 
@@ -129,17 +130,17 @@ object RDFSurfacesParserRDFLists : Grammar<PositiveRDFSurface>() {
     }
 
     private val collection: Parser<RdfTripleElement> by -lpar and zeroOrMore(parser(this::rdfObject)) and -rpar use {
-        if (this.isEmpty()) IRI.fromFullString(IRIConstants.RDF_NIL_IRI) else {
+        if (this.isEmpty()) IRI.from(IRIConstants.RDF_NIL_IRI) else {
             val collectionStart = BlankNode(createBlankNodeId())
             blankNodeToDirectParentSet.add(collectionStart)
             this.foldIndexed(collectionStart) { index, acc, s ->
-                collectionTripleSet.add(RdfTriple(acc, IRI.fromFullString(IRIConstants.RDF_FIRST_IRI), s))
+                collectionTripleSet.add(RdfTriple(acc, IRI.from(IRIConstants.RDF_FIRST_IRI), s))
                 if (this.size - 1 <= index) {
                     collectionTripleSet.add(
                         RdfTriple(
                             acc,
-                            IRI.fromFullString(IRIConstants.RDF_REST_IRI),
-                            IRI.fromFullString(IRIConstants.RDF_NIL_IRI)
+                            IRI.from(IRIConstants.RDF_REST_IRI),
+                            IRI.from(IRIConstants.RDF_NIL_IRI)
                         )
                     )
                     return@foldIndexed collectionStart
@@ -149,7 +150,7 @@ object RDFSurfacesParserRDFLists : Grammar<PositiveRDFSurface>() {
                 collectionTripleSet.add(
                     RdfTriple(
                         acc,
-                        IRI.fromFullString(IRIConstants.RDF_REST_IRI),
+                        IRI.from(IRIConstants.RDF_REST_IRI),
                         nextRestBlankNode
                     )
                 )
@@ -162,7 +163,7 @@ object RDFSurfacesParserRDFLists : Grammar<PositiveRDFSurface>() {
     private val predicate by iri or blankNode.map { varSet.add(it); it } or literal
     private val rdfObject: Parser<RdfTripleElement> by iri or blankNode.map { varSet.add(it); it } or literal or blankNodePropertyList or collection
 
-    private val verb by predicate or a.map { IRI.fromFullString(RDF_TYPE_IRI) }
+    private val verb by predicate or a.map { IRI.from(RDF_TYPE_IRI) }
 
     private val objectList by rdfObject and zeroOrMore(-comma and rdfObject) use { listOf(this.t1).plus(this.t2) }
     private val predicateObjectList by verb and objectList and zeroOrMore(
@@ -229,17 +230,17 @@ object RDFSurfacesParserRDFLists : Grammar<PositiveRDFSurface>() {
         val variableListStrings = variableList.plus(collectionBlankNodes)
         val newHayeGraph = buildList<HayesGraphElement> {
             when (surface.iri) {
-                IRIConstants.LOG_POSITIVE_SURFACE_IRI -> this.add(PositiveRDFSurface(variableListStrings, hayeGraph))
+                IRIConstants.LOG_POSITIVE_SURFACE_IRI -> this.add(PositiveSurface(variableListStrings, hayeGraph))
                 IRIConstants.LOG_NEGATIVE_TRIPLE_IRI -> this.add(
-                    NegativeTripleRDFSurface(
+                    NegativeTripleSurface(
                         variableListStrings,
                         hayeGraph
                     )
                 )
 
-                IRIConstants.LOG_QUERY_SURFACE_IRI -> this.add(QueryRDFSurface(variableListStrings, hayeGraph))
-                IRIConstants.LOG_NEGATIVE_SURFACE_IRI -> this.add(NegativeRDFSurface(variableListStrings, hayeGraph))
-                IRIConstants.LOG_NEUTRAL_SURFACE_IRI -> this.add(NeutralRDFSurface(variableListStrings, hayeGraph))
+                IRIConstants.LOG_QUERY_SURFACE_IRI -> this.add(QuerySurface(variableListStrings, hayeGraph))
+                IRIConstants.LOG_NEGATIVE_SURFACE_IRI -> this.add(NegativeSurface(variableListStrings, hayeGraph))
+                IRIConstants.LOG_NEUTRAL_SURFACE_IRI -> this.add(NeutralSurface(variableListStrings, hayeGraph))
                 else -> throw RDFSurfacesParseException(message = "Surface IRI not supported")
             }
         }
@@ -247,12 +248,12 @@ object RDFSurfacesParserRDFLists : Grammar<PositiveRDFSurface>() {
     } or triples and -optional(dot)
 
     private val directive by (prefixID or sparqlPrefix).map { (prefix, iriStr) ->
-        val iri = IRI.fromFullString(iriStr).let {
+        val iri = IRI.from(iriStr).let {
             it.takeUnless { it.isRelativeReference() } ?: IRI.transformReference(it, baseIri)
         }
         prefixMap.put(prefix.text.dropLast(1), iri.iri)
     } or (base or sparqlBase).map { iriStr ->
-        baseIri = IRI.fromFullString(iriStr)
+        baseIri = IRI.from(iriStr)
             .let { it.takeUnless { it.isRelativeReference() } ?: IRI.transformReference(it, baseIri) }
     } use { null }
 
@@ -266,17 +267,17 @@ object RDFSurfacesParserRDFLists : Grammar<PositiveRDFSurface>() {
 
             }
         } ?: Triple(listOf(), setOf(), setOf())
-        hayesGraph.singleOrNull() as? PositiveRDFSurface ?: PositiveRDFSurface(
+        hayesGraph.singleOrNull() as? PositiveSurface ?: PositiveSurface(
             collectionBlankNodes.plus(freeVariables).toList(),
             hayesGraph
         )
     }
 
-    override val rootParser: Parser<PositiveRDFSurface> by turtleDoc use {
+    override val rootParser: Parser<PositiveSurface> by turtleDoc use {
         varSet.clear()
         blankNodeTriplesSet.clear()
         prefixMap.clear()
-        baseIri = IRI.fromFullString("") //TODO
+        baseIri = IRI.from("") //TODO
         this
     }
 
@@ -288,7 +289,7 @@ object RDFSurfacesParserRDFLists : Grammar<PositiveRDFSurface>() {
         varSet.clear()
         blankNodeTriplesSet.clear()
         prefixMap.clear()
-        baseIri = IRI.fromFullString("") //TODO
+        baseIri = IRI.from("") //TODO
         blankNodeTriplesSet.clear()
         collectionTripleSet.clear()
     }

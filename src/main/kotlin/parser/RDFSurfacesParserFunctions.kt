@@ -1,5 +1,6 @@
 package parser
 
+import IRIConstants
 import IRIConstants.RDF_TYPE_IRI
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
@@ -13,12 +14,32 @@ import com.github.h0tk3y.betterParse.parser.tryParseToEnd
 import rdfSurfaces.*
 import rdfSurfaces.Collection
 
-class RDFSurfacesParser(val rdfList: Boolean) : Grammar<PositiveSurface>() {
+class RDFSurfacesParseException(message: String? = null, cause: Throwable? = null) : Exception(message, cause)
+
+fun Grammar<PositiveSurface>.tryParseToEnd(input: String): ParseResult<PositiveSurface> {
+    if (input.contains("\\b_:BN_\\d+\\b".toRegex())) throw RDFSurfacesParseException("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
+    return rootParser.tryParseToEnd(tokenizer.tokenize(input), 0)
+}
+
+fun Grammar<PositiveSurface>.parseToEnd(input: String): PositiveSurface {
+    if (input.contains("\\b_:BN_\\d+\\b".toRegex())) throw RDFSurfacesParseException("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
+    return rootParser.parseToEnd(tokenizer.tokenize(input))
+}
+
+//fun Grammar<PositiveSurface>.tryParseToEnd(input: String): ParseResult<PositiveSurface> {
+//    var blankNodeLabelBase = "BN_"
+//    var i = 0
+//    while (input.contains("\\b_:$blankNodeLabelBase\\d+\\b".toRegex())) {
+//        if (i++ > 11) throw RDFSurfacesParseException("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
+//        blankNodeLabelBase = blankNodeLabelBase.plus("0")
+//    }
+//    return rootParser.tryParseToEnd(tokenizer.tokenize(input), 0)
+//}
+
+object RDFSurfacesParserFunctions : Grammar<PositiveSurface>() {
 
     val lineComment by regexToken("^\\s*#.*$".toRegex(RegexOption.MULTILINE), ignore = true)
     val inlineComment by regexToken("\\s#.*$".toRegex(RegexOption.MULTILINE), ignore = true)
-
-    private var bnLabel = "BN_"
 
     private val space by regexToken("\\s+", ignore = true)
 
@@ -26,9 +47,6 @@ class RDFSurfacesParser(val rdfList: Boolean) : Grammar<PositiveSurface>() {
     private val blankNodeTriplesSet = mutableListOf<RdfTriple>()
     private val prefixMap = mutableMapOf<String, String>()
     private var baseIri: IRI = IRI.from("") //TODO()
-
-    private val collectionTripleSet = mutableListOf<RdfTriple>()
-    private val blankNodeToDirectParentSet = mutableSetOf<BlankNode>()
 
     private val varSet = mutableSetOf<BlankNode>()
 
@@ -41,7 +59,7 @@ class RDFSurfacesParser(val rdfList: Boolean) : Grammar<PositiveSurface>() {
     private val dot by literalToken(".")
     private val semicolon by literalToken(";")
     private val comma by literalToken(",")
-    private val a by regexToken("\\ba\\b")
+    val a by regexToken("\\ba\\b")
 
     private val prefixIdStart by literalToken("@prefix")
     private val baseStart by literalToken("@base")
@@ -82,7 +100,7 @@ class RDFSurfacesParser(val rdfList: Boolean) : Grammar<PositiveSurface>() {
     private val stringLiteralQuote by regexToken("(\"([^\u0022\u000A\u000D\\\\]|$echar|$uchar)*\")")
     private val stringLiteralSingleQuote by regexToken("('([^\u0022\u000A\u000D\\\\]|$echar|$uchar)*')")
 
-    private val string by stringLiteralLongSingleQuote.use { text.removeSurrounding("'''") } or
+    val string by stringLiteralLongSingleQuote.use { text.removeSurrounding("'''") } or
             stringLiteralLongQuote.use { text.removeSurrounding("\"\"\"") } or
             stringLiteralQuote.use { text.removeSurrounding("\"") } or
             stringLiteralSingleQuote.use { text.removeSurrounding("'") }
@@ -135,35 +153,7 @@ class RDFSurfacesParser(val rdfList: Boolean) : Grammar<PositiveSurface>() {
     }
 
     private val collection: Parser<RdfTripleElement> by -lpar and zeroOrMore(parser(this::rdfObject)) and -rpar use {
-        if (rdfList) {
-            if (this.isEmpty()) IRI.from(IRIConstants.RDF_NIL_IRI) else {
-                val collectionStart = BlankNode(createBlankNodeId())
-                blankNodeToDirectParentSet.add(collectionStart)
-                this.foldIndexed(collectionStart) { index, acc, s ->
-                    collectionTripleSet.add(RdfTriple(acc, IRI.from(IRIConstants.RDF_FIRST_IRI), s))
-                    if (index >= this.lastIndex) {
-                        collectionTripleSet.add(
-                            RdfTriple(
-                                acc,
-                                IRI.from(IRIConstants.RDF_REST_IRI),
-                                IRI.from(IRIConstants.RDF_NIL_IRI)
-                            )
-                        )
-                        return@foldIndexed collectionStart
-                    }
-                    val nextRestBlankNode = BlankNode(createBlankNodeId())
-                    blankNodeToDirectParentSet.add(nextRestBlankNode)
-                    collectionTripleSet.add(
-                        RdfTriple(
-                            acc,
-                            IRI.from(IRIConstants.RDF_REST_IRI),
-                            nextRestBlankNode
-                        )
-                    )
-                    return@foldIndexed nextRestBlankNode
-                }
-            }
-        } else (Collection(this))
+        Collection(this)
     }
 
     private val subject by iri or blankNode.map { varSet.add(it); it } or literal or collection
@@ -207,23 +197,17 @@ class RDFSurfacesParser(val rdfList: Boolean) : Grammar<PositiveSurface>() {
                 addAll(blankNodeTriplesSet)
                 blankNodeTriplesSet.clear()
             }
-            if (collectionTripleSet.isNotEmpty()) {
-                this.addAll(collectionTripleSet)
-                collectionTripleSet.clear()
-            }
         }
         val freeVariables = varSet.toSet()
-        val collectionBlankNodes = blankNodeToDirectParentSet.toSet()
         varSet.clear()
-        blankNodeToDirectParentSet.clear()
-        Triple(triplesResult, freeVariables, collectionBlankNodes)
+        Pair(triplesResult, freeVariables)
     }
 
     private val emptyVarList by (lpar and rpar) use { listOf<BlankNode>() }
     private val variableList by emptyVarList or (-lpar and oneOrMore(blankNode) and -rpar)
 
     // Triple(hayesGraph, freeVariables, collectionBlankNodes)
-    private val rdfSurfacesParser: Parser<Triple<List<HayesGraphElement>, Set<BlankNode>, Set<BlankNode>>> by
+    private val rdfSurfacesParser: Parser<Pair<List<HayesGraphElement>, Set<BlankNode>>> by
     (variableList and
             (iri) and
             -lparcurl and
@@ -231,21 +215,20 @@ class RDFSurfacesParser(val rdfList: Boolean) : Grammar<PositiveSurface>() {
                 listOf()
             }) and
             -rparcurl) map { (variableList, surface, rest) ->
-        val (hayeGraph, freeVariables, freeCollectionBlankNodes) = rest.reduceOrNull { acc, triple ->
-            Triple(acc.first.plus(triple.first), acc.second.plus(triple.second), acc.third.plus(triple.third))
-        } ?: Triple(listOf(), setOf(), setOf())
-        val graffiti = variableList.plus(freeCollectionBlankNodes)
+        val (hayeGraph, freeVariables) = rest.reduceOrNull { acc, pair ->
+            Pair(acc.first.plus(pair.first), acc.second.plus(pair.second))
+        } ?: Pair(listOf(), setOf())
         val newHayeGraph = buildList<HayesGraphElement> {
             when (surface.iri) {
-                IRIConstants.LOG_POSITIVE_SURFACE_IRI -> this.add(PositiveSurface(graffiti, hayeGraph))
-                IRIConstants.LOG_NEGATIVE_TRIPLE_IRI -> this.add(NegativeTripleSurface(graffiti, hayeGraph))
-                IRIConstants.LOG_QUERY_SURFACE_IRI -> this.add(QuerySurface(graffiti, hayeGraph))
-                IRIConstants.LOG_NEGATIVE_SURFACE_IRI -> this.add(NegativeSurface(graffiti, hayeGraph))
-                IRIConstants.LOG_NEUTRAL_SURFACE_IRI -> this.add(NeutralSurface(graffiti, hayeGraph))
+                IRIConstants.LOG_POSITIVE_SURFACE_IRI -> add(PositiveSurface(variableList, hayeGraph))
+                IRIConstants.LOG_NEGATIVE_TRIPLE_IRI -> add(NegativeTripleSurface(variableList, hayeGraph))
+                IRIConstants.LOG_QUERY_SURFACE_IRI -> add(QuerySurface(variableList, hayeGraph))
+                IRIConstants.LOG_NEGATIVE_SURFACE_IRI -> add(NegativeSurface(variableList, hayeGraph))
+                IRIConstants.LOG_NEUTRAL_SURFACE_IRI -> add(NeutralSurface(variableList, hayeGraph))
                 else -> throw RDFSurfacesParseException(message = "Surface IRI not supported")
             }
         }
-        Triple(newHayeGraph, freeVariables.minus(variableList.toSet()), setOf<BlankNode>())
+        Pair(newHayeGraph, freeVariables.minus(variableList.toSet()))
     } or triples and -optional(dot)
 
     private val directive by (prefixID or sparqlPrefix).map { (prefix, iriStr) ->
@@ -260,29 +243,28 @@ class RDFSurfacesParser(val rdfList: Boolean) : Grammar<PositiveSurface>() {
 
     private val statement by directive or rdfSurfacesParser
     private val turtleDoc by oneOrMore(statement) map {
-        val (hayesGraph, freeVariables, freeCollectionBlankNodes) = it.reduceOrNull { acc, triple ->
+        val (hayesGraph, freeVariables) = it.reduceOrNull { acc, pair ->
             when {
-                acc == null -> triple
-                triple == null -> acc
-                else -> Triple(
-                    acc.first.plus(triple.first),
-                    acc.second.plus(triple.second),
-                    acc.third.plus(triple.third)
-                )
-
+                acc == null -> pair
+                pair == null -> acc
+                else -> Pair(acc.first.plus(pair.first), acc.second.plus(pair.second))
             }
-        } ?: Triple(listOf(), setOf(), setOf())
+        } ?: Pair(listOf(), setOf())
         hayesGraph.singleOrNull() as? PositiveSurface ?: PositiveSurface(
-            freeCollectionBlankNodes.plus(freeVariables).toList(),
+            freeVariables.toList(),
             hayesGraph
         )
     }
 
     override val rootParser: Parser<PositiveSurface> by turtleDoc use {
-        this.also { resetAll() }
+        varSet.clear()
+        blankNodeTriplesSet.clear()
+        prefixMap.clear()
+        baseIri = IRI.from("") //TODO
+        this
     }
 
-    private fun createBlankNodeId(): String = "$bnLabel${++blankNodeCounter}"
+    private fun createBlankNodeId(): String = "BN_${++blankNodeCounter}"
 
     //TODO()
     fun resetAll() {
@@ -292,8 +274,6 @@ class RDFSurfacesParser(val rdfList: Boolean) : Grammar<PositiveSurface>() {
         prefixMap.clear()
         baseIri = IRI.from("") //TODO
         blankNodeTriplesSet.clear()
-        collectionTripleSet.clear()
-        bnLabel = "BN_"
     }
 
     //https://www.w3.org/TR/turtle/#numeric
@@ -317,37 +297,4 @@ class RDFSurfacesParser(val rdfList: Boolean) : Grammar<PositiveSurface>() {
         .replace("\\\"", "\u0022")
         .replace("\\'", "\u0027")
         .replace("\\\\'", "\u005C")
-
-
-    fun tryParseToEnd(input: String): ParseResult<PositiveSurface> {
-        try {
-            resetAll()
-            var bnLabel = "BN_"
-            var i = 0
-            while (input.contains("\\b_:$bnLabel\\d+\\b".toRegex()) && i++ in 0..10) {
-                bnLabel += '0'
-            }
-            if (i == 11) throw RDFSurfacesParseException("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
-            this.bnLabel = bnLabel
-            return rootParser.tryParseToEnd(tokenizer.tokenize(input), 0)
-        } finally {
-            resetAll()
-        }
-    }
-
-    fun parseToEnd(input: String): PositiveSurface {
-        try {
-            resetAll()
-            var bnLabel = "BN_"
-            var i = 0
-            while (input.contains("\\b_:$bnLabel\\d+\\b".toRegex()) && i++ in 0..10) {
-                bnLabel += '0'
-            }
-            if (i > 10) throw RDFSurfacesParseException("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
-            this.bnLabel = bnLabel
-            return rootParser.parseToEnd(tokenizer.tokenize(input))
-        } finally {
-            resetAll()
-        }
-    }
 }
