@@ -4,8 +4,7 @@ import parser.stringLiteralQuote
 import parser.stringLiteralSingleQuote
 import rdfSurfaces.*
 import rdfSurfaces.Collection
-
-class TransformerException(message: String? = null, cause: Throwable? = null) : Exception(message, cause)
+import util.TransformerException
 
 class Transformer {
     fun toNotation3Sublanguage(defaultPositiveSurface: PositiveSurface): String {
@@ -66,7 +65,7 @@ class Transformer {
                         "'$rawLiteral'".matches(stringLiteralSingleQuote) -> "'$rawLiteral'"
                         "\"\"\"$rawLiteral\"\"\"".matches(stringLiteralLongQuote) -> "\"\"\"$rawLiteral\"\"\""
                         "'''$rawLiteral'''".matches(stringLiteralLongSingleQuote) -> "'''$rawLiteral'''"
-                        else -> throw TransformerException("Transforming string error")
+                        else -> throw TransformerException("Error during the transformation of a string literal")
                     }
                 }
 
@@ -160,7 +159,7 @@ class Transformer {
         defaultPositiveSurface: PositiveSurface,
         ignoreQuerySurfaces: Boolean = false,
         tptpName: String = "axiom",
-        formulaRole: String = "axiom"
+        formulaRole: String = "axiom",
     ): String {
 
         val spaceBase = "   "
@@ -233,9 +232,11 @@ class Transformer {
                     }
                 }
 
-                is RdfTriple -> "triple(" + transform(hayesGraphElement.rdfSubject) + "," + transform(hayesGraphElement.rdfPredicate) + "," + transform(
-                    hayesGraphElement.rdfObject
-                ) + ")"
+                is RdfTriple -> "triple(${transform(hayesGraphElement.rdfSubject)},${transform(hayesGraphElement.rdfPredicate)},${
+                    transform(
+                        hayesGraphElement.rdfObject
+                    )
+                })"
 
                 else -> throw TransformerException("HayesGraphElement type not supported")
             }

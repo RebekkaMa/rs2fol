@@ -22,19 +22,15 @@ data class IRI(
             return "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?".toRegex().matchEntire(fullIRI)
                 ?.let { matchResult ->
                     IRI(
-                        if (matchResult.destructured.component1()
-                                .isEmpty()
-                        ) null else matchResult.destructured.component2(),
-                        if (matchResult.destructured.component3()
-                                .isEmpty()
-                        ) null else matchResult.destructured.component4(),
+                        matchResult.destructured.component2()
+                            .takeUnless { matchResult.destructured.component1().isEmpty() },
+                        matchResult.destructured.component4()
+                            .takeUnless { matchResult.destructured.component3().isEmpty() },
                         matchResult.destructured.component5(),
-                        if (matchResult.destructured.component6()
-                                .isEmpty()
-                        ) null else matchResult.destructured.component7(),
-                        if (matchResult.destructured.component8()
-                                .isEmpty()
-                        ) null else matchResult.destructured.component9(),
+                        matchResult.destructured.component7()
+                            .takeUnless { matchResult.destructured.component6().isEmpty() },
+                        matchResult.destructured.component9()
+                            .takeUnless { matchResult.destructured.component8().isEmpty() }
                     )
                 } ?: IRI(path = fullIRI)
         }
@@ -56,9 +52,8 @@ data class IRI(
 
         fun transformReference(R: IRI, B: IRI): IRI {
             fun merge(): String =
-                if (B.authority != null && B.path == "") "/${R.path}" else {
-                    B.path.dropLastWhile { it != '/' } + R.path
-                }
+                if (B.authority != null && B.path == "") "/${R.path}" else (B.path.dropLastWhile { it != '/' } + R.path)
+
 
             fun removeDotSegments(path: String): String {
                 //TODO(Use more efficient StringBuilder )
@@ -94,33 +89,26 @@ data class IRI(
 
                 while (inputBuffer.isNotBlank()) {
                     when {
-                        inputBuffer.startsWith("../") || inputBuffer.startsWith("./")
-                        -> {
-                            val range = "^((\\.\\./)|(\\./))".toRegex().find(inputBuffer)?.range
-                            if (range != null) inputBuffer.deleteRange(range.first, range.last + 1)
+                        inputBuffer.startsWith("../") -> inputBuffer.deleteRange(0, 3)
+                        inputBuffer.startsWith("./") -> inputBuffer.deleteRange(0, 2)
+                        inputBuffer.startsWith("/./") -> inputBuffer.setRange(0, 3, "/")
+                        inputBuffer.contentEquals("/.") -> inputBuffer.setRange(0, 2, "/")
+                        inputBuffer.startsWith("/../") -> {
+                            inputBuffer.setRange(0, 4, "/")
+                            outputBuffer.delete(outputBuffer.indexOfLast { it == '/' }.takeUnless { it == -1 } ?: 0,
+                                outputBuffer.lastIndex + 1)
                         }
 
-                        inputBuffer.startsWith("/./") || inputBuffer.toString() == "/."
-                        -> {
-                            val range = "^((/\\./)|(/\\.$))".toRegex().find(inputBuffer)?.range
-                            if (range != null) inputBuffer.replace(range.first, range.last + 1, "/")
+                        inputBuffer.contentEquals("/..") -> {
+                            inputBuffer.setRange(0, 3, "/")
+                            outputBuffer.delete(outputBuffer.indexOfLast { it == '/' }.takeUnless { it == -1 } ?: 0,
+                                outputBuffer.lastIndex + 1)
                         }
 
-                        inputBuffer.startsWith("/../") || inputBuffer.toString() == "/.."
-                        -> {
-                            val range = "^((/\\.\\./)|(/\\.\\.$))".toRegex().find(inputBuffer)?.range
-                            if (range != null) {
-                                inputBuffer.replace(range.first, range.last + 1, "/")
-                                outputBuffer.delete(outputBuffer.indexOfLast { it == '/' }.takeUnless { it == -1 } ?: 0,
-                                    outputBuffer.lastIndex + 1)
-                            }
-                        }
-
-                        inputBuffer.toString() == ".." || inputBuffer.toString() == "." -> inputBuffer.clear()
+                        inputBuffer.contentEquals("..") || inputBuffer.contentEquals(".") -> inputBuffer.clear()
                         else -> {
                             val switch =
                                 "^(/?[^/]*)(/|$)".toRegex().find(inputBuffer)?.groups?.get(1)?.range
-
                             if (switch != null) {
                                 outputBuffer.append(inputBuffer, switch.first, switch.last + 1)
                                 inputBuffer.delete(switch.first, switch.last + 1)
@@ -137,10 +125,10 @@ data class IRI(
             val targetURIquery: String?
 
             if (R.scheme != null) {
-                targetURIScheme = R.scheme;
-                targetURIauthority = R.authority;
-                targetURIpath = removeDotSegments(R.path);
-                targetURIquery = R.query;
+                targetURIScheme = R.scheme
+                targetURIauthority = R.authority
+                targetURIpath = removeDotSegments(R.path)
+                targetURIquery = R.query
             } else {
                 if (R.authority != null) {
                     targetURIauthority = R.authority
@@ -148,18 +136,18 @@ data class IRI(
                     targetURIquery = R.query
                 } else {
                     if (R.path.isEmpty()) {
-                        targetURIpath = B.path;
-                        targetURIquery = R.query ?: B.query;
+                        targetURIpath = B.path
+                        targetURIquery = R.query ?: B.query
                     } else {
                         targetURIpath = removeDotSegments(R.path.takeIf { R.path.startsWith("/") } ?: merge())
                         targetURIquery = R.query
                     }
                     targetURIauthority = B.authority
                 }
-                targetURIScheme = B.scheme;
+                targetURIScheme = B.scheme
             }
 
-            val targetURIfragment: String? = R.fragment;
+            val targetURIfragment: String? = R.fragment
 
             return IRI(targetURIScheme, targetURIauthority, targetURIpath, targetURIquery, targetURIfragment)
         }
@@ -182,8 +170,6 @@ data class Collection(val list: List<RdfTripleElement>) : RdfTripleElement(), Li
 
 open class Literal(val literalValue: Any, val datatype: BaseDatatype) : RdfTripleElement() {
 
-    //TODO(support: http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral + http://www.w3.org/1999/02/22-rdf-syntax-ns#HTML
-    // || see:https://www.w3.org/TR/rdf11-concepts/#datatype-iris)
     companion object {
         fun fromNonNumericLiteral(lexicalForm: String, datatypeIRI: IRI): Literal {
             val datatype = when {
@@ -226,15 +212,18 @@ open class Literal(val literalValue: Any, val datatype: BaseDatatype) : RdfTripl
                     "NMTOKEN" -> XSDDatatype.XSDNMTOKEN
                     "Name" -> XSDDatatype.XSDName
                     "NCName" -> XSDDatatype.XSDNCName
-                    else -> XSDDatatype(datatypeIRI.iri)
+                    else -> BaseDatatype(datatypeIRI.iri)
                 }
 
                 else -> BaseDatatype(datatypeIRI.iri)
             }
 
-            //TODO(Catch exceptions?)
-            return Literal(lexicalForm.takeUnless { datatype is XSDDatatype } ?: datatype.parse(lexicalForm),
-                datatype)
+            return Literal(
+                runCatching {
+                    lexicalForm.takeUnless { datatype is XSDDatatype } ?: datatype.parse(lexicalForm)
+                }.getOrDefault(lexicalForm),
+                datatype
+            )
         }
 
         fun fromNonNumericLiteral(lexicalValue: String, langTag: String): LanguageTaggedString =

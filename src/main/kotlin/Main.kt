@@ -4,7 +4,10 @@ import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
-import com.github.ajalt.clikt.parameters.options.*
+import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.prompt
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
@@ -42,18 +45,21 @@ class Rewrite : CliktCommand(help = "Parse and print RDF Surfaces graph using a 
         try {
             val rdfSurfaceGraph = input.readText()
 
-            val (parseError, parseResultValue) = RDFSurfaceToFOLController().transformRDFSurfaceGraphToNotation3(
+            val parseResult = RDFSurfaceToFOLController().transformRDFSurfaceGraphToNotation3(
                 rdfSurfaceGraph, commonOptions.rdfList
             )
-            if (parseError) {
-                echo(
-                    "Failed to parse ${input.name}" + if (commonOptions.verbose) ":\n$parseResultValue" else "",
-                    err = true,
-                    trailingNewline = true
-                )
-                throw ProgramResult(1)
+
+            when (parseResult) {
+                is Success -> output?.writeText(parseResult.value) ?: echo(parseResult.value)
+                is Failure -> {
+                    echo(
+                        "Failed to parse ${input.name}: " + parseResult.failureMessage,
+                        err = true,
+                        trailingNewline = true
+                    )
+                    throw ProgramResult(1)
+                }
             }
-            output?.writeText(parseResultValue) ?: println(parseResultValue)
         } catch (exception: CliktError) {
             throw exception
         } catch (exception: ProgramResult) {
@@ -83,20 +89,23 @@ class Transform : CliktCommand(help = "Transform RDF Surfaces graph to FOL formu
         try {
             val rdfSurfaceGraph = input.readText()
 
-            val (parseError, parseResultValue) = RDFSurfaceToFOLController().transformRDFSurfaceGraphToFOL(
+            val parseResult = RDFSurfaceToFOLController().transformRDFSurfaceGraphToFOL(
                 rdfSurfaceGraph,
                 ignoreQuerySurface,
                 rdfLists = commonOptions.rdfList
             )
-            if (parseError) {
-                echo(
-                    "Failed to parse ${input.name}" + if (commonOptions.verbose) ":\n$parseResultValue" else "",
-                    err = true,
-                    trailingNewline = true
-                )
-                throw ProgramResult(1)
+
+            when (parseResult) {
+                is Success -> output?.writeText(parseResult.value) ?: echo(parseResult.value)
+                is Failure -> {
+                    echo(
+                        "Failed to parse ${input.name}: " + parseResult.failureMessage,
+                        err = true,
+                        trailingNewline = true
+                    )
+                    throw ProgramResult(1)
+                }
             }
-            output?.writeText(parseResultValue) ?: println(parseResultValue)
 
         } catch (exception: CliktError) {
             throw exception
@@ -150,38 +159,48 @@ class Check :
             val answerGraph = computedAnswerFile.readText()
 
 
-            val (parseError, parseResultValue) = rdfSurfaceToFOLController.transformRDFSurfaceGraphToFOL(
+
+            val parseResult = rdfSurfaceToFOLController.transformRDFSurfaceGraphToFOL(
                 graph,
                 ignoreQuerySurface = true,
                 rdfLists = commonOptions.rdfList
             )
-            val (answerParseError, answerParseResultValue) = rdfSurfaceToFOLController.transformRDFSurfaceGraphToFOLConjecture(
+            val answerParseResult = rdfSurfaceToFOLController.transformRDFSurfaceGraphToFOLConjecture(
                 answerGraph,
                 rdfLists = commonOptions.rdfList
             )
-            if (parseError or answerParseError) {
-                echo("RDF Surfaces Parser Error", err = true, trailingNewline = true)
-                if (!quiet) {
-                    if (parseError) echo(
-                        "Failed to parse ${input.name}" + if (commonOptions.verbose) ":\n$parseResultValue" else "",
+
+            when (parseResult) {
+                is Success -> output?.writeText(parseResult.value) ?: echo(parseResult.value)
+                is Failure -> {
+                    echo(
+                        "Failed to parse ${input.name}: " + parseResult.failureMessage,
                         err = true,
                         trailingNewline = true
                     )
-                    if (answerParseError) echo(
-                        "Failed to parse ${computedAnswerFile.name}" + if (commonOptions.verbose) ":\n$answerParseResultValue" else "",
+                }
+            }
+
+            when (answerParseResult) {
+                is Success -> output?.writeText(answerParseResult.value) ?: echo(answerParseResult.value)
+                is Failure -> {
+                    echo(
+                        "Failed to parse ${input.name}: " + answerParseResult.failureMessage,
                         err = true,
-                        trailingNewline = false
+                        trailingNewline = true
                     )
                 }
-                throw ProgramResult(1)
             }
-            if (!quiet) println("Transformation was successful!")
+
+            if (parseResult is Failure || answerParseResult is Failure ) throw ProgramResult(1)
+
+            if (!quiet) echo("Transformation was successful!")
             val file = output ?: File("transformationResults/" + input.nameWithoutExtension + ".p")
 
             file.parentFile.mkdirs()
             file.createNewFile()
 
-            file.writeText("$parseResultValue\n$answerParseResultValue")
+            file.writeText("$parseResult\n$answerParseResult")
             val absolutePath = file.absolutePath
 
             if (!quiet) {
@@ -260,35 +279,36 @@ class TransformWithQA :
 
             val graph = input.readText()
 
-            val (parseError, parseResultValue, querySurfaces) = RDFSurfaceToFOLController().transformRDFSurfaceGraphToFOL(
+            val parseResult = RDFSurfaceToFOLController().transformRDFSurfaceGraphToFOL(
                 graph,
                 false,
                 rdfLists = commonOptions.rdfList
             )
 
-            if (parseError) {
-                echo("Transforming Error", err = true, trailingNewline = true)
-                if (commonOptions.verbose) echo(
-                    "Failed to parse " + input.name + ":\n" + parseResultValue,
-                    err = true,
-                    trailingNewline = true
-                )
-                throw ProgramResult(1)
+            when (parseResult) {
+                is Success -> {if (!quiet) println("Transformation was successful!")}
+                is Failure -> {
+                    echo(
+                        "Failed to parse ${input.name}: " + parseResult.failureMessage,
+                        err = true,
+                        trailingNewline = true
+                    )
+                    throw ProgramResult(1)
+                }
             }
 
-            if (!quiet) println("Transformation was successful!")
 
             val file = output ?: File("transformationResults/" + input.nameWithoutExtension + ".p")
 
             file.parentFile.mkdirs()
             file.createNewFile()
 
-            file.writeText(parseResultValue)
+            file.writeText(parseResult.value)
             val absolutePath = file.absolutePath
 
             if (!quiet) {
-                println("Problem output file: " + file.path)
-                println("Starting Vampire...")
+                echo("Problem output file: " + file.path)
+                echo("Starting Vampire...")
             }
 
             val vampireProcess =
@@ -334,7 +354,7 @@ class TransformWithQA :
                 }
 
                 if (parsedResult.isEmpty() && rawResult.isEmpty() && !quiet) return@useLines "No solutions"
-                val answerRDFSurfacesGraph = if (parsedResult.isNotEmpty()) (querySurfaces?.let {
+                val answerRDFSurfacesGraph = if (parsedResult.isNotEmpty()) (parseResult.querySurfaces?.let {
                     RDFSurfaceToFOLController().transformQuestionAnsweringResult(
                         parsedResult,
                         it.first()

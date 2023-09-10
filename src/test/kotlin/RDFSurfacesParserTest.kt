@@ -3,10 +3,10 @@ import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.shouldBe
 import org.apache.jena.datatypes.xsd.XSDDatatype
-import parser.RDFSurfacesParseException
 import parser.RDFSurfacesParser
 import rdfSurfaces.*
 import rdfSurfaces.Collection
+import util.RDFSurfacesParseException
 import java.io.File
 
 class RDFSurfacesParserTest : ShouldSpec(

@@ -1,5 +1,6 @@
 package parser
 
+import IRIConstants
 import IRIConstants.RDF_TYPE_IRI
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
@@ -12,13 +13,14 @@ import com.github.h0tk3y.betterParse.parser.parseToEnd
 import com.github.h0tk3y.betterParse.parser.tryParseToEnd
 import rdfSurfaces.*
 import rdfSurfaces.Collection
+import util.RDFSurfacesParseException
 
-class RDFSurfacesParser(val rdfList: Boolean) : Grammar<PositiveSurface>() {
+class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
 
     val lineComment by regexToken("^\\s*#.*$".toRegex(RegexOption.MULTILINE), ignore = true)
     val inlineComment by regexToken("\\s#.*$".toRegex(RegexOption.MULTILINE), ignore = true)
 
-    private var bnLabel = "BN_"
+    private lateinit var bnLabel: String
 
     private val space by regexToken("\\s+", ignore = true)
 
@@ -58,9 +60,9 @@ class RDFSurfacesParser(val rdfList: Boolean) : Grammar<PositiveSurface>() {
     private val prefixedName by pnameLn.use {
         val (prefix, local) = text.split(':', limit = 2)
         return@use (prefixMap[prefix]
-            ?: throw RDFSurfacesParseException("Prefix not defined")) + replaceReservedCharacterEscapes(local)
+            ?: throw RDFSurfacesParseException("Undefined Prefix")) + replaceReservedCharacterEscapes(local)
     } or pnameNs.use {
-        prefixMap[text.trimEnd().dropLast(1)] ?: throw RDFSurfacesParseException("Prefix not defined")
+        prefixMap[text.trimEnd().dropLast(1)] ?: throw RDFSurfacesParseException("Undefined Prefix")
     } map { IRI.from(it) }
 
     private val iri by iriref.map { iriString ->
@@ -135,7 +137,7 @@ class RDFSurfacesParser(val rdfList: Boolean) : Grammar<PositiveSurface>() {
     }
 
     private val collection: Parser<RdfTripleElement> by -lpar and zeroOrMore(parser(this::rdfObject)) and -rpar use {
-        if (rdfList) {
+        if (useRDFLists) {
             if (this.isEmpty()) IRI.from(IRIConstants.RDF_NIL_IRI) else {
                 val collectionStart = BlankNode(createBlankNodeId())
                 blankNodeToDirectParentSet.add(collectionStart)
@@ -213,8 +215,8 @@ class RDFSurfacesParser(val rdfList: Boolean) : Grammar<PositiveSurface>() {
             }
         }
         val freeVariables = varSet.toSet()
-        val collectionBlankNodes = blankNodeToDirectParentSet.toSet()
         varSet.clear()
+        val collectionBlankNodes = blankNodeToDirectParentSet.toSet()
         blankNodeToDirectParentSet.clear()
         Triple(triplesResult, freeVariables, collectionBlankNodes)
     }
@@ -269,7 +271,6 @@ class RDFSurfacesParser(val rdfList: Boolean) : Grammar<PositiveSurface>() {
                     acc.second.plus(triple.second),
                     acc.third.plus(triple.third)
                 )
-
             }
         } ?: Triple(listOf(), setOf(), setOf())
         hayesGraph.singleOrNull() as? PositiveSurface ?: PositiveSurface(
@@ -278,22 +279,28 @@ class RDFSurfacesParser(val rdfList: Boolean) : Grammar<PositiveSurface>() {
         )
     }
 
-    override val rootParser: Parser<PositiveSurface> by turtleDoc use {
-        this.also { resetAll() }
-    }
+    override val rootParser: Parser<PositiveSurface>
+        get() {
+            return try {
+                turtleDoc.getValue(this, this::rootParser)
+            } finally {
+                resetAll()
+            }
+        }
+
 
     private fun createBlankNodeId(): String = "$bnLabel${++blankNodeCounter}"
 
-    //TODO()
     fun resetAll() {
         blankNodeCounter = 0
         varSet.clear()
         blankNodeTriplesSet.clear()
         prefixMap.clear()
         baseIri = IRI.from("") //TODO
-        blankNodeTriplesSet.clear()
         collectionTripleSet.clear()
         bnLabel = "BN_"
+        blankNodeToDirectParentSet.clear()
+
     }
 
     //https://www.w3.org/TR/turtle/#numeric
@@ -320,34 +327,24 @@ class RDFSurfacesParser(val rdfList: Boolean) : Grammar<PositiveSurface>() {
 
 
     fun tryParseToEnd(input: String): ParseResult<PositiveSurface> {
-        try {
-            resetAll()
-            var bnLabel = "BN_"
-            var i = 0
-            while (input.contains("\\b_:$bnLabel\\d+\\b".toRegex()) && i++ in 0..10) {
-                bnLabel += '0'
-            }
-            if (i == 11) throw RDFSurfacesParseException("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
-            this.bnLabel = bnLabel
-            return rootParser.tryParseToEnd(tokenizer.tokenize(input), 0)
-        } finally {
-            resetAll()
+        var bnLabel = "BN_"
+        var i = 0
+        while (input.contains("\\b_:$bnLabel\\d+\\b".toRegex()) && i++ in 0..10) {
+            bnLabel += '0'
         }
+        if (i == 11) throw RDFSurfacesParseException("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
+        this.bnLabel = bnLabel
+        return rootParser.tryParseToEnd(tokenizer.tokenize(input), 0)
     }
 
     fun parseToEnd(input: String): PositiveSurface {
-        try {
-            resetAll()
-            var bnLabel = "BN_"
-            var i = 0
-            while (input.contains("\\b_:$bnLabel\\d+\\b".toRegex()) && i++ in 0..10) {
-                bnLabel += '0'
-            }
-            if (i > 10) throw RDFSurfacesParseException("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
-            this.bnLabel = bnLabel
-            return rootParser.parseToEnd(tokenizer.tokenize(input))
-        } finally {
-            resetAll()
+        var bnLabel = "BN_"
+        var i = 0
+        while (input.contains("\\b_:$bnLabel\\d+\\b".toRegex()) && i++ in 0..10) {
+            bnLabel += '0'
         }
+        if (i > 10) throw RDFSurfacesParseException("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
+        this.bnLabel = bnLabel
+        return rootParser.parseToEnd(tokenizer.tokenize(input))
     }
 }
