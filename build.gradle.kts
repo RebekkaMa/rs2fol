@@ -11,8 +11,10 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.ajalt.clikt:clikt:3.4.2")
+    implementation("com.github.ajalt.clikt:clikt:4.2.0")
     implementation("com.github.h0tk3y.betterParse:better-parse:0.4.4")
+    implementation("io.github.microutils:kotlin-logging-jvm:2.0.11")
+    implementation(group = "ch.qos.logback", name = "logback-classic", version = "1.2.9")
     testImplementation(kotlin("test"))
     testImplementation("io.kotest:kotest-runner-junit5-jvm:4.6.0")
     implementation("javax.xml.bind:jaxb-api:2.3.1")

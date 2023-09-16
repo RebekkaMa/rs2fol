@@ -3,6 +3,7 @@ package rdfSurfaces
 import IRIConstants
 import org.apache.jena.datatypes.BaseDatatype
 import org.apache.jena.datatypes.xsd.XSDDatatype
+import org.apache.jena.datatypes.xsd.XSDDatatype.*
 
 abstract class RdfTripleElement
 
@@ -17,6 +18,7 @@ data class IRI(
     val iri: String = componentRecomposition(scheme, authority, path, query, fragment)
 
     companion object {
+
         //TODO()
         fun from(fullIRI: String): IRI {
             return "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?".toRegex().matchEntire(fullIRI)
@@ -52,37 +54,10 @@ data class IRI(
 
         fun transformReference(R: IRI, B: IRI): IRI {
             fun merge(): String =
-                if (B.authority != null && B.path == "") "/${R.path}" else (B.path.dropLastWhile { it != '/' } + R.path)
+                if (B.authority != null && B.path.isEmpty()) "/${R.path}" else (B.path.dropLastWhile { it != '/' } + R.path)
 
 
             fun removeDotSegments(path: String): String {
-                //TODO(Use more efficient StringBuilder )
-//                var inputBuffer = path
-//                var outputBuffer = ""
-//
-//                while (inputBuffer.isNotBlank()) {
-//                    when {
-//                        inputBuffer.startsWith("../") || inputBuffer.startsWith("./")
-//                        -> inputBuffer = inputBuffer.replace("^((\\.\\./)|(\\./))".toRegex(), "")
-//
-//                        inputBuffer.startsWith("/./") || inputBuffer == "/."
-//                        -> inputBuffer = inputBuffer.replace("^((/\\./)|(/\\.$))".toRegex(), "/")
-//
-//                        inputBuffer.startsWith("/../") || inputBuffer == "/.."
-//                        -> {
-//                            inputBuffer = inputBuffer.replace("^((/\\.\\./)|(/\\.\\.$))".toRegex(), "/")
-//                            outputBuffer = outputBuffer.dropLastWhile { it != '/' }.removeSuffix("/")
-//                        }
-//
-//                        inputBuffer == ".." || inputBuffer == "." -> inputBuffer = ""
-//                        else -> {
-//                            val switch = "^(/?[^/]*)(/|$)".toRegex().find(inputBuffer)?.destructured?.component1().orEmpty()
-//
-//                            outputBuffer += switch
-//                            inputBuffer = inputBuffer.removePrefix(switch)
-//                        }
-//                    }
-//                }
 
                 val inputBuffer = StringBuilder(path)
                 val outputBuffer = StringBuilder()
@@ -174,44 +149,44 @@ open class Literal(val literalValue: Any, val datatype: BaseDatatype) : RdfTripl
         fun fromNonNumericLiteral(lexicalForm: String, datatypeIRI: IRI): Literal {
             val datatype = when {
                 datatypeIRI.iri.startsWith(IRIConstants.XSD_IRI) -> when (datatypeIRI.fragment) {
-                    "string" -> XSDDatatype.XSDstring
-                    "boolean" -> XSDDatatype.XSDboolean
-                    "decimal" -> XSDDatatype.XSDdecimal
-                    "integer" -> XSDDatatype.XSDinteger
-                    "double" -> XSDDatatype.XSDdouble
-                    "float" -> XSDDatatype.XSDfloat
-                    "date" -> XSDDatatype.XSDdate
-                    "time" -> XSDDatatype.XSDtime
-                    "dateTime" -> XSDDatatype.XSDdateTime
-                    "dateTimeStamp" -> XSDDatatype.XSDdateTimeStamp
-                    "gYear" -> XSDDatatype.XSDgYear
-                    "gMonth" -> XSDDatatype.XSDgMonth
-                    "gDay" -> XSDDatatype.XSDgYear
-                    "gYearMonth" -> XSDDatatype.XSDgYearMonth
-                    "duration" -> XSDDatatype.XSDduration
-                    "yearMonthDuration" -> XSDDatatype.XSDyearMonthDuration
-                    "dayTimeDuration" -> XSDDatatype.XSDdayTimeDuration
-                    "byte" -> XSDDatatype.XSDbyte
-                    "short" -> XSDDatatype.XSDshort
-                    "int" -> XSDDatatype.XSDint
-                    "long" -> XSDDatatype.XSDlong
-                    "unsignedByte" -> XSDDatatype.XSDunsignedByte
-                    "unsignedShort" -> XSDDatatype.XSDshort
-                    "unsignedInt" -> XSDDatatype.XSDunsignedInt
-                    "unsignedLong" -> XSDDatatype.XSDunsignedLong
-                    "positiveInteger" -> XSDDatatype.XSDpositiveInteger
-                    "nonNegativeInteger" -> XSDDatatype.XSDnonNegativeInteger
-                    "negativeInteger" -> XSDDatatype.XSDnegativeInteger
-                    "nonPositiveInteger" -> XSDDatatype.XSDnonPositiveInteger
-                    "hexBinary" -> XSDDatatype.XSDhexBinary
-                    "base64Binary" -> XSDDatatype.XSDbase64Binary
-                    "anyURI" -> XSDDatatype.XSDanyURI
-                    "language" -> XSDDatatype.XSDlanguage
-                    "normalizedString" -> XSDDatatype.XSDnormalizedString
-                    "token" -> XSDDatatype.XSDtoken
-                    "NMTOKEN" -> XSDDatatype.XSDNMTOKEN
-                    "Name" -> XSDDatatype.XSDName
-                    "NCName" -> XSDDatatype.XSDNCName
+                    "string" -> XSDstring
+                    "boolean" -> XSDboolean
+                    "decimal" -> XSDdecimal
+                    "integer" -> XSDinteger
+                    "double" -> XSDdouble
+                    "float" -> XSDfloat
+                    "date" -> XSDdate
+                    "time" -> XSDtime
+                    "dateTime" -> XSDdateTime
+                    "dateTimeStamp" -> XSDdateTimeStamp
+                    "gYear" -> XSDgYear
+                    "gMonth" -> XSDgMonth
+                    "gDay" -> XSDgYear
+                    "gYearMonth" -> XSDgYearMonth
+                    "duration" -> XSDduration
+                    "yearMonthDuration" -> XSDyearMonthDuration
+                    "dayTimeDuration" -> XSDdayTimeDuration
+                    "byte" -> XSDbyte
+                    "short" -> XSDshort
+                    "int" -> XSDint
+                    "long" -> XSDlong
+                    "unsignedByte" -> XSDunsignedByte
+                    "unsignedShort" -> XSDshort
+                    "unsignedInt" -> XSDunsignedInt
+                    "unsignedLong" -> XSDunsignedLong
+                    "positiveInteger" -> XSDpositiveInteger
+                    "nonNegativeInteger" -> XSDnonNegativeInteger
+                    "negativeInteger" -> XSDnegativeInteger
+                    "nonPositiveInteger" -> XSDnonPositiveInteger
+                    "hexBinary" -> XSDhexBinary
+                    "base64Binary" -> XSDbase64Binary
+                    "anyURI" -> XSDanyURI
+                    "language" -> XSDlanguage
+                    "normalizedString" -> XSDnormalizedString
+                    "token" -> XSDtoken
+                    "NMTOKEN" -> XSDNMTOKEN
+                    "Name" -> XSDName
+                    "NCName" -> XSDNCName
                     else -> BaseDatatype(datatypeIRI.iri)
                 }
 

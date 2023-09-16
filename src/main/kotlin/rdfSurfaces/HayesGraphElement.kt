@@ -1,3 +1,3 @@
 package rdfSurfaces
 
-abstract class HayesGraphElement
+sealed class HayesGraphElement

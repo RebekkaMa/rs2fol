@@ -2,8 +2,15 @@ package rdfSurfaces
 
 abstract class RDFSurface(
     val graffiti: List<BlankNode>,
-    val hayesGraph: List<HayesGraphElement>
-) : HayesGraphElement()
+    val hayesGraph: List<HayesGraphElement>,
+) : HayesGraphElement() {
+    fun containsPositiveSurface() = hayesGraph.any { it is PositiveSurface }
+    fun containsNegativeSurface() = hayesGraph.any { it is NegativeSurface }
+    fun containsQuerySurface() = hayesGraph.any { it is QuerySurface }
+    fun containsNeutralSurface() = hayesGraph.any { it is NeutralSurface }
+    fun containsSurface() = hayesGraph.any { it is RDFSurface }
+
+}
 
 //TODO(" check leanness ")
 //TODO(" isomorphic check ")
@@ -11,7 +18,6 @@ abstract class RDFSurface(
 class PositiveSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
     RDFSurface(graffiti, hayesGraph) {
     fun getQuerySurfaces(): List<QuerySurface> = hayesGraph.filterIsInstance(QuerySurface::class.java)
-    //.mapNotNull { if (it is QuerySurface) it else null}
 
     override fun equals(other: Any?): Boolean {
         return when {
@@ -48,10 +54,23 @@ class NegativeSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElem
 class QuerySurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
     RDFSurface(graffiti, hayesGraph) {
 
+    fun containsVariables(rdfSurface: RDFSurface = this): Boolean {
+        if (rdfSurface.hayesGraph.isEmpty()) return false
+        return rdfSurface.hayesGraph.any {
+            when (it) {
+                is RdfTriple -> (it.rdfSubject is BlankNode || it.rdfPredicate is BlankNode || it.rdfObject is BlankNode)
+                is RDFSurface -> containsVariables(it)
+            }
+        }
+    }
+
     fun replaceBlankNodes(list: Set<List<RdfTripleElement>>): PositiveSurface {
         val maps = list.map {
-            //TODO()
+            if (containsVariables().not()) return PositiveSurface(listOf(), this.hayesGraph)
             if (graffiti.size != it.size) throw IllegalArgumentException()
+
+            //TODO()
+
             buildMap {
                 graffiti.forEachIndexed { index, blankNode ->
                     this[blankNode] = it[index]
@@ -77,6 +96,10 @@ class QuerySurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement
                 }
             }
         )
+    }
+
+    private fun dfd() {
+
     }
 
     override fun equals(other: Any?): Boolean {

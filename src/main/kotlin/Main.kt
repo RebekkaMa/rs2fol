@@ -4,18 +4,10 @@ import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
-import com.github.ajalt.clikt.parameters.options.default
-import com.github.ajalt.clikt.parameters.options.flag
-import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.prompt
+import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
-import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
-import com.github.h0tk3y.betterParse.parser.ErrorResult
-import com.github.h0tk3y.betterParse.parser.Parsed
-import parser.TPTPTupleAnswerParser
-import rdfSurfaces.RdfTripleElement
 import java.io.File
 import java.util.concurrent.TimeUnit
 
@@ -45,28 +37,27 @@ class Rewrite : CliktCommand(help = "Parse and print RDF Surfaces graph using a 
         try {
             val rdfSurfaceGraph = input.readText()
 
-            val parseResult = RDFSurfaceToFOLController().transformRDFSurfaceGraphToNotation3(
+            val result = RDFSurfaceToFOLController().transformRDFSurfaceGraphToNotation3(
                 rdfSurfaceGraph, commonOptions.rdfList
             )
 
-            when (parseResult) {
-                is Success -> output?.writeText(parseResult.value) ?: echo(parseResult.value)
+            when (result) {
+                is Success -> output?.writeText(result.value) ?: echo(result.value)
                 is Failure -> {
                     echo(
-                        "Failed to parse ${input.name}: " + parseResult.failureMessage,
+                        "Failed to parse ${input.name}: " + result.failureMessage,
                         err = true,
                         trailingNewline = true
                     )
                     throw ProgramResult(1)
                 }
             }
-        } catch (exception: CliktError) {
-            throw exception
-        } catch (exception: ProgramResult) {
-            throw exception
         } catch (exception: Exception) {
-            echo(exception.toString(), err = true)
-            if (commonOptions.verbose) echo(exception.stackTraceToString(), err = true)
+            if (exception is CliktError) throw exception
+            if (commonOptions.verbose) echo(exception.stackTraceToString(), err = true) else echo(
+                exception.toString(),
+                err = true
+            )
         }
     }
 }
@@ -89,17 +80,17 @@ class Transform : CliktCommand(help = "Transform RDF Surfaces graph to FOL formu
         try {
             val rdfSurfaceGraph = input.readText()
 
-            val parseResult = RDFSurfaceToFOLController().transformRDFSurfaceGraphToFOL(
+            val result = RDFSurfaceToFOLController().transformRDFSurfaceGraphToFOL(
                 rdfSurfaceGraph,
                 ignoreQuerySurface,
                 rdfLists = commonOptions.rdfList
             )
 
-            when (parseResult) {
-                is Success -> output?.writeText(parseResult.value) ?: echo(parseResult.value)
+            when (result) {
+                is Success -> output?.writeText(result.value) ?: echo(result.value)
                 is Failure -> {
                     echo(
-                        "Failed to parse ${input.name}: " + parseResult.failureMessage,
+                        "Failed to parse ${input.name}: " + result.failureMessage,
                         err = true,
                         trailingNewline = true
                     )
@@ -107,16 +98,69 @@ class Transform : CliktCommand(help = "Transform RDF Surfaces graph to FOL formu
                 }
             }
 
-        } catch (exception: CliktError) {
-            throw exception
-        } catch (exception: ProgramResult) {
-            throw exception
         } catch (exception: Exception) {
-            echo(exception.toString(), err = true)
-            if (commonOptions.verbose) echo(exception.stackTraceToString(), err = true)
+            if (exception is CliktError) throw exception
+            if (commonOptions.verbose) echo(exception.stackTraceToString(), err = true) else echo(
+                exception.toString(),
+                err = true
+            )
         }
     }
 }
+
+class TPTPTupleAnswerToRDFSurfaces :
+    CliktCommand(help = "Transform TPTP tuple answer to RDF Surfaces graph in respect to a RDFQuerySurface") {
+    private val commonOptions by CommonOptions()
+
+    private val output by option("--output", "-o", help = "write output to PATH").file(mustExist = false)
+
+    private val quiet by option("--quiet", "-q", help = "Display less output").flag(default = false)
+
+    private val querySurface by option("--querySurface", "-s", help = "path to RDF Query surface").file(
+        mustExist = true,
+        canBeDir = false,
+        mustBeReadable = true
+    ).prompt()
+
+    private val tptpTupleAnswer by option("--tupleAnswer", "-t", help = "path to RDF Query surface").required()
+
+    private val fOLAnswerTupleToRDFSurfaceController = FOLAnswerTupleToRDFSurfaceController()
+
+    override fun run() {
+
+        try {
+            val rdfSurfaceGraph = querySurface.readText()
+
+            val result = fOLAnswerTupleToRDFSurfaceController.transformTPTPTupleAnswerToRDFSurfaces(
+                tptpTupleAnswer = tptpTupleAnswer,
+                querySurface = rdfSurfaceGraph,
+                quiet = quiet,
+                verbose = commonOptions.verbose,
+                rdfLists = commonOptions.rdfList
+            )
+
+            when (result) {
+                is Success -> output?.writeText(result.value) ?: echo(result.value)
+                is Failure -> {
+                    echo(
+                        "Failed to transform ${tptpTupleAnswer}: " + result.failureMessage,
+                        err = true,
+                        trailingNewline = true
+                    )
+                    throw ProgramResult(1)
+                }
+            }
+
+        } catch (exception: Exception) {
+            if (exception is CliktError) throw exception
+            if (commonOptions.verbose) echo(exception.stackTraceToString(), err = true) else echo(
+                exception.toString(),
+                err = true
+            )
+        }
+    }
+}
+
 
 class Check :
     CliktCommand(help = "Check if the consequences of an RDF Surfaces reasoner are also logical consequences of the FOL-based Vampire Theorem Proofer") {
@@ -159,7 +203,6 @@ class Check :
             val answerGraph = computedAnswerFile.readText()
 
 
-
             val parseResult = rdfSurfaceToFOLController.transformRDFSurfaceGraphToFOL(
                 graph,
                 ignoreQuerySurface = true,
@@ -192,7 +235,7 @@ class Check :
                 }
             }
 
-            if (parseResult is Failure || answerParseResult is Failure ) throw ProgramResult(1)
+            if (parseResult is Failure || answerParseResult is Failure) throw ProgramResult(1)
 
             if (!quiet) echo("Transformation was successful!")
             val file = output ?: File("transformationResults/" + input.nameWithoutExtension + ".p")
@@ -204,28 +247,17 @@ class Check :
             val absolutePath = file.absolutePath
 
             if (!quiet) {
-                println("Problem output file: " + file.path)
-                println("Starting Vampire...")
+                echo("Problem output file: " + file.path)
+                echo("Starting Vampire...")
             }
 
-            val vampireProcess =
-                if (vampireOption == 0) {
-                    "$vampireExec $absolutePath --output_mode smtcomp".runCommand(
-                        File(
-                            System.getProperty(
-                                "user.dir"
-                            )
-                        )
-                    )
-                } else {
-                    "$vampireExec -sa discount -awr 2 -s 1 -add large -afr on -afp 1000 -afq 2.0 -anc none -gsp on -lcm predicate -nm 64 -newcnf on -nwc 5 -sac on -urr ec_only -updr off $absolutePath --output_mode smtcomp".runCommand(
-                        File(
-                            System.getProperty(
-                                "user.dir"
-                            )
-                        )
-                    )
+            val vampirePrompt =
+                if (vampireOption == 0) "$vampireExec $absolutePath --output_mode smtcomp" else {
+                    "$vampireExec -sa discount -awr 2 -s 1 -add large -afr on -afp 1000 -afq 2.0 -anc none -gsp on -lcm predicate -nm 64 -newcnf on -nwc 5 -sac on -urr ec_only -updr off $absolutePath --output_mode smtcomp"
                 }
+
+
+            val vampireProcess = vampirePrompt.runCommand(File(System.getProperty("user.dir")))
 
             vampireProcess?.waitFor(60, TimeUnit.SECONDS)
 
@@ -237,16 +269,15 @@ class Check :
             }
 
             //TODO()
-            if (quiet) println(vampireResultString.lastOrNull { it == "sat" || it == "unsat" } ?: "timeout") else
-                vampireResultString.drop(1).forEach { if (!it.startsWith("WARNING") && it.isNotEmpty()) println(it) }
+            if (quiet) echo(vampireResultString.lastOrNull { it == "sat" || it == "unsat" } ?: "timeout") else
+                vampireResultString.drop(1).forEach { if (!it.startsWith("WARNING") && it.isNotEmpty()) echo(it) }
 
-        } catch (exception: CliktError) {
-            throw exception
-        } catch (exception: ProgramResult) {
-            throw exception
         } catch (exception: Exception) {
-            echo(exception.toString(), err = true)
-            if (commonOptions.verbose) echo(exception.stackTraceToString(), err = true)
+            if (exception is CliktError) throw exception
+            if (commonOptions.verbose) echo(exception.stackTraceToString(), err = true) else echo(
+                exception.toString(),
+                err = true
+            )
         }
     }
 }
@@ -260,7 +291,7 @@ class TransformWithQA :
         help = "file to RDF Surfaces graph"
     ).file().prompt()
     private val vampireExecFile by option(help = "file to vampire executable").file()
-        .default(File("/home/rebekka/Programs/Vampire-qa/tmp/build/bin/vampire_z3_rel_qa_6176"))
+        .default(File ("/home/rebekka/Programs/Vampire-qa/tmp/build/bin/vampire_z3_rel_qa_6176"))
     private val quiet by option("--quiet", "-q", help = "Display less output").flag(default = false)
 
     private val casc by option("--casc", "-c").flag(default = false)
@@ -286,10 +317,21 @@ class TransformWithQA :
             )
 
             when (parseResult) {
-                is Success -> {if (!quiet) println("Transformation was successful!")}
+                is Success -> {
+                    if (!quiet) echo("Transformation was successful!")
+                    if (parseResult.querySurfaces.isNullOrEmpty()) {
+                        echo(
+                            "Failed to transform ${input.name}: " + "Missing query surface in RDF surfaces graph",
+                            err = true,
+                            trailingNewline = true
+                        )
+                        throw ProgramResult(1)
+                    }
+                }
+
                 is Failure -> {
                     echo(
-                        "Failed to parse ${input.name}: " + parseResult.failureMessage,
+                        "Failed to transform ${input.name}: " + parseResult.failureMessage,
                         err = true,
                         trailingNewline = true
                     )
@@ -311,73 +353,35 @@ class TransformWithQA :
                 echo("Starting Vampire...")
             }
 
-            val vampireProcess =
-                if (vampireOption == 0) {
-                    "$vampireExecFile -av off$cascCommand -qa answer_literal $absolutePath".runCommand(
-                        File(
-                            System.getProperty(
-                                "user.dir"
-                            )
-                        )
-                    )
-                } else {
-                    "$vampireExecFile -av off$cascCommand -sa discount -s 1 -add large -afp 4000 -afq 1.0 -anc none -gs on -gsem off -inw on -lcm reverse -lwlo on -nm 64 -nwc 1 -sas z3 -sos all -sac on -thi all -uwa all -updr off -uhcvi on -to lpo -qa answer_literal $absolutePath -t 2m".runCommand(
-                        File(
-                            System.getProperty(
-                                "user.dir"
-                            )
-                        )
-                    )
+            val vampirePrompt =
+                if (vampireOption == 0) "$vampireExecFile -av off$cascCommand -qa answer_literal $absolutePath" else {
+                    "$vampireExecFile -av off$cascCommand -sa discount -s 1 -add large -afp 4000 -afq 1.0 -anc none -gs on -gsem off -inw on -lcm reverse -lwlo on -nm 64 -nwc 1 -sas z3 -sos all -sac on -thi all -uwa all -updr off -uhcvi on -to lpo -qa answer_literal $absolutePath -t 2m"
                 }
+
+            val vampireProcess = vampirePrompt.runCommand(File(System.getProperty("user.dir")))
 
             vampireProcess?.waitFor(60, TimeUnit.SECONDS)
 
             //TODO(Generalization: https://www.tptp.org/TPTP/Proposals/AnswerExtraction.html)
             val vampireParsingResult = vampireProcess?.inputStream?.reader()?.useLines { vampireOutput ->
-                val parsedResult = mutableSetOf<List<RdfTripleElement>>()
-                val rawResult = mutableSetOf<String>()
-                val orResult = mutableSetOf<List<List<RdfTripleElement>>>()
-                vampireOutput.forEach {
-                    if (it.contains("SZS answers Tuple")) {
-                        val rawVampireOutputLine =
-                            it.trimStart { char -> (char != '[') }.trimEnd { char -> char != ']' }
-                        when (val parserResult =
-                            TPTPTupleAnswerParser.tryParseToEnd(rawVampireOutputLine)) {
-                            is Parsed -> {
-                                parsedResult.addAll(parserResult.value.first)
-                                orResult.addAll(parserResult.value.second)
-                            }
-
-                            is ErrorResult -> rawResult.add(rawVampireOutputLine)
-                        }
-                    }
-                }
-
-                if (parsedResult.isEmpty() && rawResult.isEmpty() && !quiet) return@useLines "No solutions"
-                val answerRDFSurfacesGraph = if (parsedResult.isNotEmpty()) (parseResult.querySurfaces?.let {
-                    RDFSurfaceToFOLController().transformQuestionAnsweringResult(
-                        parsedResult,
-                        it.first()
-                    )
-                } ?: parsedResult.joinToString(prefix = "- ")) else ""
-                val notParsedAnswers = if (rawResult.isNotEmpty()) rawResult.joinToString(
-                    prefix = "Not parsed results: \n",
-                    separator = "\n"
-                ) else ""
-                return@useLines answerRDFSurfacesGraph + (if (notParsedAnswers.isNotEmpty() && answerRDFSurfacesGraph.isNotEmpty()) "\n" else "") + notParsedAnswers
+                FOLAnswerTupleToRDFSurfaceController().questionAnsweringOutputToRDFSurfacesCasc(
+                    querySurface = parseResult.querySurfaces.first(),
+                    verbose = commonOptions.verbose,
+                    quiet = quiet,
+                    questionAnsweringOutputLines = vampireOutput
+                )
             }
             if (vampireParsingResult == null) {
                 echo("Vampire Execution Error", err = true)
                 throw ProgramResult(1)
             }
-            println(vampireParsingResult)
-        } catch (exception: CliktError) {
-            throw exception
-        } catch (exception: ProgramResult) {
-            throw exception
+            echo(vampireParsingResult)
         } catch (exception: Exception) {
-            echo(exception.toString(), err = true)
-            if (commonOptions.verbose) echo(exception.stackTraceToString(), err = true)
+            if (exception is CliktError) throw exception
+            if (commonOptions.verbose) echo(exception.stackTraceToString(), err = true) else echo(
+                exception.toString(),
+                err = true
+            )
         }
     }
 }
@@ -390,5 +394,5 @@ fun String.runCommand(workingDir: File): Process? {
 }
 
 fun main(args: Array<String>) =
-    RdfSurfaceToFol().subcommands(Transform(), Check(), TransformWithQA(), Rewrite())
+    RdfSurfaceToFol().subcommands(Transform(), Check(), TransformWithQA(), Rewrite(), TPTPTupleAnswerToRDFSurfaces())
         .main(args)

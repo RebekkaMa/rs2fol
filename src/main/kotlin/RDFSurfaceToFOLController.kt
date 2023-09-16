@@ -1,25 +1,19 @@
-import com.github.h0tk3y.betterParse.parser.ErrorResult
 import com.github.h0tk3y.betterParse.parser.ParseException
-import com.github.h0tk3y.betterParse.parser.ParseResult
-import com.github.h0tk3y.betterParse.parser.Parsed
-import com.github.h0tk3y.betterParse.parser.Parser
-import org.apache.jena.vocabulary.RDFS
 import parser.RDFSurfacesParser
 import rdfSurfaces.QuerySurface
-import rdfSurfaces.RdfTripleElement
 import util.RDFSurfacesParseException
 import util.TransformerException
 
 
 public sealed class RdfSurfacesResult
 
-public class Success(val value: String, val querySurfaces: List<QuerySurface>?) : RdfSurfacesResult()
+public class Success(val value: String, val querySurfaces: List<QuerySurface>? = null) : RdfSurfacesResult()
 
 public class Failure(val failureMessage: String) : RdfSurfacesResult()
 
 class RDFSurfaceToFOLController {
 
-    private val generalParseErrorString = "General parse error. Please check the syntax of your RDF Surfaces graph."
+    private val generalParseErrorString = "Please check the syntax of your RDF surfaces graph."
 
     fun transformRDFSurfaceGraphToFOL(
         rdfSurfaceGraph: String,
@@ -28,19 +22,20 @@ class RDFSurfaceToFOLController {
         verbose: Boolean = false,
     ): RdfSurfacesResult {
         return try {
-            when (
-                val parserResult = RDFSurfacesParser(rdfLists).tryParseToEnd(rdfSurfaceGraph)) {
-                is Parsed -> Success(
-                    Transformer().toFOL(parserResult.value, ignoreQuerySurface),
-                    parserResult.value.getQuerySurfaces()
+            val parserResult = RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfaceGraph)
+            Success(
+                Transformer().toFOL(parserResult, ignoreQuerySurface),
+                parserResult.getQuerySurfaces()
+            )
+        } catch (exc: Exception) {
+            when (exc) {
+                is ParseException -> Failure(if (verbose) exc.stackTraceToString() else generalParseErrorString)
+                is RDFSurfacesParseException, is TransformerException -> Failure(
+                    if (verbose) exc.stackTraceToString() else (exc.message ?: exc.toString())
                 )
 
-                is ErrorResult -> Failure(ParseException(parserResult).let {
-                    if (verbose) it.stackTraceToString() else generalParseErrorString
-                })
+                else -> throw exc
             }
-        } catch (exc: RDFSurfacesParseException) {
-            Failure(if (verbose) exc.stackTraceToString() else (exc.message ?: exc.toString()))
         }
     }
 
@@ -50,22 +45,20 @@ class RDFSurfaceToFOLController {
         verbose: Boolean = false,
     ): RdfSurfacesResult {
         return try {
-            when (
-                val answerParserResult = RDFSurfacesParser(rdfLists).tryParseToEnd(rdfSurfaceGraph)) {
-                is Parsed -> Success(
-                    Transformer().toFOL(answerParserResult.value, false, "conjecture", "conjecture"),
-                    null
+            val parserResult = RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfaceGraph)
+            Success(
+                Transformer().toFOL(parserResult, false, "conjecture", "conjecture"),
+                null
+            )
+        } catch (exc: Exception) {
+            when (exc) {
+                is ParseException -> Failure(if (verbose) exc.stackTraceToString() else generalParseErrorString)
+                is RDFSurfacesParseException, is TransformerException -> Failure(
+                    if (verbose) exc.stackTraceToString() else (exc.message ?: exc.toString())
                 )
 
-                is ErrorResult -> Failure(ParseException(answerParserResult).let {
-                    if (verbose) it.stackTraceToString() else generalParseErrorString
-                })
-
+                else -> throw exc
             }
-        } catch (exc: RDFSurfacesParseException) {
-            Failure(if (verbose) exc.stackTraceToString() else (exc.message ?: exc.toString()))
-        } catch (exc: TransformerException) {
-            Failure(if (verbose) exc.stackTraceToString() else (exc.message ?: exc.toString()))
         }
     }
 
@@ -75,22 +68,18 @@ class RDFSurfaceToFOLController {
         verbose: Boolean = false,
     ): RdfSurfacesResult {
         return try {
-            when (
-                val parserResult = RDFSurfacesParser(rdfLists).tryParseToEnd(rdfSurfaceGraph)) {
-                is Parsed -> Success(Transformer().toNotation3Sublanguage(parserResult.value), null)
+            val parserResult = RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfaceGraph)
+            Success(Transformer().toNotation3Sublanguage(parserResult), parserResult.getQuerySurfaces())
 
-                is ErrorResult -> Failure(ParseException(parserResult).let {
-                    if (verbose) it.stackTraceToString() else generalParseErrorString
-                })
+        } catch (exc: Exception) {
+            when (exc) {
+                is ParseException -> Failure(if (verbose) exc.stackTraceToString() else generalParseErrorString)
+                is RDFSurfacesParseException, is TransformerException -> Failure(
+                    if (verbose) exc.stackTraceToString() else (exc.message ?: exc.toString())
+                )
+
+                else -> throw exc
             }
-        } catch (exc: RDFSurfacesParseException) {
-            Failure(if (verbose) exc.stackTraceToString() else (exc.message ?: exc.toString()))
-        } catch (exc: TransformerException) {
-            Failure(if (verbose) exc.stackTraceToString() else (exc.message ?: exc.toString()))
         }
     }
-
-    fun transformQuestionAnsweringResult(resultList: Set<List<RdfTripleElement>>, querySurface: QuerySurface) =
-        querySurface.replaceBlankNodes(resultList).let { Transformer().toNotation3Sublanguage(it) }
-
 }
