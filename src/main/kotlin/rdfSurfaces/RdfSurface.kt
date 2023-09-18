@@ -1,9 +1,9 @@
 package rdfSurfaces
 
-abstract class RDFSurface(
+sealed class RDFSurface(
     val graffiti: List<BlankNode>,
     val hayesGraph: List<HayesGraphElement>,
-) : HayesGraphElement() {
+) : HayesGraphElement(), Cloneable {
     fun containsPositiveSurface() = hayesGraph.any { it is PositiveSurface }
     fun containsNegativeSurface() = hayesGraph.any { it is NegativeSurface }
     fun containsQuerySurface() = hayesGraph.any { it is QuerySurface }
@@ -64,12 +64,29 @@ class QuerySurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement
         }
     }
 
+    fun isBounded(blankNode: BlankNode, rdfSurface: RDFSurface = this):Boolean {
+        if (rdfSurface.hayesGraph.isEmpty()) return false
+        return rdfSurface.hayesGraph.any{
+            when (it) {
+                is RdfTriple -> (it.rdfSubject == blankNode || it.rdfPredicate == blankNode || it.rdfObject == blankNode)
+                is RDFSurface -> if (blankNode in it.graffiti) false else isBounded(blankNode, it)
+            }
+        }
+
+    }
+
     fun replaceBlankNodes(list: Set<List<RdfTripleElement>>): PositiveSurface {
         val maps = list.map {
             if (containsVariables().not()) return PositiveSurface(listOf(), this.hayesGraph)
-            if (graffiti.size != it.size) throw IllegalArgumentException()
-
-            //TODO()
+            if (graffiti.size != it.size) {
+                val relevantGraffiti = this.graffiti.filter { blankNode ->  isBounded(blankNode)}
+                if (relevantGraffiti.size != it.size) throw IllegalArgumentException("The arity of the answer tuples doesn't match the graffiti on the query surface!")
+                return@map buildMap {
+                    relevantGraffiti.forEachIndexed { index, blankNode ->
+                        this[blankNode] = it[index]
+                    }
+                }
+            }
 
             buildMap {
                 graffiti.forEachIndexed { index, blankNode ->
@@ -80,25 +97,36 @@ class QuerySurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement
         return PositiveSurface(
             listOf(),
             maps.flatMap { map ->
-                hayesGraph.map { hayesGraphElement ->
-                    when (hayesGraphElement) {
-                        is RdfTriple -> return@map RdfTriple(
-                            hayesGraphElement.rdfSubject.takeUnless { it is BlankNode }
-                                ?: map[hayesGraphElement.rdfSubject] ?: hayesGraphElement.rdfSubject,
-                            hayesGraphElement.rdfPredicate.takeUnless { it is BlankNode }
-                                ?: map[hayesGraphElement.rdfPredicate] ?: hayesGraphElement.rdfPredicate,
-                            hayesGraphElement.rdfObject.takeUnless { it is BlankNode }
-                                ?: map[hayesGraphElement.rdfObject] ?: hayesGraphElement.rdfObject,
-                        )
-
-                        else -> throw Exception("Nested Surfaces on the query surface are not supported yet")
-                    }
-                }
-            }
+                dfd(map, this).hayesGraph
+            }.distinct()
         )
     }
 
-    private fun dfd() {
+    private fun dfd(map: Map<BlankNode, RdfTripleElement>, rdfSurface: RDFSurface): RDFSurface {
+
+        val hayesGraph = rdfSurface.hayesGraph.map { hayesGraphElement ->
+            return@map when (hayesGraphElement) {
+                is RdfTriple -> RdfTriple(
+                    hayesGraphElement.rdfSubject.takeUnless { it is BlankNode }
+                        ?: map[hayesGraphElement.rdfSubject] ?: hayesGraphElement.rdfSubject,
+                    hayesGraphElement.rdfPredicate.takeUnless { it is BlankNode }
+                        ?: map[hayesGraphElement.rdfPredicate] ?: hayesGraphElement.rdfPredicate,
+                    hayesGraphElement.rdfObject.takeUnless { it is BlankNode }
+                        ?: map[hayesGraphElement.rdfObject] ?: hayesGraphElement.rdfObject,
+                )
+
+                is RDFSurface -> dfd(map.minus(hayesGraphElement.graffiti.toSet()), hayesGraphElement)
+            }
+        }
+
+        return when (rdfSurface) {
+            is PositiveSurface -> PositiveSurface(rdfSurface.graffiti, hayesGraph)
+            is NegativeSurface -> NegativeSurface(rdfSurface.graffiti, hayesGraph)
+            is QuerySurface -> QuerySurface(rdfSurface.graffiti, hayesGraph)
+            is NeutralSurface -> NeutralSurface(rdfSurface.graffiti, hayesGraph)
+            is NegativeTripleSurface -> NegativeTripleSurface(rdfSurface.graffiti, hayesGraph)
+        }
+
 
     }
 

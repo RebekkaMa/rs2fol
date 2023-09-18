@@ -3,6 +3,10 @@
 
 # beetle is a car
 :beetle a :Car.
+() log:onNegativeSurface {
+:beetle :is :beautiful.
+
+}
 
 # everything is beautiful
 (_:A) log:onNegativeSurface {
@@ -12,6 +16,6 @@
 }.
 
 # query
-() log:onQuerySurface {
+(_:bd) log:onQuerySurface {
     :beetle :is :beautiful.
 }.

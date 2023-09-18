@@ -3,64 +3,99 @@ import com.github.h0tk3y.betterParse.parser.ParseException
 import mu.KotlinLogging
 import parser.RDFSurfacesParser
 import parser.TPTPTupleAnswerFormTransformer
+import rdfSurfaces.PositiveSurface
 import rdfSurfaces.QuerySurface
 import rdfSurfaces.RdfTripleElement
 import util.TPTPTupleAnswerFormTransformerException
 
-public sealed class TPTPAnswerTupleTransformerResult
+sealed class TPTPAnswerTupleTransformerResult
 
-public class TPTPAnswerTupleTransformerSuccess(
+class TPTPAnswerTupleTransformerSuccess(
     val result: List<List<RdfTripleElement>>,
     val orResult: List<List<List<RdfTripleElement>>>,
 ) : TPTPAnswerTupleTransformerResult()
 
-public class TPTPAnswerTupleTransformerFailure(val failureMessage: String) : TPTPAnswerTupleTransformerResult()
+class TPTPAnswerTupleTransformerFailure(val failureMessage: String) : TPTPAnswerTupleTransformerResult()
+
+sealed class AnswerTupleToRDFSurfacesGraphResult
+
+class AnswerTupleToRDFSurfacesGraphSuccess(
+    val value: String,
+) : AnswerTupleToRDFSurfacesGraphResult()
+
+class AnswerTupleToRDFSurfacesGraphFailure(val failureMessage: String) : AnswerTupleToRDFSurfacesGraphResult()
+
 
 private val logger = KotlinLogging.logger {}
 
 class FOLAnswerTupleToRDFSurfaceController {
 
-    private val generalTPTPParseErrorString = "Please check the syntax of the TPTP answer tuples."
+    private val generalTPTPParseErrorString = "Please check the syntax of the TPTP answer tuple."
     private val generalRdfSurfacesParseErrorString = "Could not parse the RDF Surfaces graph. Please check the syntax."
+
+
+    fun questionAnsweringOutputToRDFSurfacesCasc(
+        querySurface: String,
+        questionAnsweringOutputLines: Sequence<String>,
+        debug: Boolean,
+        rdfLists: Boolean,
+    ): AnswerTupleToRDFSurfacesGraphResult {
+
+        val querySurfaceParseResult = getQuerySurfaceFromRdfSurfacesGraph(querySurface, rdfLists)
+
+        if (querySurfaceParseResult.isEmpty()) return AnswerTupleToRDFSurfacesGraphFailure("RDF Graph contains no query surface.")
+        if (querySurfaceParseResult.size > 1) return AnswerTupleToRDFSurfacesGraphFailure("Multiple query surfaces are not supported.")
+
+        return questionAnsweringOutputToRDFSurfacesCasc(
+            querySurfaceParseResult.single(),
+            questionAnsweringOutputLines,
+            debug,
+        )
+    }
 
     fun questionAnsweringOutputToRDFSurfacesCasc(
         querySurface: QuerySurface,
         questionAnsweringOutputLines: Sequence<String>,
-        verbose: Boolean,
-        quiet: Boolean,
-    ): String {
+        debug: Boolean,
+    ): AnswerTupleToRDFSurfacesGraphResult {
         val parsedResult = mutableSetOf<List<RdfTripleElement>>()
-        val rawResult = mutableSetOf<String>()
         val orResult = mutableSetOf<List<List<RdfTripleElement>>>()
 
-        questionAnsweringOutputLines.forEach {
-            if (it.contains("SZS answers Tuple")) {
-                val rawVampireOutputLine =
-                    it.trimStart { char -> char != '[' }.trimEnd { char -> char != ']' }
+        var refutationFound = false
 
-                when (val parserResult = transformTPTPTupleAnswerToRDFSurfacesElements(rawVampireOutputLine, verbose)) {
+        for (line in questionAnsweringOutputLines) {
+            if (line.contains("SZS answers Tuple")) {
+                val rawVampireOutputLine =
+                    line.trimStart { char -> char != '[' }.trimEnd { char -> char != ']' }
+
+                when (val parserResult = parseRawTPTPAnswerTupleList(rawVampireOutputLine, debug)) {
                     is TPTPAnswerTupleTransformerSuccess -> {
                         parsedResult.addAll(parserResult.result)
                         orResult.addAll(parserResult.orResult)
                     }
 
                     is TPTPAnswerTupleTransformerFailure -> {
-                        logger.error { parserResult.failureMessage }
-                        rawResult.add(rawVampireOutputLine)
+                        return AnswerTupleToRDFSurfacesGraphFailure(parserResult.failureMessage)
                     }
                 }
             }
+            if (line.contains("(SZS status ContradictoryAxioms for)|(^\\s*unsat\\s*$)".toRegex(RegexOption.IGNORE_CASE))) refutationFound =
+                true
         }
-        val output = StringBuilder()
-        if (rawResult.isNotEmpty()) {
-            output.append(
-                rawResult.joinToString(
-                    prefix = "Failed to parse: ${System.lineSeparator()}-  ",
-                    separator = System.lineSeparator() + "-  ",
-                    postfix = System.lineSeparator()
+
+        if (refutationFound) {
+            if (querySurface.graffiti.isEmpty()) return AnswerTupleToRDFSurfacesGraphSuccess(
+                Transformer().toNotation3Sublanguage(
+                    PositiveSurface(
+                        emptyList(),
+                        querySurface.hayesGraph
+                    )
                 )
             )
+            return AnswerTupleToRDFSurfacesGraphSuccess("Refutation found")
         }
+
+        val output = StringBuilder()
         if (parsedResult.isEmpty()) output.append("No answers") else
             output.append(
                 transformQuestionAnsweringResult(
@@ -68,21 +103,22 @@ class FOLAnswerTupleToRDFSurfaceController {
                     querySurface
                 )
             )
-        logger.info { orResult }
-        return output.toString()
+        return AnswerTupleToRDFSurfacesGraphSuccess(output.toString())
     }
+
+
+
 
     private fun transformTPTPTupleAnswerToRDFSurfaces(
         querySurface: QuerySurface,
         tptpTupleAnswer: String,
-        verbose: Boolean,
-        quiet: Boolean,
-    ): RdfSurfacesResult {
+        debug: Boolean,
+    ): AnswerTupleToRDFSurfacesGraphResult {
 
-        return when (val parserResult = transformTPTPTupleAnswerToRDFSurfacesElements(tptpTupleAnswer, verbose)) {
+        return when (val parserResult = parseRawTPTPAnswerTupleList(tptpTupleAnswer, debug)) {
             is TPTPAnswerTupleTransformerSuccess -> {
                 if (parserResult.orResult.isEmpty().not()) logger.info { parserResult.orResult }
-                Success(
+                AnswerTupleToRDFSurfacesGraphSuccess(
                     transformQuestionAnsweringResult(
                         parserResult.result.toSet(),
                         querySurface
@@ -91,8 +127,7 @@ class FOLAnswerTupleToRDFSurfaceController {
             }
 
             is TPTPAnswerTupleTransformerFailure -> {
-                logger.error { parserResult.failureMessage }
-                Failure(
+                AnswerTupleToRDFSurfacesGraphFailure(
                     parserResult.failureMessage
                 )
             }
@@ -100,32 +135,39 @@ class FOLAnswerTupleToRDFSurfaceController {
     }
 
     fun transformTPTPTupleAnswerToRDFSurfaces(
-        querySurface: String,
+        querySurfaceStr: String,
         tptpTupleAnswer: String,
-        verbose: Boolean,
-        quiet: Boolean,
+        debug: Boolean,
         rdfLists: Boolean,
-    ): RdfSurfacesResult {
+    ): AnswerTupleToRDFSurfacesGraphResult {
         return try {
-            val querySurface = getQuerySurfaceFromRdfSurfacesGraph(querySurface, rdfLists)
+            val querySurface = getQuerySurfaceFromRdfSurfacesGraph(querySurfaceStr, rdfLists)
 
-            if (querySurface.isEmpty()) return Failure("RDF Graph contains no query surface")
+            if (querySurface.isEmpty()) return AnswerTupleToRDFSurfacesGraphFailure("RDF Graph contains no query surface.")
+            if (querySurface.size > 1) return AnswerTupleToRDFSurfacesGraphFailure("Multiple query surfaces are not supported.")
 
             transformTPTPTupleAnswerToRDFSurfaces(
-                querySurface.first(),
+                querySurface.single(),
                 tptpTupleAnswer,
-                verbose,
-                quiet,
+                debug,
             )
 
         } catch (exc: ParseException) {
-            Failure(if (verbose) exc.stackTraceToString() else generalRdfSurfacesParseErrorString)
+            AnswerTupleToRDFSurfacesGraphFailure(if (debug) exc.stackTraceToString() else generalRdfSurfacesParseErrorString)
         }
     }
 
-    private fun transformTPTPTupleAnswerToRDFSurfacesElements(
+
+    fun transformQuestionAnsweringResult(resultList: Set<List<RdfTripleElement>>, querySurface: QuerySurface) =
+        querySurface.replaceBlankNodes(resultList).let { Transformer().toNotation3Sublanguage(it) }
+
+    private fun getQuerySurfaceFromRdfSurfacesGraph(rdfSurfacesGraph: String, rdfLists: Boolean): List<QuerySurface> {
+        return RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfacesGraph).getQuerySurfaces()
+    }
+
+    private fun parseRawTPTPAnswerTupleList(
         tptpTupleAnswer: String,
-        verbose: Boolean,
+        debug: Boolean,
     ): TPTPAnswerTupleTransformerResult {
         return try {
 
@@ -134,20 +176,13 @@ class FOLAnswerTupleToRDFSurfaceController {
 
         } catch (exc: ParseException) {
             TPTPAnswerTupleTransformerFailure(
-                if (verbose) exc.stackTraceToString() else generalTPTPParseErrorString
+                "Affected tuple: $tptpTupleAnswer. " + (if (debug) exc.stackTraceToString() else generalTPTPParseErrorString)
             )
         } catch (exc: TPTPTupleAnswerFormTransformerException) {
             TPTPAnswerTupleTransformerFailure(
-                if (verbose) exc.stackTraceToString() else (exc.message ?: exc.toString())
+                "Affected tuple: $tptpTupleAnswer. " + (if (debug) exc.stackTraceToString() else (exc.message ?: exc.toString()))
             )
         }
-    }
-
-    fun transformQuestionAnsweringResult(resultList: Set<List<RdfTripleElement>>, querySurface: QuerySurface) =
-        querySurface.replaceBlankNodes(resultList).let { Transformer().toNotation3Sublanguage(it) }
-
-    private fun getQuerySurfaceFromRdfSurfacesGraph(rdfSurfacesGraph: String, rdfLists: Boolean): List<QuerySurface> {
-        return RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfacesGraph).getQuerySurfaces()
     }
 
 }

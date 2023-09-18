@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.8.0"
+    kotlin("jvm") version "1.8.20"
     application
 }
 
@@ -13,6 +13,7 @@ repositories {
 dependencies {
     implementation("com.github.ajalt.clikt:clikt:4.2.0")
     implementation("com.github.h0tk3y.betterParse:better-parse:0.4.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.11")
     implementation(group = "ch.qos.logback", name = "logback-classic", version = "1.2.9")
     testImplementation(kotlin("test"))

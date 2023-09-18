@@ -210,7 +210,7 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
                 blankNodeTriplesSet.clear()
             }
             if (collectionTripleSet.isNotEmpty()) {
-                this.addAll(collectionTripleSet)
+                addAll(collectionTripleSet)
                 collectionTripleSet.clear()
             }
         }

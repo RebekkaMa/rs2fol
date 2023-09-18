@@ -1,5 +1,6 @@
 package parser
 
+import Transformer
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parser
@@ -33,6 +34,8 @@ object TPTPTupleAnswerFormTransformer :
     private val variableToken by regexToken("[A-Z][A-Za-z0-9_]*")
     private val variable by variableToken use { BlankNode(this.text) }
 
+    private val transformer = Transformer()
+
     //TODO(defined Term + System Term)
     private val term: Parser<RdfTripleElement> by variable or parser(this::nonLogicalSymbol)
 
@@ -45,9 +48,11 @@ object TPTPTupleAnswerFormTransformer :
     private val nonLogicalSymbol: Parser<RdfTripleElement> by (atomicWord and -lpar and arguments and -rpar).map { (atomicWord, arguments) ->
         return@map when {
             atomicWord.text.startsWith("sK") -> BlankNode(
-                atomicWord.text + arguments.joinToString(
-                    prefix = "(",
-                    postfix = ")"
+                encodeToValidBlankNodeLabel(
+                    atomicWord.text + "_" + arguments.joinToString(
+                        prefix = "(",
+                        postfix = ")"
+                    )
                 )
             )
 
@@ -72,7 +77,6 @@ object TPTPTupleAnswerFormTransformer :
 
     private val variableList by
     -lparBracket and optional((nonLogicalSymbol or variable) and zeroOrMore(-comma and (nonLogicalSymbol or variable))) and -rparBracket use {
-        //TODO(Performance)
         this?.let { listOf(this.t1).plus(this.t2) } ?: listOf()
     }
 
@@ -97,5 +101,20 @@ object TPTPTupleAnswerFormTransformer :
                 orResults.clear()
             }
         }
+
+    private fun encodeToValidBlankNodeLabel(string: String): String {
+        val str = string.replace("0x", "0x00300x0078")
+        return buildString {
+            str.toCharArray().forEachIndexed { i, char ->
+                if ((i in 1..(str.length - 2) && "($pnChars|\\.)".toRegex().matches(char.toString())) ||
+                    (i == 0 && "($pnCharsU|[0-9])".toRegex().matches(char.toString())) ||
+                     i > 0 && "$pnChars".toRegex().matches(char.toString())
+                ) this.append(char) else {
+                    val hexValue = Integer.toHexString(char.code)
+                    this.append("0x${hexValue.padStart(4, '0').uppercase()}")
+                }
+            }
+        }
+    }
 
 }

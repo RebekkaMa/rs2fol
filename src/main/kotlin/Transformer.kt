@@ -104,7 +104,6 @@ class Transformer {
                         is QuerySurface -> "log:onQuerySurface"
                         is NegativeTripleSurface -> "log:negativeTriple"
                         is NeutralSurface -> "log:onNeutralSurface"
-                        else -> throw TransformerException("Surface-type is not supported")
                     }
                     val graffitiStringList = transform(hayesGraphElement.graffiti)
                     val hayesGraphString =
@@ -127,8 +126,6 @@ class Transformer {
                         hayesGraphElement.rdfPredicate
                     )
                 } ${transform(hayesGraphElement.rdfObject)}."
-
-                else -> throw TransformerException("HayesGraphElement type not supported")
             }
         }
 
@@ -168,7 +165,7 @@ class Transformer {
         //TODO(make collision safe)
         fun transform(blankNode: BlankNode) = blankNode.blankNodeId.replaceFirstChar { it.uppercaseChar() }
 
-        fun transform(iri: IRI) = "'${encodeToValidTPTPLiteral(iri.iri)}'"
+        fun transform(iri: IRI) = "'${iri.iri}'"
 
         fun transform(literal: Literal) = "'" + encodeToValidTPTPLiteral(
             when (literal) {
@@ -238,7 +235,6 @@ class Transformer {
                     )
                 })"
 
-                else -> throw TransformerException("HayesGraphElement type not supported")
             }
         }
 
