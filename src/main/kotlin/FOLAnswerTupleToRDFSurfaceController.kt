@@ -31,7 +31,8 @@ private val logger = KotlinLogging.logger {}
 class FOLAnswerTupleToRDFSurfaceController {
 
     private val generalTPTPParseErrorString = "Please check the syntax of the TPTP answer tuple."
-    private val generalRdfSurfacesParseErrorString = "Could not parse the RDF Surfaces graph. Please check the syntax."
+    private val generalRdfSurfacesParseErrorString =
+        "Could not parse the RDF surfaces graph. Please check the syntax of your RDF surfaces graph."
 
 
     fun questionAnsweringOutputToRDFSurfacesCasc(
@@ -43,7 +44,7 @@ class FOLAnswerTupleToRDFSurfaceController {
 
         val querySurfaceParseResult = getQuerySurfaceFromRdfSurfacesGraph(querySurface, rdfLists)
 
-        if (querySurfaceParseResult.isEmpty()) return AnswerTupleToRDFSurfacesGraphFailure("RDF Graph contains no query surface.")
+        if (querySurfaceParseResult.isEmpty()) return AnswerTupleToRDFSurfacesGraphFailure("RDF surfaces graph contains no query surface.")
         if (querySurfaceParseResult.size > 1) return AnswerTupleToRDFSurfacesGraphFailure("Multiple query surfaces are not supported.")
 
         return questionAnsweringOutputToRDFSurfacesCasc(
@@ -95,18 +96,13 @@ class FOLAnswerTupleToRDFSurfaceController {
             return AnswerTupleToRDFSurfacesGraphSuccess("Refutation found")
         }
 
-        val output = StringBuilder()
-        if (parsedResult.isEmpty()) output.append("No answers") else
-            output.append(
-                transformQuestionAnsweringResult(
-                    parsedResult,
-                    querySurface
-                )
+        val successValue = if (parsedResult.isEmpty()) "No answers" else
+            transformQuestionAnsweringResult(
+                parsedResult,
+                querySurface
             )
-        return AnswerTupleToRDFSurfacesGraphSuccess(output.toString())
+        return AnswerTupleToRDFSurfacesGraphSuccess(successValue)
     }
-
-
 
 
     private fun transformTPTPTupleAnswerToRDFSurfaces(
@@ -143,7 +139,7 @@ class FOLAnswerTupleToRDFSurfaceController {
         return try {
             val querySurface = getQuerySurfaceFromRdfSurfacesGraph(querySurfaceStr, rdfLists)
 
-            if (querySurface.isEmpty()) return AnswerTupleToRDFSurfacesGraphFailure("RDF Graph contains no query surface.")
+            if (querySurface.isEmpty()) return AnswerTupleToRDFSurfacesGraphFailure("RDF surfaces graph contains no query surface.")
             if (querySurface.size > 1) return AnswerTupleToRDFSurfacesGraphFailure("Multiple query surfaces are not supported.")
 
             transformTPTPTupleAnswerToRDFSurfaces(
@@ -158,7 +154,7 @@ class FOLAnswerTupleToRDFSurfaceController {
     }
 
 
-    fun transformQuestionAnsweringResult(resultList: Set<List<RdfTripleElement>>, querySurface: QuerySurface) =
+    private fun transformQuestionAnsweringResult(resultList: Set<List<RdfTripleElement>>, querySurface: QuerySurface) =
         querySurface.replaceBlankNodes(resultList).let { Transformer().toNotation3Sublanguage(it) }
 
     private fun getQuerySurfaceFromRdfSurfacesGraph(rdfSurfacesGraph: String, rdfLists: Boolean): List<QuerySurface> {
@@ -174,15 +170,19 @@ class FOLAnswerTupleToRDFSurfaceController {
             val parserResult = TPTPTupleAnswerFormTransformer.parseToEnd(tptpTupleAnswer)
             TPTPAnswerTupleTransformerSuccess(parserResult.first, parserResult.second)
 
-        } catch (exc: ParseException) {
-            TPTPAnswerTupleTransformerFailure(
-                "Affected tuple: $tptpTupleAnswer. " + (if (debug) exc.stackTraceToString() else generalTPTPParseErrorString)
-            )
-        } catch (exc: TPTPTupleAnswerFormTransformerException) {
-            TPTPAnswerTupleTransformerFailure(
-                "Affected tuple: $tptpTupleAnswer. " + (if (debug) exc.stackTraceToString() else (exc.message ?: exc.toString()))
-            )
+        } catch (exc: Exception) {
+            when (exc) {
+                is ParseException -> TPTPAnswerTupleTransformerFailure(
+                    "Affected tuple: $tptpTupleAnswer. " + (if (debug) exc.stackTraceToString() else generalTPTPParseErrorString)
+                )
+
+                is TPTPTupleAnswerFormTransformerException -> TPTPAnswerTupleTransformerFailure(
+                    "Affected tuple: $tptpTupleAnswer. " + (if (debug) exc.stackTraceToString() else (exc.message
+                        ?: exc.toString()))
+                )
+
+                else -> throw exc
+            }
         }
     }
-
 }

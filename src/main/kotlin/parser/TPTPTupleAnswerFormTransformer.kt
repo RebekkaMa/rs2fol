@@ -1,6 +1,5 @@
 package parser
 
-import Transformer
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parser
@@ -33,8 +32,6 @@ object TPTPTupleAnswerFormTransformer :
     private val underscore by literalToken("_")
     private val variableToken by regexToken("[A-Z][A-Za-z0-9_]*")
     private val variable by variableToken use { BlankNode(this.text) }
-
-    private val transformer = Transformer()
 
     //TODO(defined Term + System Term)
     private val term: Parser<RdfTripleElement> by variable or parser(this::nonLogicalSymbol)

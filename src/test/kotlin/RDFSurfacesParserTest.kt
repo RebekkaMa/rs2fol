@@ -11,6 +11,7 @@ import java.io.File
 
 class RDFSurfacesParserTest : ShouldSpec(
     {
+        val baseIri = IRI.from(System.getProperty("user.dir"))
 
         context("selected Turtle examples") {
             should("transform example2.n3 without exception") {
@@ -22,7 +23,7 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val rdfTriple = RdfTriple(iri1, iri2, iri3)
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple)
                 )
@@ -41,7 +42,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple2 = RdfTriple(iri1, iri4, literal)
 
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2)
                 )
@@ -59,7 +60,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple1 = RdfTriple(iri1, iri2, iri3)
                 val rdfTriple2 = RdfTriple(iri1, iri4, literal)
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2)
                 )
@@ -77,7 +78,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
                 val rdfTriple2 = RdfTriple(iri1, iri2, literal2)
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2)
                 )
@@ -94,7 +95,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
                 val rdfTriple2 = RdfTriple(iri1, iri2, literal2)
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2)
                 )
@@ -108,7 +109,7 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, iri3)
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1)
                 )
@@ -123,7 +124,7 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, iri3)
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1)
                 )
@@ -165,7 +166,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple9 = RdfTriple(iri19, iri17, iri20)
 
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(
                         rdfTriple1,
@@ -194,7 +195,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
                 val rdfTriple2 = RdfTriple(iri3, iri2, literal2)
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2)
                 )
@@ -226,7 +227,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple7 = RdfTriple(iri1, iri4, literal5)
 
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2, rdfTriple3, rdfTriple4, rdfTriple5, rdfTriple6, rdfTriple7)
                 )
@@ -247,7 +248,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple2 = RdfTriple(iri1, iri3, literal2)
                 val rdfTriple3 = RdfTriple(iri1, iri4, literal3)
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2, rdfTriple3)
                 )
@@ -263,7 +264,7 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1)
                 )
@@ -281,7 +282,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple2 = RdfTriple(bn2, iri1, bn1)
 
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(
                         bn1,
                         bn2
@@ -305,7 +306,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple2 = RdfTriple(bn2, iri2, literal)
 
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(
                         bn1,
                         bn2
@@ -338,7 +339,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple6 = RdfTriple(bn3, iri3, iri4)
 
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(
                         bn1,
                         bn2,
@@ -372,7 +373,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple6 = RdfTriple(bn2, iri3, iri4)
 
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(
                         bn1,
                         bn2,
@@ -403,7 +404,7 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val positiveSurface2 = PositiveSurface(listOf(bn1), listOf(rdfTriple2))
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(bn1), listOf(rdfTriple1, positiveSurface2)
                 )
             }
@@ -421,7 +422,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple1 = RdfTriple(iri1, iri2, collection1)
 
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(), listOf(rdfTriple1)
                 )
 
@@ -449,7 +450,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple5 = RdfTriple(bn2, iri4, bn1)
 
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(bn1, bn2), listOf(rdfTriple1, rdfTriple2, rdfTriple3, rdfTriple4, rdfTriple5)
                 )
             }
@@ -464,7 +465,7 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(), listOf(rdfTriple1, rdfTriple1)
                 )
             }
@@ -483,7 +484,7 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val rdfTriple1 = RdfTriple(collection1, iri1, literal1)
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(), listOf(rdfTriple1)
                 )
             }
@@ -512,7 +513,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple6 = RdfTriple(bn2, iri3, iri4)
                 val rdfTriple7 = RdfTriple(bn0, iri1, literal1)
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(bn0, bn1, bn2),
                     listOf(rdfTriple1, rdfTriple2, rdfTriple3, rdfTriple4, rdfTriple5, rdfTriple6, rdfTriple7)
                 )
@@ -538,7 +539,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple2 = RdfTriple(bn0, iri1, iri2)
 
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(bn0),
                     listOf(rdfTriple1, rdfTriple2)
                 )
@@ -575,7 +576,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple9 = RdfTriple(bn3, iri3, iri4)
 
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(bn0, bn1, bn2, bn3, bn4),
                     listOf(
                         rdfTriple1,
@@ -620,7 +621,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                     NegativeSurface(listOf(bnS), listOf(rdfTriple3, negativeSurface21, negativeSurface22))
                 val querySurface = QuerySurface(listOf(bnS, bnC), listOf(rdfTriple6))
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, negativeSurface1, negativeSurface2, querySurface)
                 )
@@ -662,7 +663,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 )
                 val querySurface = QuerySurface(listOf(bnS, bnC), listOf(rdfTriple8))
 
-                RDFSurfacesParser(false).parseToEnd(file.readText()) shouldBeEqualToComparingFields PositiveSurface(
+                RDFSurfacesParser(false).parseToEnd(file.readText(), baseIri) shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, negativeSurface1, negativeSurface2, negativeSurface3, querySurface)
                 )
@@ -673,12 +674,12 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val testStr = "@prefix : <http://example.org#> . _:BN_12 _:BN_043 _:BN_0023. (:a _:BN_23 []) :b :c."
                 val rdfSurfaceParser = RDFSurfacesParser(true)
 
-                rdfSurfaceParser.parseToEnd(testStr).graffiti.size shouldBe 8
+                rdfSurfaceParser.parseToEnd(testStr, baseIri).graffiti.size shouldBe 8
             }
             should("throw an exeption") {
                 val testStr = "@prefix : <http://example.org#> . _:BN_12 _:BN_043 _:BN_0000000000000023. (:a _:BN_23 []) :b :c."
                 val rdfSurfaceParser = RDFSurfacesParser(true)
-                shouldThrow<RDFSurfacesParseException> { rdfSurfaceParser.parseToEnd(testStr) }
+                shouldThrow<RDFSurfacesParseException> { rdfSurfaceParser.parseToEnd(testStr, baseIri) }
             }
 
         }
@@ -692,7 +693,7 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val literal = Literal.fromNonNumericLiteral("base", IRI.from(IRIConstants.XSD_STRING_IRI))
 
-                rdfSurfaceParser.parseToEnd(testStr) shouldBeEqualToComparingFields PositiveSurface(listOf(), listOf(RdfTriple(iri1,iri2,literal)))
+                rdfSurfaceParser.parseToEnd(testStr, baseIri) shouldBeEqualToComparingFields PositiveSurface(listOf(), listOf(RdfTriple(iri1,iri2,literal)))
             }
         }
 

@@ -5,7 +5,7 @@ import org.apache.jena.datatypes.BaseDatatype
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.datatypes.xsd.XSDDatatype.*
 
-abstract class RdfTripleElement
+sealed class RdfTripleElement
 
 data class IRI(
     val scheme: String? = null,
@@ -55,7 +55,6 @@ data class IRI(
         fun transformReference(R: IRI, B: IRI): IRI {
             fun merge(): String =
                 if (B.authority != null && B.path.isEmpty()) "/${R.path}" else (B.path.dropLastWhile { it != '/' } + R.path)
-
 
             fun removeDotSegments(path: String): String {
 

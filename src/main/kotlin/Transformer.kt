@@ -90,8 +90,6 @@ class Transformer {
                 separator = " ",
                 postfix = ")"
             ) { transform(it) }
-
-            else -> throw TransformerException("RDF triple element type not supported")
         }
 
         fun transform(hayesGraphElement: HayesGraphElement, depth: Int): String {
@@ -180,8 +178,6 @@ class Transformer {
             is IRI -> transform(rdfTripleElement)
             is Collection -> "list".takeIf { rdfTripleElement.list.isEmpty() }
                 ?: ("list(" + rdfTripleElement.list.joinToString(",") { transform(it) } + ")")
-
-            else -> throw TransformerException("RDF triple element type not supported")
         }
 
         fun transform(blankNodeList: List<BlankNode>) = blankNodeList.joinToString(separator = ",") { transform(it) }
@@ -224,8 +220,8 @@ class Transformer {
                                     postfix = "\n$newDepthSpace)"
                                 ) { transform(it, depth + 1) }
                             }
+                        is NeutralSurface -> throw TransformerException("Surface-type is not supported: neutral surface")
 
-                        else -> throw TransformerException("Surface-type is not supported")
                     }
                 }
 

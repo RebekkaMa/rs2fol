@@ -1,15 +1,14 @@
 import com.github.h0tk3y.betterParse.parser.ParseException
 import parser.RDFSurfacesParser
+import rdfSurfaces.IRI
 import rdfSurfaces.QuerySurface
 import util.RDFSurfacesParseException
 import util.TransformerException
 
 
-public sealed class RdfSurfacesResult
-
-public class Success(val value: String, val querySurfaces: List<QuerySurface>? = null) : RdfSurfacesResult()
-
-public class Failure(val failureMessage: String) : RdfSurfacesResult()
+sealed class RdfSurfacesResult
+class Success(val value: String, val querySurfaces: List<QuerySurface>? = null) : RdfSurfacesResult()
+class Failure(val failureMessage: String) : RdfSurfacesResult()
 
 class RDFSurfaceToFOLController {
 
@@ -20,9 +19,10 @@ class RDFSurfaceToFOLController {
         ignoreQuerySurface: Boolean,
         rdfLists: Boolean = false,
         verbose: Boolean = false,
+        baseIRI: IRI
     ): RdfSurfacesResult {
         return try {
-            val parserResult = RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfaceGraph)
+            val parserResult = RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfaceGraph, baseIRI)
             Success(
                 Transformer().toFOL(parserResult, ignoreQuerySurface),
                 parserResult.getQuerySurfaces()
@@ -43,9 +43,10 @@ class RDFSurfaceToFOLController {
         rdfSurfaceGraph: String,
         rdfLists: Boolean = false,
         verbose: Boolean = false,
+        baseIRI: IRI
     ): RdfSurfacesResult {
         return try {
-            val parserResult = RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfaceGraph)
+            val parserResult = RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfaceGraph, baseIRI)
             Success(
                 Transformer().toFOL(parserResult, false, "conjecture", "conjecture"),
                 null
@@ -66,9 +67,10 @@ class RDFSurfaceToFOLController {
         rdfSurfaceGraph: String,
         rdfLists: Boolean = false,
         verbose: Boolean = false,
+        baseIRI: IRI
     ): RdfSurfacesResult {
         return try {
-            val parserResult = RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfaceGraph)
+            val parserResult = RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfaceGraph, baseIRI)
             Success(Transformer().toNotation3Sublanguage(parserResult), parserResult.getQuerySurfaces())
 
         } catch (exc: Exception) {
