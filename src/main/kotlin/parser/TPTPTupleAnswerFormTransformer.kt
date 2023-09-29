@@ -8,6 +8,7 @@ import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.Parser
 import rdfSurfaces.*
 import rdfSurfaces.Collection
+import util.NotSupportedException
 
 object TPTPTupleAnswerFormTransformer :
     Grammar<Pair<List<List<RdfTripleElement>>, List<List<List<RdfTripleElement>>>>>() {
@@ -54,7 +55,7 @@ object TPTPTupleAnswerFormTransformer :
             )
 
             atomicWord.text.startsWith("list") -> Collection(arguments)
-            else -> throw Exception("Function/Predicate Symbol not supported")
+            else -> throw NotSupportedException("Function/Predicate Symbol of TPTP tuple answer not supported")
         }
     } or atomicWord.map { atomicWord ->
         return@map when {
@@ -100,15 +101,19 @@ object TPTPTupleAnswerFormTransformer :
         }
 
     private fun encodeToValidBlankNodeLabel(string: String): String {
-        val str = string.replace("0x", "0x00300x0078")
+        val hexValueForO = Integer.toHexString('O'.code).uppercase().padStart(4, '0')
+        val hexValueForx = Integer.toHexString('x'.code).uppercase().padStart(4, '0')
+        val strWithoutOx = string.replace("Ox([0-9A-Fa-f]{4})".toRegex()){
+            "Ox${hexValueForO}Ox$hexValueForx" + it.destructured.component1()
+        }
         return buildString {
-            str.toCharArray().forEachIndexed { i, char ->
-                if ((i in 1..(str.length - 2) && "($pnChars|\\.)".toRegex().matches(char.toString())) ||
+            strWithoutOx.toCharArray().forEachIndexed { i, char ->
+                if ((i in 1..(strWithoutOx.length - 2) && "($pnChars|\\.)".toRegex().matches(char.toString())) ||
                     (i == 0 && "($pnCharsU|[0-9])".toRegex().matches(char.toString())) ||
                      i > 0 && "$pnChars".toRegex().matches(char.toString())
                 ) this.append(char) else {
-                    val hexValue = Integer.toHexString(char.code)
-                    this.append("0x${hexValue.padStart(4, '0').uppercase()}")
+                    val hexValue = Integer.toHexString(char.code).padStart(4, '0').uppercase()
+                    this.append("Ox$hexValue")
                 }
             }
         }

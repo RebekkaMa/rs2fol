@@ -1,6 +1,6 @@
 fof(axiom,axiom,
-   ? [Alice,Bob] : (
-      triple(Alice,'http://xmlns.com/foaf/0.1/knows',Bob)
-      & triple(Bob,'http://xmlns.com/foaf/0.1/knows',Alice)
+   ? [Ox0061lice,Ox0062ob] : (
+      triple(Ox0061lice,'http://xmlns.com/foaf/0.1/knows',Ox0062ob)
+      & triple(Ox0062ob,'http://xmlns.com/foaf/0.1/knows',Ox0061lice)
    )
 ).

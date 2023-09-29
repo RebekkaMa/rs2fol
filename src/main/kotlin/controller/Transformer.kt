@@ -1,9 +1,13 @@
+package controller
+
 import parser.stringLiteralLongQuote
 import parser.stringLiteralLongSingleQuote
 import parser.stringLiteralQuote
 import parser.stringLiteralSingleQuote
 import rdfSurfaces.*
 import rdfSurfaces.Collection
+import util.IRIConstants
+import util.NotSupportedException
 import util.TransformerException
 
 class Transformer {
@@ -56,8 +60,6 @@ class Transformer {
         fun transform(literal: Literal): String {
             if (literal is LanguageTaggedString) return "\"${literal.lexicalForm}\"@${literal.languageTag}"
             return when (literal.datatype.uri) {
-                //TODO()
-                //IRIConstants.XSD_INTEGER, IRIConstants.XSD_DOUBLE, IRIConstants.XSD_BOOLEAN_IRI, IRIConstants.XSD_DECIMAL
                 IRIConstants.XSD_STRING_IRI -> {
                     val rawLiteral = literal.literalValue.toString()
                     when {
@@ -65,12 +67,11 @@ class Transformer {
                         "'$rawLiteral'".matches(stringLiteralSingleQuote) -> "'$rawLiteral'"
                         "\"\"\"$rawLiteral\"\"\"".matches(stringLiteralLongQuote) -> "\"\"\"$rawLiteral\"\"\""
                         "'''$rawLiteral'''".matches(stringLiteralLongSingleQuote) -> "'''$rawLiteral'''"
-                        else -> throw TransformerException("Error during the transformation of a string literal")
+                        else -> throw TransformerException("Error during the transformation of a string literal to N3")
                     }
                 }
 
                 else -> "\"${literal.literalValue}\"^^${transform(IRI.from(literal.datatype.uri))}"
-                //TODO(${transform(IRI.fromFullString(literal.datatype.uri))})
             }
         }
 
@@ -160,8 +161,7 @@ class Transformer {
         val spaceBase = "   "
         val doubleSpaceBase = spaceBase.repeat(2)
 
-        //TODO(make collision safe)
-        fun transform(blankNode: BlankNode) = blankNode.blankNodeId.replaceFirstChar { it.uppercaseChar() }
+        fun transform(blankNode: BlankNode) = encodeToValidTPTPVariable(blankNode.blankNodeId)
 
         fun transform(iri: IRI) = "'${iri.iri}'"
 
@@ -220,7 +220,7 @@ class Transformer {
                                     postfix = "\n$newDepthSpace)"
                                 ) { transform(it, depth + 1) }
                             }
-                        is NeutralSurface -> throw TransformerException("Surface-type is not supported: neutral surface")
+                        is NeutralSurface -> throw NotSupportedException("Transformation of surface type is not supported: Neutral surface")
 
                     }
                 }
@@ -296,19 +296,24 @@ class Transformer {
 
     fun encodeToValidTPTPVariable(string: String): String {
         return buildString {
-            string.toCharArray().forEachIndexed { index, c ->
-                if ((isPrintableAscii(c) && c != 'U') && (index != 0 || c.isUpperCase())) {
+            val hexValueForO = Integer.toHexString('O'.code).uppercase().padStart(4, '0')
+            val hexValueForx = Integer.toHexString('x'.code).uppercase().padStart(4, '0')
+            val strWithoutOx = string.replace("Ox([0-9A-Fa-f]{4})".toRegex()){
+                "Ox${hexValueForO}Ox$hexValueForx" + it.destructured.component1()
+            }
+            strWithoutOx.toCharArray().forEachIndexed { index, c ->
+                if ((isPrintableAscii(c)) && (index != 0 || c.isUpperCase())) {
                     this.append(c)
                 } else {
-                    val hexValue = Integer.toHexString(c.code)
-                    this.append("U${hexValue.padStart(4, '0').uppercase()}")
+                    val hexValue = Integer.toHexString(c.code).uppercase().padStart(4, '0')
+                    this.append("Ox$hexValue")
                 }
             }
         }
     }
 
-    fun decodeValidTPTPVariable(string: String) = string.replace("U[0-9A-Fa-f]{4}".toRegex()) {
-        Integer.parseInt(it.value.drop(1), 16).toChar().toString()
+    fun decodeValidTPTPVariable(string: String) = string.replace("Ox[0-9A-Fa-f]{4}".toRegex()) {
+        Integer.parseInt(it.value.drop(2), 16).toChar().toString()
     }
 
     fun decodeValidTPTPLiteral(string: String) = string.replace("\\\\\\\\u[0-9A-Fa-f]{4}".toRegex()) {

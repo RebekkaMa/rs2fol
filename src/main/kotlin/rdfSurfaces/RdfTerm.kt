@@ -1,9 +1,9 @@
 package rdfSurfaces
 
-import IRIConstants
 import org.apache.jena.datatypes.BaseDatatype
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.datatypes.xsd.XSDDatatype.*
+import util.IRIConstants
 
 sealed class RdfTripleElement
 
@@ -233,7 +233,6 @@ open class Literal(val literalValue: Any, val datatype: BaseDatatype) : RdfTripl
         result = 31 * result + datatype.uri.hashCode()
         return result
     }
-
 }
 
 

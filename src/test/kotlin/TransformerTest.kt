@@ -1,3 +1,4 @@
+import controller.Transformer
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.shouldBe
@@ -344,7 +345,14 @@ class TransformerTest
                 testStr shouldBe transformer.decodeValidTPTPVariable(encoded)
             }
             should("encode and decode 4") {
-                val testStr = "Un_3"
+                val testStr = "Ox3A23n_3"
+                val encoded = transformer.encodeToValidTPTPVariable(testStr)
+                println(encoded)
+                println(transformer.decodeValidTPTPVariable(encoded))
+                testStr shouldBe transformer.decodeValidTPTPVariable(encoded)
+            }
+            should("encode and decode 5") {
+                val testStr = "Ox3A2P3n_3"
                 val encoded = transformer.encodeToValidTPTPVariable(testStr)
                 println(encoded)
                 println(transformer.decodeValidTPTPVariable(encoded))

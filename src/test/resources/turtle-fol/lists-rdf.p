@@ -1,0 +1,30 @@
+fof(axiom,axiom,
+   ? [BN_1,BN_2,BN_3,T,M,BN_4] : (
+      triple(T,'http://example.org/foopredicate',BN_1)
+      & triple(BN_1,'http://www.w3.org/1999/02/22-rdf-syntax-ns#first','http://example.org/fooA')
+      & triple(BN_1,'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest',BN_2)
+      & triple(BN_2,'http://www.w3.org/1999/02/22-rdf-syntax-ns#first','http://example.org/fooB')
+      & triple(BN_2,'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest',BN_3)
+      & triple(BN_3,'http://www.w3.org/1999/02/22-rdf-syntax-ns#first','http://example.org/fooC')
+      & triple(BN_3,'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest','http://www.w3.org/1999/02/22-rdf-syntax-ns#nil')
+      & ? [T] : (
+         triple('http://example.org/foosubject','http://example.org/foopredicate2','http://www.w3.org/1999/02/22-rdf-syntax-ns#nil')
+      )
+      & ! [T,O,BN_5,BN_6,BN_7,BN_8,BN_9,BN_10] :  ~(
+         triple('http://example.org/foosubject','http://example.org/foopredicate2',BN_8)
+         & triple(BN_4,'http://example.org/fooA','http://example.org/fooC')
+         & triple(BN_5,'http://www.w3.org/1999/02/22-rdf-syntax-ns#first','http://example.org/fooL')
+         & triple(BN_5,'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest',BN_6)
+         & triple(BN_6,'http://www.w3.org/1999/02/22-rdf-syntax-ns#first',M)
+         & triple(BN_6,'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest',BN_7)
+         & triple(BN_7,'http://www.w3.org/1999/02/22-rdf-syntax-ns#first',BN_4)
+         & triple(BN_7,'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest','http://www.w3.org/1999/02/22-rdf-syntax-ns#nil')
+         & triple(BN_8,'http://www.w3.org/1999/02/22-rdf-syntax-ns#first','http://example.org/fooC')
+         & triple(BN_8,'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest',BN_9)
+         & triple(BN_9,'http://www.w3.org/1999/02/22-rdf-syntax-ns#first','http://example.org/fooF')
+         & triple(BN_9,'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest',BN_10)
+         & triple(BN_10,'http://www.w3.org/1999/02/22-rdf-syntax-ns#first',BN_5)
+         & triple(BN_10,'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest','http://www.w3.org/1999/02/22-rdf-syntax-ns#nil')
+      )
+   )
+).

@@ -80,7 +80,7 @@ class QuerySurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement
             if (containsVariables().not()) return PositiveSurface(listOf(), this.hayesGraph)
             if (graffiti.size != it.size) {
                 val relevantGraffiti = this.graffiti.filter { blankNode ->  isBounded(blankNode)}
-                if (relevantGraffiti.size != it.size) throw IllegalArgumentException("The arity of the answer tuples doesn't match the graffiti on the query surface!")
+                if (relevantGraffiti.size != it.size) throw IllegalArgumentException("The arity of the answer tuples doesn't match the number of graffiti on the query surface!")
                 return@map buildMap {
                     relevantGraffiti.forEachIndexed { index, blankNode ->
                         this[blankNode] = it[index]

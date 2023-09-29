@@ -1,3 +1,4 @@
+
 import com.github.ajalt.clikt.core.*
 import com.github.ajalt.clikt.output.MordantHelpFormatter
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
@@ -10,6 +11,8 @@ import com.github.ajalt.clikt.parameters.types.path
 import com.github.ajalt.mordant.rendering.TextColors
 import com.github.ajalt.mordant.rendering.TextColors.red
 import com.github.ajalt.mordant.rendering.TextStyle
+import controller.FOLAnswerTupleToRDFSurfaceController
+import controller.RDFSurfaceToFOLController
 import kotlinx.coroutines.runBlocking
 import rdfSurfaces.IRI
 import java.io.File
@@ -18,6 +21,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.io.path.*
 
 val errorKeyWordTextStyle = TextStyle(color = red)
+
 
 class RdfSurfaceToFol : CliktCommand() {
     init {
@@ -47,7 +51,7 @@ class Rewrite : CliktCommand(help = "Parses and prints an RDF surfaces graph usi
 
         try {
             val (inputStream, baseIRI) = when {
-                input == null || input!!.pathString == "-" -> System.`in` to IRI.from("file://" + System.getProperty("user.dir"))
+                input == null || input!!.pathString == "-" -> System.`in` to IRI.from("file://" + System.getProperty("user.dir") + "/")
 
                 input!!.notExists() -> throw BadParameterValue(
                     currentContext.localization.pathDoesNotExist(
@@ -63,24 +67,29 @@ class Rewrite : CliktCommand(help = "Parses and prints an RDF surfaces graph usi
                     )
                 )
 
-                else -> input!!.inputStream() to IRI.from("file://" + input!!.absolute().invariantSeparatorsPathString)
+                else -> input!!.inputStream() to IRI.from("file://" + input!!.absolute().parent.invariantSeparatorsPathString + "/")
             }
 
             val rdfSurfacesGraph = inputStream.bufferedReader().use { it.readText() }
             val result = RDFSurfaceToFOLController().transformRDFSurfaceGraphToNotation3(
                 rdfSurfaceGraph = rdfSurfacesGraph, rdfLists = commonOptions.rdfList, baseIRI = baseIRI
             )
-            when (result) {
-                is Success -> output?.let {
-                    it.parent?.createDirectories()
-                    if (it.exists().not()) it.createFile()
-                    it.writeText(result.value)
-                } ?: echo(result.value)
-                is Failure -> {
-                    echoError("Failed to rewrite the RDF surfaces graph. " + result.failureMessage)
+
+            result.fold(
+                onSuccess = { rewrittenRdfSurfacesGraph ->
+                    output?.let {
+                        it.parent?.createDirectories()
+                        if (it.exists().not()) it.createFile()
+                        it.writeText(rewrittenRdfSurfacesGraph)
+                    } ?: echo(rewrittenRdfSurfacesGraph)
+                },
+                onFailure = { throwable ->
+                    val failureMessage =  if (commonOptions.debug) throwable.stackTraceToString() else (throwable.message
+                            ?: throwable.toString())
+                    echoError(failureMessage)
                     throw ProgramResult(1)
                 }
-            }
+            )
         } catch (exception: Exception) {
             if (exception is CliktError) throw exception
             if (commonOptions.debug) echoError(exception.stackTraceToString()) else echoError(exception.toString())
@@ -91,7 +100,7 @@ class Rewrite : CliktCommand(help = "Parses and prints an RDF surfaces graph usi
 
 class Transform : CliktCommand(help = "Transforms an RDF surfaces graph (--input) to a FOL formula in TPTP format") {
     private val commonOptions by CommonOptions()
-    private val input by option("--input", "-i", help = "Path to RDF surfaces graph").path()
+    private val input by option("--input", "-i", help = "Get RDF surfaces graph from <path>").path()
     private val output by option("--output", "-o", help = "Write output to <path>").path()
 
     private val ignoreQuerySurface by option("--ignoreQuerySurface").flag(default = false, defaultForHelp = "false")
@@ -100,7 +109,7 @@ class Transform : CliktCommand(help = "Transforms an RDF surfaces graph (--input
 
         try {
             val (inputStream, baseIRI) = when {
-                input == null || input!!.pathString == "-" -> System.`in` to IRI.from("file://" + System.getProperty("user.dir"))
+                input == null || input!!.pathString == "-" -> System.`in` to IRI.from("file://" + System.getProperty("user.dir") + "/")
 
                 input!!.notExists() -> throw BadParameterValue(
                     currentContext.localization.pathDoesNotExist(
@@ -116,7 +125,7 @@ class Transform : CliktCommand(help = "Transforms an RDF surfaces graph (--input
                     )
                 )
 
-                else -> input!!.inputStream() to IRI.from("file://" + input!!.absolute().invariantSeparatorsPathString)
+                else -> input!!.inputStream() to IRI.from("file://" + input!!.absolute().parent.invariantSeparatorsPathString + "/")
             }
 
             val rdfSurfacesGraph = inputStream.bufferedReader().use { it.readText() }
@@ -126,20 +135,22 @@ class Transform : CliktCommand(help = "Transforms an RDF surfaces graph (--input
                 rdfLists = commonOptions.rdfList,
                 baseIRI = baseIRI
             )
-            when (result) {
-                is Success -> {
+
+            result.fold(
+                onSuccess = { (folFormula, _) ->
                     output?.let {
                         it.parent?.createDirectories()
                         if (it.exists().not()) it.createFile()
-                        println(it.toUri().path)
-                        it.writeText(result.value)
-                    } ?: echo(result.value)
-                }
-                is Failure -> {
-                    echoError("Failed to transform the RDF surfaces graph: " + result.failureMessage)
+                        it.writeText(folFormula)
+                    } ?: echo(folFormula)
+                },
+                onFailure = { throwable ->
+                    val failureMessage =  if (commonOptions.debug) throwable.stackTraceToString() else (throwable.message
+                            ?: throwable.toString())
+                    echoError(failureMessage)
                     throw ProgramResult(1)
                 }
-            }
+            )
         } catch (exception: Exception) {
             if (exception is CliktError) throw exception
             if (commonOptions.debug) echoError(exception.stackTraceToString()) else echoError(exception.toString())
@@ -151,10 +162,10 @@ class Transform : CliktCommand(help = "Transforms an RDF surfaces graph (--input
 class TPTPTupleAnswerToRDFSurfaces :
     CliktCommand(help = "Transforms a TPTP tuple answer (--input) into an RDF surfaces graph using a specified RDF query surface (--query-surface)") {
     private val commonOptions by CommonOptions()
-    private val input by option("--tuple-answer", "-t", help = "Path to RDF query surface").path()
+    private val input by option("--tuple-answer", "-t", help = "Get tptp answer tuple from <path>").path()
     private val output by option("--output", "-o", help = "Write output to <path>").path(mustExist = false)
 
-    private val querySurface by option("--querySurface", "-s", help = "Get RDF query surface from <path>").path(
+    private val querySurface by option("--query-surface", "-s", help = "Get RDF query surface from <path>").path(
         mustExist = true,
         canBeDir = false,
         mustBeReadable = true
@@ -169,7 +180,7 @@ class TPTPTupleAnswerToRDFSurfaces :
 
         try {
             val (inputStream, baseIRI) = when {
-                input == null || input!!.pathString == "-" -> System.`in` to IRI.from("file://" + System.getProperty("user.dir"))
+                input == null || input!!.pathString == "-" -> System.`in` to IRI.from("file://" + System.getProperty("user.dir") + "/")
 
                 input!!.notExists() -> throw BadParameterValue(
                     currentContext.localization.pathDoesNotExist(
@@ -185,42 +196,62 @@ class TPTPTupleAnswerToRDFSurfaces :
                     )
                 )
 
-                else -> input!!.inputStream() to IRI.from("file://" + input!!.absolute().invariantSeparatorsPathString)
+                else -> input!!.inputStream() to IRI.from("file://" + input!!.absolute().parent.invariantSeparatorsPathString + "/")
 
             }
 
             val rdfSurfaceGraph = querySurface.readText()
 
+            val querySurface = fOLAnswerTupleToRDFSurfaceController.getQuerySurfaceFromRdfSurfacesGraph(rdfSurfaceGraph, commonOptions.rdfList).fold(
+                onSuccess = {querySurface ->
+                    if (querySurface.isEmpty()) {
+                        echoError("--query-surface: RDF surfaces graph contains no query surface.")
+                        throw ProgramResult(1)
+                    }
+
+                    if (querySurface.size > 1){
+                        echoError("--query-surface: Multiple query surfaces are not supported.")
+                        throw ProgramResult(1)
+                    }
+                    querySurface.single()
+                },
+                onFailure = {throwable ->
+                    val failureMessage =  if (commonOptions.debug) throwable.stackTraceToString() else (throwable.message ?: throwable.toString())
+                    echoError("--query-surface: $failureMessage")
+                    throw ProgramResult(1)
+                }
+            )
+
+
             val result = if (inputType == "raw") {
                 fOLAnswerTupleToRDFSurfaceController.transformTPTPTupleAnswerToRDFSurfaces(
                     tptpTupleAnswer = inputStream.bufferedReader().use { it.readText() },
-                    querySurfaceStr = rdfSurfaceGraph,
-                    debug = commonOptions.debug,
-                    rdfLists = commonOptions.rdfList,
+                    querySurface = querySurface,
                 )
             } else {
                 inputStream.bufferedReader().useLines {
                     fOLAnswerTupleToRDFSurfaceController.questionAnsweringOutputToRDFSurfacesCasc(
-                        querySurface = rdfSurfaceGraph,
+                        querySurface = querySurface,
                         questionAnsweringOutputLines = it,
-                        debug = commonOptions.debug,
-                        rdfLists = commonOptions.rdfList
                     )
                 }
             }
-            when (result) {
-                is AnswerTupleToRDFSurfacesGraphSuccess -> {
+
+            result.fold(
+                onSuccess = { succRes ->
                     output?.let {
                         it.parent?.createDirectories()
                         if (it.exists().not()) it.createFile()
-                        it.writeText(result.value)
-                    } ?: echo(result.value)
-                }
-                is AnswerTupleToRDFSurfacesGraphFailure -> {
-                    echoError("Failed to transform the TPTP tuple answer: " + result.failureMessage)
+                        it.writeText(succRes)
+                    } ?: echo(succRes)
+                },
+                onFailure = { throwable ->
+                    val failureMessage = if (commonOptions.debug) throwable.stackTraceToString() else (throwable.message
+                            ?: throwable.toString())
+                    echoError(failureMessage)
                     throw ProgramResult(1)
                 }
-            }
+            )
         } catch (exception: Exception) {
             if (exception is CliktError) throw exception
             if (commonOptions.debug) echoError(exception.stackTraceToString()) else echoError(exception.toString())
@@ -264,11 +295,10 @@ class Check :
 
             var baseIRI: IRI
             var computedExpectedAnswer: Path
-            var isPath: Boolean
 
             val inputStream = when {
                 input == null || input!!.pathString == "-" -> {
-                    baseIRI = IRI.from("file://" + System.getProperty("user.dir"))
+                    baseIRI = IRI.from("file://" + System.getProperty("user.dir") + "/")
                     computedExpectedAnswer = when {
                         consequence == null -> throw BadParameterValue(currentContext.localization.missingOption("option 'consequences' must not be null if the RDF graph is given as a stream."))
                         consequence!!.notExists() -> throw BadParameterValue(
@@ -287,7 +317,6 @@ class Check :
 
                         else -> consequence!!
                     }
-                    isPath = false
                     System.`in`
                 }
 
@@ -306,7 +335,7 @@ class Check :
                 )
 
                 else -> {
-                    baseIRI = IRI.from("file://" + input!!.absolute().invariantSeparatorsPathString)
+                    baseIRI = IRI.from("file://" + input!!.absolute().parent.invariantSeparatorsPathString + "/")
                     computedExpectedAnswer = when {
                         consequence == null -> Path(input!!.parent.pathString + "/" + input!!.nameWithoutExtension + "-answer.n3s").takeIf { it.exists() }
                             ?: Path(input!!.parent.pathString + "/" + input!!.nameWithoutExtension + "-answer.n3").takeIf { it.exists() }
@@ -333,7 +362,6 @@ class Check :
 
                         else -> consequence!!
                     }
-                    isPath = true
                     input!!.inputStream()
                 }
             }
@@ -355,35 +383,38 @@ class Check :
                 baseIRI = baseIRI
             )
 
-            when (parseResult) {
-                is Success -> {
-                    if (quiet.not()) echoNonQuiet("Transformation of RDF surfaces graph was successful")
+            val folAtom = parseResult.fold(
+                onSuccess = { (folAtom, _) ->
+                    if (quiet.not()) echoNonQuiet("Transformation of --input RDF surfaces graph was successful")
+                    folAtom
+                },
+                onFailure = { throwable ->
+                    val failureMessage = if (commonOptions.debug) throwable.stackTraceToString() else (throwable.message
+                            ?: throwable.toString())
+                    echoError("--input: $failureMessage")
+                    throw ProgramResult(1)
                 }
+            )
 
-                is Failure -> {
-                    echoError("Failed to parse RDF surfaces Graph: " + parseResult.failureMessage)
+            val folConjecture = answerParseResult.fold(
+                onSuccess = { folConjecture ->
+                    if (quiet.not() && folAtom != null) echoNonQuiet("Transformation of --consequence RDF surfaces graph was successful")
+                    folConjecture
+                },
+                onFailure = { throwable ->
+                    val failureMessage = if (commonOptions.debug) throwable.stackTraceToString() else (throwable.message
+                            ?: throwable.toString())
+                    echoError("--consequence: $failureMessage")
+                    throw ProgramResult(1)
                 }
-            }
+            )
 
-            when (answerParseResult) {
-                is Success -> {
-                    if (quiet.not() && parseResult is Success) echoNonQuiet("Transformation of the consequences RDF surfaces graph was successful")
-                }
-
-                is Failure -> {
-                    echoError("Failed to parse consequences" + answerParseResult.failureMessage)
-                }
-            }
-
-            if (parseResult is Failure || answerParseResult is Failure) throw ProgramResult(1)
-
-            val parseResultSuccess = parseResult as Success
-            val answerResultSuccess = answerParseResult as Success
+            //if (parseResult is Failure || answerParseResult is Failure) throw ProgramResult(1)
 
             output?.let {
                 it.parent?.createDirectories()
                 if (it.exists().not()) it.createFile()
-                it.writeText(parseResultSuccess.value + System.lineSeparator() + answerResultSuccess.value)
+                it.writeText(folAtom + System.lineSeparator() + folConjecture)
                 if (!quiet) echoNonQuiet("Problem output file: $output")
             }
 
@@ -395,23 +426,19 @@ class Check :
                 }
 
             val vampireProcess = vampirePrompt.runCommand(File(System.getProperty("user.dir")))
-            vampireProcess?.outputWriter()?.use { it.write(parseResultSuccess.value + System.lineSeparator() + answerResultSuccess.value) }
+            vampireProcess.outputWriter()
+                ?.use { it.write(folAtom + System.lineSeparator() + folConjecture) }
 
-            val noTimeout = vampireProcess?.waitFor(timeLimit, TimeUnit.SECONDS)
+            val noTimeout = vampireProcess.waitFor(timeLimit, TimeUnit.SECONDS)
 
-            if (noTimeout?.not() == true) {
+            if (noTimeout.not()) {
                 echo("timeout")
                 vampireProcess.destroy()
                 if (vampireProcess.isAlive) vampireProcess.destroyForcibly()
                 return
             }
 
-            val vampireResultString = vampireProcess?.inputReader()?.readLines()
-
-            if (vampireResultString == null) {
-                echoError("Vampire Execution Error")
-                throw ProgramResult(1)
-            }
+            val vampireResultString = vampireProcess.inputReader().readLines()
 
             vampireResultString.lastOrNull { it == "sat" || it == "unsat" }
                 ?.let { echo(if (it.startsWith('s')) TextColors.rgb("#ff9933")(it) else TextColors.green(it)); return }
@@ -423,6 +450,7 @@ class Check :
                     separator = System.lineSeparator()
                 ) else ""
             )
+            throw ProgramResult(1)
 
         } catch (exception: Exception) {
             if (exception is CliktError) throw exception
@@ -433,7 +461,7 @@ class Check :
 }
 
 class TransformWithQA :
-    CliktCommand(help = "Transform an RDF surfaces graph to FOL and show the results of the Vampire question answering feature") {
+    CliktCommand(help = "Transforms an RDF surfaces graph to FOL and returns the results of the Vampire question answering feature") {
     private val commonOptions by CommonOptions()
     private val input by option(
         "--input", "-i",
@@ -463,7 +491,7 @@ class TransformWithQA :
 
             val inputStream = when {
                 input == null || input!!.pathString == "-" -> {
-                    baseIRI = IRI.from("file://" + System.getProperty("user.dir"))
+                    baseIRI = IRI.from("file://" + System.getProperty("user.dir") + "/")
                     System.`in`
                 }
 
@@ -482,7 +510,7 @@ class TransformWithQA :
                 )
 
                 else -> {
-                    baseIRI = IRI.from("file://" + input!!.absolute().invariantSeparatorsPathString)
+                    baseIRI = IRI.from("file://" + input!!.absolute().parent.invariantSeparatorsPathString + "/")
                     input!!.inputStream()
                 }
             }
@@ -493,30 +521,33 @@ class TransformWithQA :
                 rdfLists = commonOptions.rdfList,
                 baseIRI = baseIRI
             )
-            when (parseResult) {
-                is Success -> {
-                    if (!quiet) echoNonQuiet("Transformation was successful!")
-                    if (parseResult.querySurfaces.isNullOrEmpty()) {
-                        echoError("Missing query surface in RDF surfaces graph")
-                        throw ProgramResult(1)
-                    }
-                    if (parseResult.querySurfaces.size > 1) {
-                        echoError("There are too many query surfaces. Only one query surface is currently supported.")
+
+            val (fol, querySurface) = parseResult.fold(
+                onSuccess = { (fol, querySurfaces) ->
+                    if (!quiet) echoNonQuiet("Transformation to FOL was successful!")
+                    if (querySurfaces.isEmpty()) {
+                        echoError("--input: RDF surfaces graph contains no query surface.")
                         throw ProgramResult(1)
                     }
 
-                }
-
-                is Failure -> {
-                    echoError("Failed to transform RDF surfaces graph: " + parseResult.failureMessage)
+                    if (querySurfaces.size > 1){
+                        echoError("--input: Multiple query surfaces are not supported.")
+                        throw ProgramResult(1)
+                    }
+                    fol to querySurfaces.single()
+                },
+                onFailure = { throwable ->
+                    val failureMessage = if (commonOptions.debug) throwable.stackTraceToString() else (throwable.message
+                            ?: throwable.toString())
+                    echoError("--input: $failureMessage")
                     throw ProgramResult(1)
                 }
-            }
+            )
 
             output?.let {
                 it.parent?.createDirectories()
                 if (it.exists().not()) it.createFile()
-                it.writeText(parseResult.value)
+                it.writeText(fol)
                 if (!quiet) echoNonQuiet("Problem output file: $output")
             }
 
@@ -528,37 +559,36 @@ class TransformWithQA :
                 }
 
             val vampireProcess = vampirePrompt.runCommand(File(System.getProperty("user.dir")))
-            vampireProcess?.outputWriter()?.use { it.write(parseResult.value) }
+            vampireProcess.outputWriter().use { it.write(fol) }
 
-            val noTimeout = vampireProcess?.waitFor(timeLimit, TimeUnit.SECONDS)
+            val noTimeout = vampireProcess.waitFor(timeLimit, TimeUnit.SECONDS)
 
-            if (noTimeout?.not() == true) {
+            if (noTimeout.not()) {
                 echo("timeout")
                 vampireProcess.destroy()
                 if (vampireProcess.isAlive) vampireProcess.destroyForcibly()
                 return@runBlocking
             }
 
-            val vampireParsingResult = vampireProcess?.inputReader()?.useLines { vampireOutput ->
+            val vampireParsingResult = vampireProcess.inputReader().useLines { vampireOutput ->
                 FOLAnswerTupleToRDFSurfaceController().questionAnsweringOutputToRDFSurfacesCasc(
-                    querySurface = parseResult.querySurfaces.single(),
-                    debug = commonOptions.debug,
+                    querySurface = querySurface,
                     questionAnsweringOutputLines = vampireOutput,
                 )
             }
 
-            when (vampireParsingResult) {
-                null -> {
-                    echoError("Vampire Execution Error")
+            vampireParsingResult.fold(
+                onSuccess = {
+                    echo(it)
+                },
+                onFailure = { throwable ->
+                    val failureMessage = if (commonOptions.debug) throwable.stackTraceToString() else (throwable.message
+                            ?: throwable.toString())
+                    echoError(failureMessage)
                     throw ProgramResult(1)
                 }
+            )
 
-                is AnswerTupleToRDFSurfacesGraphSuccess -> echo(vampireParsingResult.value)
-                is AnswerTupleToRDFSurfacesGraphFailure -> {
-                    echoError(vampireParsingResult.failureMessage)
-                    throw ProgramResult(1)
-                }
-            }
         } catch (exception: Exception) {
             if (exception is CliktError) throw exception
             if (commonOptions.debug) echoError(exception.stackTraceToString()) else echoError(exception.toString())
@@ -567,7 +597,7 @@ class TransformWithQA :
     }
 }
 
-fun String.runCommand(workingDir: File): Process? {
+fun String.runCommand(workingDir: File): Process {
     return ProcessBuilder(*split(" ").toTypedArray())
         .directory(workingDir)
         .redirectErrorStream(true)

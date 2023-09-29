@@ -1,3 +1,5 @@
+package util
+
 object IRIConstants {
     const val XSD_IRI = "http://www.w3.org/2001/XMLSchema#"
     const val RDF_IRI = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -57,8 +59,6 @@ object IRIConstants {
     const val RDF_NIL_IRI = RDF_IRI + "nil"
     const val RDF_REST_IRI = RDF_IRI + "rest"
     const val RDF_FIRST_IRI = RDF_IRI + "first"
-
-
 
 
 }

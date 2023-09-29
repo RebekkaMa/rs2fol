@@ -1,7 +1,7 @@
 package util
 
-class RDFSurfacesParseException(message: String? = null, cause: Throwable? = null) : Exception(message, cause)
+val generalParseErrorString = "Failed to parse RDF surfaces graph. Please check the syntax."
 
-class TransformerException(message: String? = null, cause: Throwable? = null) : Exception(message, cause)
-
-class TPTPTupleAnswerFormTransformerException(message: String? = null, cause: Throwable? = null) : Exception(message, cause)
+class TransformerException(message: String, cause: Throwable? = null) : Exception(message, cause)
+class NotSupportedException(message: String, cause: Throwable? = null) : Exception(message, cause)
+class InvalidInputException(message: String, cause: Throwable? = null) : Exception(message, cause)

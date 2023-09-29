@@ -3,10 +3,13 @@
 @prefix log: <http://www.w3.org/2000/10/swap/log#>.
 
 # the object of this triple is the RDF collection blank node
-_:t :predicate ( :a :b :c ) .
+_:T :predicate ( :A :B :C ) .
 
 # an empty collection value - rdf:nil
-(_:t) log:onPositiveSurface {
+(_:T) log:onPositiveSurface {
  :subject :predicate2 () .
 }
 
+(_:T _:O) log:onNegativeSurface {
+ :subject :predicate2 (:C :F (:L _:M [:A :C])) .
+}

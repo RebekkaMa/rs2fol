@@ -1,9 +1,0 @@
-fof(axiom,axiom,
-   ? [BN_1] : (
-      triple('http://www.w3.org/People/Eric/ericP-foaf.rdf#ericP','http://xmlns.com/foaf/0.1/givenName','"Eric"^^http://www.w3.org/2001/XMLSchema#string')
-      & triple('http://www.w3.org/People/Eric/ericP-foaf.rdf#ericP','http://xmlns.com/foaf/0.1/knows','http://norman.walsh.name/knows/who/dan-brickley')
-      & triple('http://www.w3.org/People/Eric/ericP-foaf.rdf#ericP','http://xmlns.com/foaf/0.1/knows',BN_1)
-      & triple('http://www.w3.org/People/Eric/ericP-foaf.rdf#ericP','http://xmlns.com/foaf/0.1/knows','http://getopenid.com/amyvdh')
-      & triple(BN_1,'http://xmlns.com/foaf/0.1/mbox','mailto:timbl@w3.org')
-   )
-).

@@ -1,7 +1,5 @@
 package parser
 
-import IRIConstants
-import IRIConstants.RDF_TYPE_IRI
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parser
@@ -13,7 +11,10 @@ import com.github.h0tk3y.betterParse.parser.parseToEnd
 import com.github.h0tk3y.betterParse.parser.tryParseToEnd
 import rdfSurfaces.*
 import rdfSurfaces.Collection
-import util.RDFSurfacesParseException
+import util.IRIConstants
+import util.IRIConstants.RDF_TYPE_IRI
+import util.InvalidInputException
+import util.NotSupportedException
 
 class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
 
@@ -27,7 +28,7 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
     private var blankNodeCounter = 0
     private val blankNodeTriplesSet = mutableListOf<RdfTriple>()
     private val prefixMap = mutableMapOf<String, String>()
-    private var baseIri: IRI = IRI.from("") //TODO()
+    private var baseIri: IRI = IRI.from("file://" + System.getProperty("user.dir") + "/")
 
     private val collectionTripleSet = mutableListOf<RdfTriple>()
     private val blankNodeToDirectParentSet = mutableSetOf<BlankNode>()
@@ -60,9 +61,13 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
     private val prefixedName by pnameLn.use {
         val (prefix, local) = text.split(':', limit = 2)
         return@use (prefixMap[prefix]
-            ?: throw RDFSurfacesParseException("Undefined Prefix")) + replaceReservedCharacterEscapes(local)
+            ?: throw InvalidInputException("Undefined Prefix: $prefix")) + replaceReservedCharacterEscapes(local)
     } or pnameNs.use {
-        prefixMap[text.trimEnd().dropLast(1)] ?: throw RDFSurfacesParseException("Undefined Prefix")
+        prefixMap[text.trimEnd().dropLast(1)] ?: throw InvalidInputException(
+            "Undefined Prefix: ${
+                text.trimEnd().dropLast(1)
+            }"
+        )
     } map { IRI.from(it) }
 
     private val iri by iriref.map { iriString ->
@@ -108,7 +113,7 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
                 Literal.fromNonNumericLiteral(literalValue, datatypeIRI = part)
             }
 
-            else -> throw RDFSurfacesParseException("RDF Literal type not supported")
+            else -> throw NotSupportedException("RDF Literal type not supported")
         }
     }
     private val booleanLiteralToken by regexToken("(true)|(false)")
@@ -244,7 +249,7 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
                 IRIConstants.LOG_QUERY_SURFACE_IRI -> this.add(QuerySurface(graffiti, hayeGraph))
                 IRIConstants.LOG_NEGATIVE_SURFACE_IRI -> this.add(NegativeSurface(graffiti, hayeGraph))
                 IRIConstants.LOG_NEUTRAL_SURFACE_IRI -> this.add(NeutralSurface(graffiti, hayeGraph))
-                else -> throw RDFSurfacesParseException(message = "Surface IRI not supported")
+                else -> throw NotSupportedException(message = "Surface type '${surface.iri}' not supported")
             }
         }
         Triple(newHayeGraph, freeVariables.minus(variableList.toSet()), setOf<BlankNode>())
@@ -330,7 +335,7 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
         while (input.contains("\\b_:$bnLabel\\d+\\b".toRegex()) && i++ in 0..10) {
             bnLabel += '0'
         }
-        if (i == 11) throw RDFSurfacesParseException("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
+        if (i == 11) throw InvalidInputException("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
         this.bnLabel = bnLabel
         this.baseIri = baseIRI
         return rootParser.tryParseToEnd(tokenizer.tokenize(input), 0)
@@ -342,7 +347,7 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
         while (input.contains("\\b_:$bnLabel\\d+\\b".toRegex()) && i++ in 0..10) {
             bnLabel += '0'
         }
-        if (i > 10) throw RDFSurfacesParseException("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
+        if (i > 10) throw InvalidInputException("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
         this.bnLabel = bnLabel
         this.baseIri = baseIRI
         return rootParser.parseToEnd(tokenizer.tokenize(input))

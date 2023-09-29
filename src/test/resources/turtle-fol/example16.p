@@ -5,6 +5,6 @@ fof(axiom,axiom,
       & triple(BN_2,'http://xmlns.com/foaf/0.1/name','"Eve"^^http://www.w3.org/2001/XMLSchema#string')
       & triple(BN_3,'http://xmlns.com/foaf/0.1/name','"Bob"^^http://www.w3.org/2001/XMLSchema#string')
       & triple(BN_3,'http://xmlns.com/foaf/0.1/knows',BN_2)
-      & triple(BN_3,'http://xmlns.com/foaf/0.1/mbox','bob@example.com')
+      & triple(BN_3,'http://xmlns.com/foaf/0.1/mbox','file:///home/rebekka/Nextcloud/Studium/SS23/untitled1/src/test/resources/turtle/bob@example.com')
    )
 ).
