@@ -1,3 +1,5 @@
+package controllerTest
+
 import controller.Transformer
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
@@ -123,7 +125,7 @@ class TransformerTest
 
         context("toFOLTest") {
             should("transform example2.n3 without exception") {
-                val solutionFile = File("src/test/resources/turtle-fol/example2.p")
+                val solutionFile = File("src/test/resources/turtle/example2.p")
 
                 val iri1 = IRI.from("http://example.org/#spiderman")
                 val iri2 = IRI.from("http://www.perceive.net/schemas/relationship/enemyOf")
@@ -142,7 +144,7 @@ class TransformerTest
             }
 
             should("transform example11.n3 without exception") {
-                val solutionFile = File("src/test/resources/turtle-fol/example11.p")
+                val solutionFile = File("src/test/resources/turtle/example11.p")
 
                 val iri1 = IRI.from("http://example.org/vocab/show/218")
                 val iri2 = IRI.from("http://www.w3.org/2000/01/rdf-schema#label")
@@ -177,7 +179,7 @@ class TransformerTest
 
 
             should("transform example23.n3 without exception") {
-                val solutionFile = File("src/test/resources/turtle-fol/example23.p")
+                val solutionFile = File("src/test/resources/turtle/example23.p")
 
                 val iri1 = IRI.from("http://example.org/stuff/1.0/p")
 
@@ -200,7 +202,7 @@ class TransformerTest
 
             context("blogic") {
                 should("transform blogic abc.n3") {
-                    val solutionFile = File("src/test/resources/blogic-fol/abc-fol.p")
+                    val solutionFile = File("src/test/resources/blogic/abc.p")
 
                     val iri1 = IRI.from("http://example.org/ns#i")
                     val iri2 = IRI.from("http://example.org/ns#A")
@@ -234,7 +236,7 @@ class TransformerTest
 
                 }
                 should("transform blogic abcd.n3") {
-                    val solutionFile = File("src/test/resources/blogic-fol/abcd-fol.p")
+                    val solutionFile = File("src/test/resources/blogic/abcd.p")
 
                     val iri1 = IRI.from("http://example.org/ns#i")
                     val iri2 = IRI.from("http://example.org/ns#A")
@@ -289,24 +291,20 @@ class TransformerTest
                         "The second line\n" +
                         "  more"
                 val encoded = transformer.encodeToValidTPTPLiteral(testStr)
-                println(encoded)
-                println(transformer.decodeValidTPTPLiteral(encoded))
+//                println(encoded)
+//                println(transformer.decodeValidTPTPLiteral(encoded))
                 testStr shouldBe transformer.decodeValidTPTPLiteral(encoded)
             }
 
             should("encode and decode 2") {
                 val testStr = "The first line\\nThe second line\\n  more"
                 val encoded = transformer.encodeToValidTPTPLiteral(testStr)
-                println(encoded)
-                println(transformer.decodeValidTPTPLiteral(encoded))
                 testStr shouldBe transformer.decodeValidTPTPLiteral(encoded)
             }
 
             should("encode and decode 3") {
                 val testStr = "The first line\\nThe second line\\n  more"
                 val encoded = transformer.encodeToValidTPTPLiteral(testStr)
-                println(encoded)
-                println(transformer.decodeValidTPTPLiteral(encoded))
                 testStr shouldBe transformer.decodeValidTPTPLiteral(encoded)
             }
             should("encode and decode 4") {
@@ -315,8 +313,6 @@ class TransformerTest
                             "\uD800\uDC00 literal with many quotes (\"\"\"\"\")\n" +
                             "and up to two sequential apostrophes ('')."
                 val encoded = transformer.encodeToValidTPTPLiteral(testStr)
-                println(encoded)
-                println(transformer.decodeValidTPTPLiteral(encoded))
                 testStr shouldBe transformer.decodeValidTPTPLiteral(encoded)
             }
         }
@@ -324,40 +320,29 @@ class TransformerTest
             should("encode and decode 1") {
                 val testStr = "BN_1"
                 val encoded = transformer.encodeToValidTPTPVariable(testStr)
-                println(encoded)
-                println(transformer.decodeValidTPTPVariable(encoded))
                 testStr shouldBe transformer.decodeValidTPTPVariable(encoded)
             }
 
             should("encode and decode 2") {
                 val testStr = "bn_1"
                 val encoded = transformer.encodeToValidTPTPVariable(testStr)
-                println(encoded)
-                println(transformer.decodeValidTPTPVariable(encoded))
                 testStr shouldBe transformer.decodeValidTPTPVariable(encoded)
             }
 
             should("encode and decode 3") {
                 val testStr = "jiUd_.a\uD800\uDC00"
                 val encoded = transformer.encodeToValidTPTPVariable(testStr)
-                println(encoded)
-                println(transformer.decodeValidTPTPVariable(encoded))
                 testStr shouldBe transformer.decodeValidTPTPVariable(encoded)
             }
             should("encode and decode 4") {
                 val testStr = "Ox3A23n_3"
                 val encoded = transformer.encodeToValidTPTPVariable(testStr)
-                println(encoded)
-                println(transformer.decodeValidTPTPVariable(encoded))
                 testStr shouldBe transformer.decodeValidTPTPVariable(encoded)
             }
             should("encode and decode 5") {
                 val testStr = "Ox3A2P3n_3"
                 val encoded = transformer.encodeToValidTPTPVariable(testStr)
-                println(encoded)
-                println(transformer.decodeValidTPTPVariable(encoded))
                 testStr shouldBe transformer.decodeValidTPTPVariable(encoded)
             }
         }
-
     })

@@ -35,7 +35,6 @@ class RDFSurfaceToFOLController {
         rdfLists: Boolean = false,
         baseIRI: IRI,
     ): Result<String> {
-        //TODO(QuerySurfaces)
         return try {
             val parserResult = RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfaceGraph, baseIRI)
             success(Transformer().toFOL(parserResult, true, "conjecture", "conjecture"))

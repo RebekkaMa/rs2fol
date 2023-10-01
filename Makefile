@@ -1,5 +1,3 @@
-untitled1:  ./src/main/*
+rs2fol:  ./src/main/*
 	./gradlew installDist
-	cp -r ./build/install/untitled1/* ./
-#	mv PcfgTool pcfg_tool
-#   rm PcfgTool.bat
+	cp -r ./build/install/rs2fol/* ./

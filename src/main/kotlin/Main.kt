@@ -11,7 +11,7 @@ import com.github.ajalt.clikt.parameters.types.path
 import com.github.ajalt.mordant.rendering.TextColors
 import com.github.ajalt.mordant.rendering.TextColors.red
 import com.github.ajalt.mordant.rendering.TextStyle
-import controller.FOLAnswerTupleToRDFSurfaceController
+import controller.FolAnswerTupleToRDFSurfaceController
 import controller.RDFSurfaceToFOLController
 import kotlinx.coroutines.runBlocking
 import rdfSurfaces.IRI
@@ -21,9 +21,10 @@ import java.util.concurrent.TimeUnit
 import kotlin.io.path.*
 
 val errorKeyWordTextStyle = TextStyle(color = red)
+val workingDir = IRI.from("file://" + System.getProperty("user.dir") + "/")
 
 
-class RdfSurfaceToFol : CliktCommand() {
+class Rs2fol : CliktCommand() {
     init {
         context {
             helpFormatter = { MordantHelpFormatter(it, showDefaultValues = true) }
@@ -42,7 +43,7 @@ class CommonOptions : OptionGroup("Standard Options") {
     ).flag(default = false, defaultForHelp = "false")
 }
 
-class Rewrite : CliktCommand(help = "Parses and prints an RDF surfaces graph using a Notation 3 sublanguage") {
+class Rewrite : CliktCommand(help = "Parses and returns an RDF surfaces graph using a sublanguage of Notation 3 ") {
     private val commonOptions by CommonOptions()
     private val input by option("--input", "-i", help = "Get RDF surfaces graph from <path>").path()
     private val output by option("--output", "-o", help = "Write output to <path>").path()
@@ -51,7 +52,7 @@ class Rewrite : CliktCommand(help = "Parses and prints an RDF surfaces graph usi
 
         try {
             val (inputStream, baseIRI) = when {
-                input == null || input!!.pathString == "-" -> System.`in` to IRI.from("file://" + System.getProperty("user.dir") + "/")
+                input == null || input!!.pathString == "-" -> System.`in` to workingDir
 
                 input!!.notExists() -> throw BadParameterValue(
                     currentContext.localization.pathDoesNotExist(
@@ -108,8 +109,8 @@ class Transform : CliktCommand(help = "Transforms an RDF surfaces graph (--input
     override fun run() {
 
         try {
-            val (inputStream, baseIRI) = when {
-                input == null || input!!.pathString == "-" -> System.`in` to IRI.from("file://" + System.getProperty("user.dir") + "/")
+            val (inputStream, baseIri) = when {
+                input == null || input!!.pathString == "-" -> System.`in` to workingDir
 
                 input!!.notExists() -> throw BadParameterValue(
                     currentContext.localization.pathDoesNotExist(
@@ -133,7 +134,7 @@ class Transform : CliktCommand(help = "Transforms an RDF surfaces graph (--input
                 rdfSurfacesGraph,
                 ignoreQuerySurface,
                 rdfLists = commonOptions.rdfList,
-                baseIRI = baseIRI
+                baseIRI = baseIri
             )
 
             result.fold(
@@ -159,10 +160,10 @@ class Transform : CliktCommand(help = "Transforms an RDF surfaces graph (--input
     }
 }
 
-class TPTPTupleAnswerToRDFSurfaces :
+class QaAnswerToRs :
     CliktCommand(help = "Transforms a TPTP tuple answer (--input) into an RDF surfaces graph using a specified RDF query surface (--query-surface)") {
     private val commonOptions by CommonOptions()
-    private val input by option("--tuple-answer", "-t", help = "Get tptp answer tuple from <path>").path()
+    private val input by option("--tuple-answer", "-t", help = "Get TPTP answer tuple from <path>").path()
     private val output by option("--output", "-o", help = "Write output to <path>").path(mustExist = false)
 
     private val querySurface by option("--query-surface", "-s", help = "Get RDF query surface from <path>").path(
@@ -174,13 +175,13 @@ class TPTPTupleAnswerToRDFSurfaces :
 
     private val inputType by option("--input-option", "-io").choice("raw", "szs").default("szs")
 
-    private val fOLAnswerTupleToRDFSurfaceController = FOLAnswerTupleToRDFSurfaceController()
+    private val folAnswerTupleToRDFSurfaceController = FolAnswerTupleToRDFSurfaceController()
 
     override fun run() {
 
         try {
-            val (inputStream, baseIRI) = when {
-                input == null || input!!.pathString == "-" -> System.`in` to IRI.from("file://" + System.getProperty("user.dir") + "/")
+            val (inputStream, baseIri) = when {
+                input == null || input!!.pathString == "-" -> System.`in` to workingDir
 
                 input!!.notExists() -> throw BadParameterValue(
                     currentContext.localization.pathDoesNotExist(
@@ -202,7 +203,7 @@ class TPTPTupleAnswerToRDFSurfaces :
 
             val rdfSurfaceGraph = querySurface.readText()
 
-            val querySurface = fOLAnswerTupleToRDFSurfaceController.getQuerySurfaceFromRdfSurfacesGraph(rdfSurfaceGraph, commonOptions.rdfList).fold(
+            val querySurface = folAnswerTupleToRDFSurfaceController.getQuerySurfaceFromRdfSurfacesGraph(rdfSurfaceGraph, baseIri ,commonOptions.rdfList).fold(
                 onSuccess = {querySurface ->
                     if (querySurface.isEmpty()) {
                         echoError("--query-surface: RDF surfaces graph contains no query surface.")
@@ -224,13 +225,13 @@ class TPTPTupleAnswerToRDFSurfaces :
 
 
             val result = if (inputType == "raw") {
-                fOLAnswerTupleToRDFSurfaceController.transformTPTPTupleAnswerToRDFSurfaces(
+                folAnswerTupleToRDFSurfaceController.transformTPTPTupleAnswerToRDFSurfaces(
                     tptpTupleAnswer = inputStream.bufferedReader().use { it.readText() },
                     querySurface = querySurface,
                 )
             } else {
                 inputStream.bufferedReader().useLines {
-                    fOLAnswerTupleToRDFSurfaceController.questionAnsweringOutputToRDFSurfacesCasc(
+                    folAnswerTupleToRDFSurfaceController.questionAnsweringOutputToRDFSurfacesCasc(
                         querySurface = querySurface,
                         questionAnsweringOutputLines = it,
                     )
@@ -267,7 +268,7 @@ class Check :
 
     private val input by option(
         "--input", "-i",
-        help = "Path to RDF surfaces graph"
+        help = "Get RDF surfaces graph from <path>"
     ).path()
 
     private val consequence by option(
@@ -284,23 +285,21 @@ class Check :
         help = "Write transformation output to <path>"
     ).path(mustExist = false)
 
-    private val vampireOption by option("--vampire-option", "-v").choice("0", "1").int().default(0)
+    private val vampireOption by option("--vampire-option-mode", "-v").choice("0", "1").int().default(0)
 
-    private val timeLimit by option("--time-limit", "-t", help = "Reasoning time limit in seconds").long().default(60)
+    private val timeLimit by option("--time-limit", "-t", help = "Time limit in seconds").long().default(60)
         .validate { it > 0 }
 
 
     override fun run() {
         try {
 
-            var baseIRI: IRI
-            var computedExpectedAnswer: Path
+            val computedExpectedAnswer: Path
 
-            val inputStream = when {
+            val (inputStream, baseIri) = when {
                 input == null || input!!.pathString == "-" -> {
-                    baseIRI = IRI.from("file://" + System.getProperty("user.dir") + "/")
                     computedExpectedAnswer = when {
-                        consequence == null -> throw BadParameterValue(currentContext.localization.missingOption("option 'consequences' must not be null if the RDF graph is given as a stream."))
+                        consequence == null -> throw BadParameterValue(currentContext.localization.missingOption("The option 'consequence' must not be null if the RDF surface graph is entered as a stream."))
                         consequence!!.notExists() -> throw BadParameterValue(
                             currentContext.localization.pathDoesNotExist(
                                 "file",
@@ -317,7 +316,7 @@ class Check :
 
                         else -> consequence!!
                     }
-                    System.`in`
+                    System.`in` to workingDir
                 }
 
                 input!!.notExists() -> throw BadParameterValue(
@@ -335,7 +334,6 @@ class Check :
                 )
 
                 else -> {
-                    baseIRI = IRI.from("file://" + input!!.absolute().parent.invariantSeparatorsPathString + "/")
                     computedExpectedAnswer = when {
                         consequence == null -> Path(input!!.parent.pathString + "/" + input!!.nameWithoutExtension + "-answer.n3s").takeIf { it.exists() }
                             ?: Path(input!!.parent.pathString + "/" + input!!.nameWithoutExtension + "-answer.n3").takeIf { it.exists() }
@@ -362,7 +360,7 @@ class Check :
 
                         else -> consequence!!
                     }
-                    input!!.inputStream()
+                    input!!.inputStream() to IRI.from("file://" + input!!.absolute().parent.invariantSeparatorsPathString + "/")
                 }
             }
 
@@ -375,17 +373,17 @@ class Check :
                 graph,
                 ignoreQuerySurface = true,
                 rdfLists = commonOptions.rdfList,
-                baseIRI = baseIRI
+                baseIRI = baseIri
             )
             val answerParseResult = rdfSurfaceToFOLController.transformRDFSurfaceGraphToFOLConjecture(
                 answerGraph,
                 rdfLists = commonOptions.rdfList,
-                baseIRI = baseIRI
+                baseIRI = baseIri
             )
 
             val folAtom = parseResult.fold(
                 onSuccess = { (folAtom, _) ->
-                    if (quiet.not()) echoNonQuiet("Transformation of --input RDF surfaces graph was successful")
+                    if (quiet.not()) echoNonQuiet("Transformation of RDF surfaces graph (--input) was successful")
                     folAtom
                 },
                 onFailure = { throwable ->
@@ -398,7 +396,7 @@ class Check :
 
             val folConjecture = answerParseResult.fold(
                 onSuccess = { folConjecture ->
-                    if (quiet.not() && folAtom != null) echoNonQuiet("Transformation of --consequence RDF surfaces graph was successful")
+                    if (quiet.not()) echoNonQuiet("Transformation of RDF surfaces graph (--consequence) was successful")
                     folConjecture
                 },
                 onFailure = { throwable ->
@@ -460,12 +458,12 @@ class Check :
     }
 }
 
-class TransformWithQA :
+class TransformQa :
     CliktCommand(help = "Transforms an RDF surfaces graph to FOL and returns the results of the Vampire question answering feature") {
     private val commonOptions by CommonOptions()
     private val input by option(
         "--input", "-i",
-        help = "File to RDF Surfaces graph"
+        help = "Get RDF surfaces graph from <path>"
     ).path()
     private val output by option(
         "--output",
@@ -474,14 +472,14 @@ class TransformWithQA :
     ).path()
 
 
-    private val vampireExecFile by option(help = "File to vampire executable").path()
+    private val vampireExecFile by option(help = "File to the Vampire executable").path()
         .default(Path("/home/rebekka/Programs/Vampire-qa/tmp/build/bin/vampire_z3_rel_qa_6176"))
 
     private val quiet by option("--quiet", "-q", help = "Display less output").flag(default = false)
 
-    private val vampireOption by option("--vampire-option", "-v").choice("0", "1").int().default(0)
+    private val vampireOption by option("--vampire-option-mode", "-v").choice("0", "1").int().default(0)
 
-    private val timeLimit by option("--time-limit", "-t", help = "Reasoning time limit in seconds").long().default(60)
+    private val timeLimit by option("--time-limit", "-t", help = "Time limit in seconds").long().default(60)
         .validate { it > 0 }
 
 
@@ -491,7 +489,7 @@ class TransformWithQA :
 
             val inputStream = when {
                 input == null || input!!.pathString == "-" -> {
-                    baseIRI = IRI.from("file://" + System.getProperty("user.dir") + "/")
+                    baseIRI = workingDir
                     System.`in`
                 }
 
@@ -571,7 +569,7 @@ class TransformWithQA :
             }
 
             val vampireParsingResult = vampireProcess.inputReader().useLines { vampireOutput ->
-                FOLAnswerTupleToRDFSurfaceController().questionAnsweringOutputToRDFSurfacesCasc(
+                FolAnswerTupleToRDFSurfaceController().questionAnsweringOutputToRDFSurfacesCasc(
                     querySurface = querySurface,
                     questionAnsweringOutputLines = vampireOutput,
                 )
@@ -605,12 +603,12 @@ fun String.runCommand(workingDir: File): Process {
 }
 
 fun main(args: Array<String>) =
-    RdfSurfaceToFol().subcommands(
-        Transform(),
-        Check(),
-        TransformWithQA(),
+    Rs2fol().subcommands(
         Rewrite(),
-        TPTPTupleAnswerToRDFSurfaces()
+        Transform(),
+        QaAnswerToRs(),
+        Check(),
+        TransformQa(),
     )
         .main(args)
 

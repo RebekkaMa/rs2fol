@@ -140,7 +140,7 @@ data class IRI(
 
 data class BlankNode(val blankNodeId: String) : RdfTripleElement()
 
-data class Collection(val list: List<RdfTripleElement>) : RdfTripleElement(), List<RdfTripleElement> by list
+data class Collection(val list: List<RdfTripleElement> = listOf()) : RdfTripleElement(), List<RdfTripleElement> by list
 
 open class Literal(val literalValue: Any, val datatype: BaseDatatype) : RdfTripleElement() {
 

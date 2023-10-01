@@ -10,7 +10,7 @@ import rdfSurfaces.*
 import rdfSurfaces.Collection
 import util.NotSupportedException
 
-object TPTPTupleAnswerFormTransformer :
+object TptpTupleAnswerFormTransformer :
     Grammar<Pair<List<List<RdfTripleElement>>, List<List<List<RdfTripleElement>>>>>() {
 
     private val results = mutableListOf<List<RdfTripleElement>>()
@@ -38,9 +38,12 @@ object TPTPTupleAnswerFormTransformer :
     private val term: Parser<RdfTripleElement> by variable or parser(this::nonLogicalSymbol)
 
     private val arguments: Parser<List<RdfTripleElement>> by (term and -comma and parser(this::arguments)).map {
-        it.t2.plus(
-            it.t1
-        )
+        buildList {
+            add(it.t1)
+            it.t2.forEach { rdfTripleElement ->
+                add(rdfTripleElement)
+            }
+        }
     } or term.map { listOf(it) }
 
     private val nonLogicalSymbol: Parser<RdfTripleElement> by (atomicWord and -lpar and arguments and -rpar).map { (atomicWord, arguments) ->
@@ -49,6 +52,7 @@ object TPTPTupleAnswerFormTransformer :
                 encodeToValidBlankNodeLabel(
                     atomicWord.text + "_" + arguments.joinToString(
                         prefix = "(",
+                        separator = ",",
                         postfix = ")"
                     )
                 )
@@ -69,6 +73,8 @@ object TPTPTupleAnswerFormTransformer :
                     val (literalValue, languageTag) = it.destructured
                     Literal.fromNonNumericLiteral(literalValue, languageTag)
                 } ?: IRI.from(atomicWord.text.removeSurrounding("'"))
+                    .takeUnless { it.isRelativeReference() || it.iri.contains("\\s".toRegex()) }
+                ?: throw NotSupportedException("Element \"${atomicWord.text}\" could not be parsed.")
             }
         }
     }
@@ -100,17 +106,17 @@ object TPTPTupleAnswerFormTransformer :
             }
         }
 
-    private fun encodeToValidBlankNodeLabel(string: String): String {
+    fun encodeToValidBlankNodeLabel(string: String): String {
         val hexValueForO = Integer.toHexString('O'.code).uppercase().padStart(4, '0')
         val hexValueForx = Integer.toHexString('x'.code).uppercase().padStart(4, '0')
-        val strWithoutOx = string.replace("Ox([0-9A-Fa-f]{4})".toRegex()){
+        val strWithoutOx = string.replace("Ox([0-9A-Fa-f]{4})".toRegex()) {
             "Ox${hexValueForO}Ox$hexValueForx" + it.destructured.component1()
         }
         return buildString {
             strWithoutOx.toCharArray().forEachIndexed { i, char ->
                 if ((i in 1..(strWithoutOx.length - 2) && "($pnChars|\\.)".toRegex().matches(char.toString())) ||
                     (i == 0 && "($pnCharsU|[0-9])".toRegex().matches(char.toString())) ||
-                     i > 0 && "$pnChars".toRegex().matches(char.toString())
+                    i > 0 && "$pnChars".toRegex().matches(char.toString())
                 ) this.append(char) else {
                     val hexValue = Integer.toHexString(char.code).padStart(4, '0').uppercase()
                     this.append("Ox$hexValue")

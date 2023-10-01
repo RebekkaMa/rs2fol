@@ -3,7 +3,8 @@ import com.github.h0tk3y.betterParse.grammar.parseToEnd
 import com.github.h0tk3y.betterParse.parser.ParseException
 import mu.KotlinLogging
 import parser.RDFSurfacesParser
-import parser.TPTPTupleAnswerFormTransformer
+import parser.TptpTupleAnswerFormTransformer
+import rdfSurfaces.IRI
 import rdfSurfaces.PositiveSurface
 import rdfSurfaces.QuerySurface
 import rdfSurfaces.RdfTripleElement
@@ -13,14 +14,15 @@ import util.generalParseErrorString
 
 private val logger = KotlinLogging.logger {}
 
-class FOLAnswerTupleToRDFSurfaceController {
+class FolAnswerTupleToRDFSurfaceController {
 
     fun getQuerySurfaceFromRdfSurfacesGraph(
         rdfSurfacesGraph: String,
+        baseIRI: IRI,
         rdfLists: Boolean,
     ): Result<List<QuerySurface>> {
         return try {
-            Result.success(RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfacesGraph).getQuerySurfaces())
+            Result.success(RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfacesGraph, baseIRI).getQuerySurfaces())
         } catch (exc: Exception) {
             when (exc) {
                 is ParseException -> Result.failure(InvalidInputException(generalParseErrorString, exc))
@@ -101,7 +103,7 @@ class FOLAnswerTupleToRDFSurfaceController {
         tptpTupleAnswer: String,
     ): Result<Pair<List<List<RdfTripleElement>>, List<List<List<RdfTripleElement>>>>> {
         return try {
-            Result.success(TPTPTupleAnswerFormTransformer.parseToEnd(tptpTupleAnswer))
+            Result.success(TptpTupleAnswerFormTransformer.parseToEnd(tptpTupleAnswer))
         } catch (exc: Exception) {
             when (exc) {
                 is ParseException -> Result.failure(InvalidInputException("'$tptpTupleAnswer': TPTP Answer Tuple could not be parsed. Please check the syntax.", exc))

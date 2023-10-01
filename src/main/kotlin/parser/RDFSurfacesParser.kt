@@ -51,26 +51,26 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
     private val sparqlBaseStart by regexToken("\\bBASE\\b".toRegex(RegexOption.IGNORE_CASE))
     private val sparqlPrefixStart by regexToken("\\bPREFIX\\b".toRegex(RegexOption.IGNORE_CASE))
 
-    private val irirefToken by regexToken("<([^\u0000-\u0020<>\"{}|^`\\\\]|((\\\\u([0-9]|[A-F]|[a-f]){4})|(\\\\U([0-9]|[A-F]|[a-f]){8})))*>")
-    private val iriref by irirefToken use { replaceNumericEscapeSequences(text.removeSurrounding("<", ">")) }
+    private val iriRefToken by regexToken("<([^\u0000-\u0020<>\"{}|^`\\\\]|((\\\\u([0-9]|[A-F]|[a-f]){4})|(\\\\U([0-9]|[A-F]|[a-f]){8})))*>")
+    private val iriRef by iriRefToken use { replaceNumericEscapeSequences(text.removeSurrounding("<", ">")) }
 
     private val blankNodeLabelToken by regexToken("_:($pnCharsU|[0-9])(($pnChars|\\.)*$pnChars)?")
 
-    private val pnameLn by regexToken("$pnPrefix?:$pnLocal")
-    private val pnameNs by regexToken("$pnPrefix?:")
-    private val prefixedName by pnameLn.use {
+    private val pNameLn by regexToken("$pnPrefix?:$pnLocal")
+    private val pNameNs by regexToken("$pnPrefix?:")
+    private val prefixedName by pNameLn.use {
         val (prefix, local) = text.split(':', limit = 2)
         return@use (prefixMap[prefix]
-            ?: throw InvalidInputException("Undefined Prefix: $prefix")) + replaceReservedCharacterEscapes(local)
-    } or pnameNs.use {
+            ?: throw InvalidInputException("Undefined prefix: $prefix")) + replaceReservedCharacterEscapes(local)
+    } or pNameNs.use {
         prefixMap[text.trimEnd().dropLast(1)] ?: throw InvalidInputException(
-            "Undefined Prefix: ${
+            "Undefined prefix: ${
                 text.trimEnd().dropLast(1)
             }"
         )
     } map { IRI.from(it) }
 
-    private val iri by iriref.map { iriString ->
+    private val iri by iriRef.map { iriString ->
         IRI.from(iriString).let {
             it.takeUnless { it.isRelativeReference() } ?: IRI.transformReference(R = it, B = baseIri)
         }
@@ -113,7 +113,7 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
                 Literal.fromNonNumericLiteral(literalValue, datatypeIRI = part)
             }
 
-            else -> throw NotSupportedException("RDF Literal type not supported")
+            else -> throw NotSupportedException("RDF Literal type is not supported")
         }
     }
     private val booleanLiteralToken by regexToken("(true)|(false)")
@@ -184,10 +184,10 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
         -semicolon and optional(verb and objectList)
     )
 
-    private val prefixID by -prefixIdStart and pnameNs and iriref and -dot
-    private val base by -baseStart and iriref and -dot
-    private val sparqlBase by -sparqlBaseStart and iriref
-    private val sparqlPrefix by -sparqlPrefixStart and pnameNs and iriref
+    private val prefixID by -prefixIdStart and pNameNs and iriRef and -dot
+    private val base by -baseStart and iriRef and -dot
+    private val sparqlBase by -sparqlBaseStart and iriRef
+    private val sparqlPrefix by -sparqlPrefixStart and pNameNs and iriRef
 
 
     private val triples by (subject and predicateObjectList) or (blankNodePropertyList and optional(predicateObjectList)) map { (subj, predObjList) ->
@@ -249,7 +249,7 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
                 IRIConstants.LOG_QUERY_SURFACE_IRI -> this.add(QuerySurface(graffiti, hayeGraph))
                 IRIConstants.LOG_NEGATIVE_SURFACE_IRI -> this.add(NegativeSurface(graffiti, hayeGraph))
                 IRIConstants.LOG_NEUTRAL_SURFACE_IRI -> this.add(NeutralSurface(graffiti, hayeGraph))
-                else -> throw NotSupportedException(message = "Surface type '${surface.iri}' not supported")
+                else -> throw NotSupportedException(message = "Surface type '${surface.iri}' is not supported")
             }
         }
         Triple(newHayeGraph, freeVariables.minus(variableList.toSet()), setOf<BlankNode>())
@@ -296,7 +296,7 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
 
     private fun createBlankNodeId(): String = "$bnLabel${++blankNodeCounter}"
 
-    fun resetAll() {
+    private fun resetAll() {
         blankNodeCounter = 0
         varSet.clear()
         blankNodeTriplesSet.clear()

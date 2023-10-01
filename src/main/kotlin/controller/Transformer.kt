@@ -96,7 +96,7 @@ class Transformer {
         fun transform(hayesGraphElement: HayesGraphElement, depth: Int): String {
             val newDepthSpace = spaceBase.repeat(depth.takeIf { it >= 0 } ?: 0)
             return when (hayesGraphElement) {
-                is RDFSurface -> {
+                is RdfSurface -> {
                     val surfaceNameString = when (hayesGraphElement) {
                         is PositiveSurface -> "log:onPositiveSurface"
                         is NegativeSurface -> "log:onNegativeSurface"
@@ -107,9 +107,9 @@ class Transformer {
                     val graffitiStringList = transform(hayesGraphElement.graffiti)
                     val hayesGraphString =
                         hayesGraphElement.hayesGraph.joinToString(
-                            prefix = "\n",
-                            separator = "\n",
-                            postfix = "\n"
+                            prefix = System.lineSeparator(),
+                            separator = System.lineSeparator(),
+                            postfix = System.lineSeparator()
                         ) {
                             transform(
                                 hayesGraphElement = it,
@@ -133,9 +133,9 @@ class Transformer {
         val graffitiListString = transform(defaultPositiveSurface.graffiti)
         val hayesGraphString =
             defaultPositiveSurface.hayesGraph.joinToString(
-                prefix = "\n",
-                separator = "\n",
-                postfix = "\n"
+                prefix = System.lineSeparator(),
+                separator = System.lineSeparator(),
+                postfix = System.lineSeparator()
             ) {
                 transform(
                     hayesGraphElement = it,
@@ -146,7 +146,7 @@ class Transformer {
         )
 
         prefixMap.forEach { (iri, prefix) ->
-            rdfSurfacesGraphString.insert(0, "@prefix $prefix: <$iri>.\n")
+            rdfSurfacesGraphString.insert(0, "@prefix $prefix: <$iri>.${System.lineSeparator()}")
         }
         return rdfSurfacesGraphString.toString()
     }
@@ -163,7 +163,7 @@ class Transformer {
 
         fun transform(blankNode: BlankNode) = encodeToValidTPTPVariable(blankNode.blankNodeId)
 
-        fun transform(iri: IRI) = "'${iri.iri}'"
+        fun transform(iri: IRI) = "'${encodeToValidTPTPLiteral(iri.iri)}'"
 
         fun transform(literal: Literal) = "'" + encodeToValidTPTPLiteral(
             when (literal) {
@@ -187,21 +187,21 @@ class Transformer {
             val nextDepthSpace = newDepthSpace.plus(spaceBase)
 
             return when (hayesGraphElement) {
-                is RDFSurface -> {
+                is RdfSurface -> {
                     val fofVariableList = transform(hayesGraphElement.graffiti)
                     when (hayesGraphElement) {
                         is PositiveSurface -> "\$true".takeIf { hayesGraphElement.hayesGraph.isEmpty() }
                             ?: if (hayesGraphElement.graffiti.isEmpty()) {
                                 hayesGraphElement.hayesGraph.joinToString(
                                     prefix = "",
-                                    separator = "\n$newDepthSpace& ",
+                                    separator = "${System.lineSeparator()}$newDepthSpace& ",
                                     postfix = ""
                                 ) { transform(it, depth + 1) }
                             } else {
                                 hayesGraphElement.hayesGraph.joinToString(
-                                    prefix = "? [$fofVariableList] : (\n$nextDepthSpace",
-                                    separator = "\n$nextDepthSpace& ",
-                                    postfix = "\n$newDepthSpace)"
+                                    prefix = "? [$fofVariableList] : (${System.lineSeparator()}$nextDepthSpace",
+                                    separator = "${System.lineSeparator()}$nextDepthSpace& ",
+                                    postfix = "${System.lineSeparator()}$newDepthSpace)"
                                 ) { transform(it, depth + 1) }
                             }
 
@@ -209,15 +209,15 @@ class Transformer {
                         is NegativeSurface, is QuerySurface, is NegativeTripleSurface -> "\$false".takeIf { hayesGraphElement.hayesGraph.isEmpty() }
                             ?: if (hayesGraphElement.graffiti.isEmpty()) {
                                 hayesGraphElement.hayesGraph.joinToString(
-                                    prefix = "~(\n$nextDepthSpace",
-                                    separator = "\n$nextDepthSpace& ",
-                                    postfix = "\n$newDepthSpace)"
+                                    prefix = "~(${System.lineSeparator()}$nextDepthSpace",
+                                    separator = "${System.lineSeparator()}$nextDepthSpace& ",
+                                    postfix = "${System.lineSeparator()}$newDepthSpace)"
                                 ) { transform(it, depth + 1) }
                             } else {
                                 hayesGraphElement.hayesGraph.joinToString(
-                                    prefix = "! [$fofVariableList] :  ~(\n$nextDepthSpace",
-                                    separator = "\n$nextDepthSpace& ",
-                                    postfix = "\n$newDepthSpace)"
+                                    prefix = "! [$fofVariableList] :  ~(${System.lineSeparator()}$nextDepthSpace",
+                                    separator = "${System.lineSeparator()}$nextDepthSpace& ",
+                                    postfix = "${System.lineSeparator()}$newDepthSpace)"
                                 ) { transform(it, depth + 1) }
                             }
                         is NeutralSurface -> throw NotSupportedException("Transformation of surface type is not supported: Neutral surface")
@@ -243,18 +243,18 @@ class Transformer {
                 if (defaultPositiveSurface.graffiti.isEmpty()) {
                     otherSurfaces.joinToString(
                         prefix = "",
-                        separator = "\n$spaceBase& ",
+                        separator = "${System.lineSeparator()}$spaceBase& ",
                         postfix = ""
                     ) { hayesGraphElement -> transform(hayesGraphElement, 2) }
                 } else {
                     otherSurfaces.joinToString(
-                        prefix = "? [$fofVariableList] : (\n$doubleSpaceBase",
-                        separator = "\n$doubleSpaceBase& ",
-                        postfix = "\n$spaceBase)"
+                        prefix = "? [$fofVariableList] : (${System.lineSeparator()}$doubleSpaceBase",
+                        separator = "${System.lineSeparator()}$doubleSpaceBase& ",
+                        postfix = "${System.lineSeparator()}$spaceBase)"
                     ) { hayesGraphElement -> transform(hayesGraphElement, 2) }
                 }
             }
-            "fof($tptpName,$formulaRole,\n$spaceBase$fofFormula\n)."
+            "fof($tptpName,$formulaRole,${System.lineSeparator()}$spaceBase$fofFormula${System.lineSeparator()})."
         }
 
         val fofQuantifiedFormulaQuestion = querySurfaces.mapIndexed { index, surface ->
@@ -263,23 +263,23 @@ class Transformer {
                 if (querySurface.graffiti.isEmpty()) {
                     querySurface.hayesGraph.joinToString(
                         prefix = "",
-                        separator = "\n$spaceBase& ",
+                        separator = "${System.lineSeparator()}$spaceBase& ",
                         postfix = ""
                     ) { hayesGraphElement -> transform(hayesGraphElement, 2) }
                 } else {
                     querySurface.hayesGraph.joinToString(
-                        prefix = "? [${transform(querySurface.graffiti)}] : (\n$doubleSpaceBase",
-                        separator = "\n$doubleSpaceBase& ",
-                        postfix = "\n$spaceBase)"
+                        prefix = "? [${transform(querySurface.graffiti)}] : (${System.lineSeparator()}$doubleSpaceBase",
+                        separator = "${System.lineSeparator()}$doubleSpaceBase& ",
+                        postfix = "${System.lineSeparator()}$spaceBase)"
                     ) { hayesGraphElement -> transform(hayesGraphElement, 2) }
                 }
             }
-            "fof(question_$index,question,\n$spaceBase$fofFormula\n)."
+            "fof(question_$index,question,${System.lineSeparator()}$spaceBase$fofFormula${System.lineSeparator()})."
         }
 
         return fofQuantifiedFormula + if (!ignoreQuerySurfaces && fofQuantifiedFormulaQuestion.isNotEmpty()) fofQuantifiedFormulaQuestion.joinToString(
-            prefix = "\n",
-            separator = "\n"
+            prefix = System.lineSeparator(),
+            separator = System.lineSeparator()
         ) else ""
     }
 

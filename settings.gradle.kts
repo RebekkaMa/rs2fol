@@ -1,3 +1,3 @@
 
-rootProject.name = "untitled1"
+rootProject.name = "rs2fol"
 

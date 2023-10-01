@@ -7,5 +7,5 @@ fof(axiom,axiom,
    & triple('http://one.example/path/subject4','http://one.example/path/predicate4','http://one.example/path/object4')
    & triple('http://another.example/subject5','http://another.example/predicate5','http://another.example/object5')
    & triple('http://another.example/subject6','http://www.w3.org/1999/02/22-rdf-syntax-ns#type','http://another.example/subject7')
-   & triple('http://伝言.example/?user=أكرم&amp;channel=R%26D','http://www.w3.org/1999/02/22-rdf-syntax-ns#type','http://another.example/subject8')
+   & triple('http://\\u4F1D\\u8A00.example/?user=\\u0623\\u0643\\u0631\\u0645&amp;channel=R%26D','http://www.w3.org/1999/02/22-rdf-syntax-ns#type','http://another.example/subject8')
 ).
