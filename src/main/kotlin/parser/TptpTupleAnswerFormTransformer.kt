@@ -50,11 +50,7 @@ object TptpTupleAnswerFormTransformer :
         return@map when {
             atomicWord.text.startsWith("sK") -> BlankNode(
                 encodeToValidBlankNodeLabel(
-                    atomicWord.text + "_" + arguments.joinToString(
-                        prefix = "(",
-                        separator = ",",
-                        postfix = ")"
-                    )
+                    atomicWord.text + "-" + arguments.hashCode()
                 )
             )
 
@@ -98,12 +94,9 @@ object TptpTupleAnswerFormTransformer :
 
     override val rootParser: Parser<Pair<List<List<RdfTripleElement>>, List<List<List<RdfTripleElement>>>>>
         get() {
-            return try {
-                resultValue.getValue(this, this::rootParser).map { results.toList() to orResults.toList() }
-            } finally {
-                results.clear()
-                orResults.clear()
-            }
+            results.clear()
+            orResults.clear()
+            return resultValue.getValue(this, this::rootParser).map { results.toList() to orResults.toList() }
         }
 
     fun encodeToValidBlankNodeLabel(string: String): String {

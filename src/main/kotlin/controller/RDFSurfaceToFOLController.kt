@@ -37,7 +37,7 @@ class RDFSurfaceToFOLController {
     ): Result<String> {
         return try {
             val parserResult = RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfaceGraph, baseIRI)
-            success(Transformer().toFOL(parserResult, true, "conjecture", "conjecture"))
+            success(Transformer().toFOL(parserResult, false, "conjecture", "conjecture"))
         } catch (exc: Exception) {
             when (exc) {
                 is ParseException -> failure(InvalidInputException(generalParseErrorString, exc))

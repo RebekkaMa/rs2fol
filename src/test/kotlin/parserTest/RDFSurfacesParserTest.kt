@@ -2,8 +2,8 @@ package parserTest
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.ShouldSpec
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
-import io.kotest.matchers.shouldBe
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import parser.RDFSurfacesParser
 import rdfSurfaces.*
@@ -152,7 +152,6 @@ class RDFSurfacesParserTest : ShouldSpec(
                     listOf(rdfTriple1)
                 )
             }
-            //TODO()
             should("transform example9.n3 without exception") {
                 val file = Path("src/test/resources/turtle/example9.n3")
 
@@ -729,7 +728,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 rdfSurfaceParser.parseToEnd(
                     testStr,
                     IRI.from("file://" + IRI.from(System.getProperty("user.dir")))
-                ).graffiti.size shouldBe 8
+                ).graffiti shouldNotContain BlankNode("BN_1")
             }
             should("throw an exeption") {
                 val testStr =

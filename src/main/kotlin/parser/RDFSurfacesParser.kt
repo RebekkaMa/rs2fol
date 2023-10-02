@@ -286,11 +286,8 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
 
     override val rootParser: Parser<PositiveSurface>
         get() {
-            return try {
-                turtleDoc.getValue(this, this::rootParser)
-            } finally {
-                resetAll()
-            }
+            resetAll()
+            return turtleDoc.getValue(this, this::rootParser)
         }
 
 
@@ -302,7 +299,6 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
         blankNodeTriplesSet.clear()
         prefixMap.clear()
         collectionTripleSet.clear()
-        bnLabel = "BN_"
         blankNodeToDirectParentSet.clear()
     }
 
@@ -332,7 +328,7 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
     fun tryParseToEnd(input: String, baseIRI: IRI): ParseResult<PositiveSurface> {
         var bnLabel = "BN_"
         var i = 0
-        while (input.contains("\\b_:$bnLabel\\d+\\b".toRegex()) && i++ in 0..10) {
+        while (input.contains("_:$bnLabel\\d+".toRegex()) && i++ in 0..10) {
             bnLabel += '0'
         }
         if (i == 11) throw InvalidInputException("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
@@ -344,7 +340,7 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
     fun parseToEnd(input: String, baseIRI: IRI): PositiveSurface {
         var bnLabel = "BN_"
         var i = 0
-        while (input.contains("\\b_:$bnLabel\\d+\\b".toRegex()) && i++ in 0..10) {
+        while (input.contains("_:$bnLabel\\d+".toRegex()) && i++ in 0..10) {
             bnLabel += '0'
         }
         if (i > 10) throw InvalidInputException("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")

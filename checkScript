@@ -1,12 +1,11 @@
 #!/bin/bash
-# NOTE : Quote it else use array to avoid problems #
-FILES="/home/rebekka/Programs/EyeReasoner/eye/reasoning/blogic/*.n3s"
+FILES="eye/reasoning/blogic/*.n3s"
 RE=0
 for f in $FILES
 do
   if [[ $f = *answer.n3s ]]; then continue ; fi
   echo -n "Processing $f file...  -   "
-  ./bin/untitled1 check -q -i $f # --vampire-option 1 --rdf-list
+  ./bin/rs2fol check -q -i $f -e /vampire_z3_rel_qa_6176 # --vampire-option-mode 1 --rdf-list
   ((RE++))
 done
 echo "Number of processed files: $RE"

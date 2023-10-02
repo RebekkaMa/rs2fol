@@ -72,7 +72,6 @@ class QuerySurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement
                 is RdfSurface -> if (blankNode in it.graffiti) false else isBounded(blankNode, it)
             }
         }
-
     }
 
     fun replaceBlankNodes(list: Set<List<RdfTripleElement>>): PositiveSurface {

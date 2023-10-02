@@ -120,14 +120,6 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
         should("transform example10.n3 without exception") {
             val file = Path("src/test/resources/turtle/example10.n3")
             val solutionFile = Path("src/test/resources/turtle/example10.p")
-            println(
-                (Transformer().toFOL(
-                    rdfSurfacesParser.parseToEnd(
-                        file.readText(),
-                        IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                    )
-                ))
-            )
             (Transformer().toFOL(
                 rdfSurfacesParser.parseToEnd(
                     file.readText(),
@@ -240,7 +232,6 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
    )
 )."""
 
-            //TODO(absolutePath)
             (Transformer().toFOL(
                 rdfSurfacesParser.parseToEnd(
                     file.readText(),

@@ -39,7 +39,7 @@ class CommonOptions : OptionGroup("Standard Options") {
     val rdfList by option(
         "--rdf-list",
         "-r",
-        help = "Use the rdf:first/rdf:rest list structure to translate RDF lists.\nIf set to \"false\", lists will be translated using FOL functions."
+        help = "Use the rdf:first/rdf:rest list structure to translate lists.\nIf set to \"false\", lists will be translated using FOL functions."
     ).flag(default = false, defaultForHelp = "false")
 }
 
@@ -163,7 +163,7 @@ class Transform : CliktCommand(help = "Transforms an RDF surfaces graph (--input
 class QaAnswerToRs :
     CliktCommand(help = "Transforms a TPTP tuple answer (--input) into an RDF surfaces graph using a specified RDF query surface (--query-surface)") {
     private val commonOptions by CommonOptions()
-    private val input by option("--tuple-answer", "-t", help = "Get TPTP answer tuple from <path>").path()
+    private val input by option("--input", "-i", help = "Get TPTP answer tuple from <path>").path()
     private val output by option("--output", "-o", help = "Write output to <path>").path(mustExist = false)
 
     private val querySurface by option("--query-surface", "-s", help = "Get RDF query surface from <path>").path(
@@ -173,7 +173,7 @@ class QaAnswerToRs :
     ).required()
 
 
-    private val inputType by option("--input-option", "-io").choice("raw", "szs").default("szs")
+    private val inputType by option("--input-type", "-it").choice("raw", "szs").default("szs")
 
     private val folAnswerTupleToRDFSurfaceController = FolAnswerTupleToRDFSurfaceController()
 
@@ -201,9 +201,9 @@ class QaAnswerToRs :
 
             }
 
-            val rdfSurfaceGraph = querySurface.readText()
+            val rdfSurfacesGraph = querySurface.readText()
 
-            val querySurface = folAnswerTupleToRDFSurfaceController.getQuerySurfaceFromRdfSurfacesGraph(rdfSurfaceGraph, baseIri ,commonOptions.rdfList).fold(
+            val querySurface = folAnswerTupleToRDFSurfaceController.getQuerySurfaceFromRdfSurfacesGraph(rdfSurfacesGraph, baseIri ,commonOptions.rdfList).fold(
                 onSuccess = {querySurface ->
                     if (querySurface.isEmpty()) {
                         echoError("--query-surface: RDF surfaces graph contains no query surface.")
@@ -263,7 +263,7 @@ class QaAnswerToRs :
 
 
 class Check :
-    CliktCommand(help = "Checks whether an RDF surfaces graph (--consequence) is a logical consequence of another RDF surfaces graph (--input), using the FOL-based Vampire Theorem Proofer") {
+    CliktCommand(help = "Checks whether an RDF surfaces graph (--consequence) is a logical consequence of another RDF surfaces graph (--input) using the FOL-based Vampire theorem prover") {
     private val commonOptions by CommonOptions()
 
     private val input by option(
@@ -273,16 +273,15 @@ class Check :
 
     private val consequence by option(
         "--consequence", "-c",
-        help = "Path to the consequence (given as RDF surfaces graph) (default: <<input>-answer.n3s>)"
+        help = "Path to the consequence (given as RDF surfaces graph) (default: <<--input>.n3s.out>)"
     ).path()
 
-    private val vampireExec by option(help = "Path to Vampire executable").path()
-        .default(Path("/home/rebekka/Programs/Vampire-qa/tmp/build/bin/vampire_z3_rel_qa_6176"))
+    private val vampireExec by option("--vampire-exec", "-e", help = "Path to the Vampire executable").path(mustExist = true).required()
     private val quiet by option("--quiet", "-q", help = "Display less output").flag(default = false)
     private val output by option(
         "--output",
         "-o",
-        help = "Write transformation output to <path>"
+        help = "Write the generated FOL formula (interim result) to <path>"
     ).path(mustExist = false)
 
     private val vampireOption by option("--vampire-option-mode", "-v").choice("0", "1").int().default(0)
@@ -294,11 +293,11 @@ class Check :
     override fun run() {
         try {
 
-            val computedExpectedAnswer: Path
+            val computedConsequence: Path
 
             val (inputStream, baseIri) = when {
                 input == null || input!!.pathString == "-" -> {
-                    computedExpectedAnswer = when {
+                    computedConsequence = when {
                         consequence == null -> throw BadParameterValue(currentContext.localization.missingOption("The option 'consequence' must not be null if the RDF surface graph is entered as a stream."))
                         consequence!!.notExists() -> throw BadParameterValue(
                             currentContext.localization.pathDoesNotExist(
@@ -334,13 +333,13 @@ class Check :
                 )
 
                 else -> {
-                    computedExpectedAnswer = when {
-                        consequence == null -> Path(input!!.parent.pathString + "/" + input!!.nameWithoutExtension + "-answer.n3s").takeIf { it.exists() }
-                            ?: Path(input!!.parent.pathString + "/" + input!!.nameWithoutExtension + "-answer.n3").takeIf { it.exists() }
+                    computedConsequence = when {
+                        consequence == null -> Path( input!!.pathString + ".out").takeIf { it.exists() }
+                            ?: Path(input!!.pathString + ".out").takeIf { it.exists() }
                             ?: throw BadParameterValue(
                                 currentContext.localization.pathDoesNotExist(
                                     "file",
-                                    input!!.parent.pathString + "/" + input!!.nameWithoutExtension + "-answer.n3s"
+                                    input!!.pathString + ".out"
                                 )
                             )
 
@@ -367,7 +366,7 @@ class Check :
             val rdfSurfaceToFOLController = RDFSurfaceToFOLController()
 
             val graph = inputStream.bufferedReader().use { it.readText() }
-            val answerGraph = computedExpectedAnswer.readText()
+            val consequenceGraph = computedConsequence.readText()
 
             val parseResult = rdfSurfaceToFOLController.transformRDFSurfaceGraphToFOL(
                 graph,
@@ -376,7 +375,7 @@ class Check :
                 baseIRI = baseIri
             )
             val answerParseResult = rdfSurfaceToFOLController.transformRDFSurfaceGraphToFOLConjecture(
-                answerGraph,
+                consequenceGraph,
                 rdfLists = commonOptions.rdfList,
                 baseIRI = baseIri
             )
@@ -407,7 +406,6 @@ class Check :
                 }
             )
 
-            //if (parseResult is Failure || answerParseResult is Failure) throw ProgramResult(1)
 
             output?.let {
                 it.parent?.createDirectories()
@@ -459,7 +457,7 @@ class Check :
 }
 
 class TransformQa :
-    CliktCommand(help = "Transforms an RDF surfaces graph to FOL and returns the results of the Vampire question answering feature") {
+    CliktCommand(help = "Transforms an RDF surfaces graph to FOL and returns the results of the Vampire question answering feature as an RDF surfaces graph") {
     private val commonOptions by CommonOptions()
     private val input by option(
         "--input", "-i",
@@ -468,12 +466,11 @@ class TransformQa :
     private val output by option(
         "--output",
         "-o",
-        help = "Write transformation output to <path>"
+        help = "Write the generated FOL formula (interim result) to <path>"
     ).path()
 
 
-    private val vampireExecFile by option(help = "File to the Vampire executable").path()
-        .default(Path("/home/rebekka/Programs/Vampire-qa/tmp/build/bin/vampire_z3_rel_qa_6176"))
+    private val vampireExecFile by option("--vampire-exec", "-e", help = "File to the Vampire executable").path(mustExist = true).required()
 
     private val quiet by option("--quiet", "-q", help = "Display less output").flag(default = false)
 

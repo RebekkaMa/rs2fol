@@ -30,7 +30,6 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
         should("parse example with lists without exception") {
             val str =
                 "[[list('http://example.org/ns#s',list('http://example.org/ns#s',list('http://example.org/ns#s','\"0\"^^http://www.w3.org/2001/XMLSchema#integer'))),list]|_]"
-            println(TptpTupleAnswerFormTransformer.parseToEnd(str))
             TptpTupleAnswerFormTransformer.parseToEnd(str) shouldBeEqualToComparingFields Pair(
                 listOf(
                     listOf(
@@ -90,7 +89,7 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
             TptpTupleAnswerFormTransformer.parseToEnd(str) shouldBeEqualToComparingFields Pair(
                 listOf(
                     listOf(
-                        BlankNode(TptpTupleAnswerFormTransformer.encodeToValidBlankNodeLabel("sK1_(http://example.org/ns#b,http://example.org/ns#c)"))
+                        BlankNode(TptpTupleAnswerFormTransformer.encodeToValidBlankNodeLabel("sK1-${listOf(IRI.from("http://example.org/ns#b"), IRI.from("http://example.org/ns#c")).hashCode()}"))
                     )
                 ),
                 listOf()
