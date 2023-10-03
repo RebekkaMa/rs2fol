@@ -96,7 +96,7 @@ $ ./bin/rs2fol transform -i - < src/test/resources/blogic/abc.n3s | $PATH_TO_VAM
 So if you want to use Vampire with other options or another FOL theorem prover, you can replace the middle part with the wanted command.
 
 But you have to keep in mind that this programm is currently optimized only for Vampire and its input and output.
-This means that the subcommand "qa-answer-to-rs" can only extract and transform answer tuples as described before.
+This means that the subcommand `qa-answer-to-rs` can only extract and transform answer tuples as described before.
 If you want to use another FOL theorem prover and this programm doesn't accept its output, please let me know so that I can further extend the acceptance range and/or fix possible bugs.
 
 #### Caution
