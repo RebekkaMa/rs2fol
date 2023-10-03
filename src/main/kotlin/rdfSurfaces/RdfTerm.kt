@@ -19,7 +19,6 @@ data class IRI(
 
     companion object {
 
-        //TODO()
         fun from(fullIRI: String): IRI {
             return "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?".toRegex().matchEntire(fullIRI)
                 ?.let { matchResult ->

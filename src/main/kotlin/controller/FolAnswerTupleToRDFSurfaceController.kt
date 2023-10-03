@@ -37,7 +37,6 @@ class FolAnswerTupleToRDFSurfaceController {
         questionAnsweringOutputLines: Sequence<String>,
     ): Result<String> {
         val parsedResult = mutableSetOf<List<RdfTripleElement>>()
-        val orResult = mutableSetOf<List<List<RdfTripleElement>>>()
 
         var refutationFound = false
 
@@ -49,7 +48,6 @@ class FolAnswerTupleToRDFSurfaceController {
                 parseRawTPTPAnswerTupleList(tptpAnswerTupleList).fold(
                     onSuccess = {
                         parsedResult.addAll(it.first)
-                        orResult.addAll(it.second)
                     },
                     onFailure = {
                         return Result.failure(it)

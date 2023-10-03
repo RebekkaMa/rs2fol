@@ -482,7 +482,7 @@ class TransformQa :
 
     override fun run() = runBlocking {
         try {
-            var baseIRI: IRI
+            val baseIRI: IRI
 
             val inputStream = when {
                 input == null || input!!.pathString == "-" -> {
