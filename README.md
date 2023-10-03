@@ -2,7 +2,7 @@
 
 This repository is a tool for RDF surface reasoning using FOL theorem provers.
 
-For my tests and sample data, I used [EYE](https://github.com/eyereasoner/eye) and EYE's [Blogic examples](https://github.com/eyereasoner/eye/tree/master/reasoning/blogic).
+For my tests and sample data, I used [EYE](https://github.com/eyereasoner/eye) and [EYE's Blogic examples](https://github.com/eyereasoner/eye/tree/master/reasoning/blogic).
 
 ## Source Build
 
@@ -24,7 +24,7 @@ For my tests and sample data, I used [EYE](https://github.com/eyereasoner/eye) a
 
 ### qa-answer-to-rs
 
-This subcommand transforms a FOL question answering result into an RDF surfaces graph by replacing all blank nodes that are coreferences to the blank node graffiti defined on the given query surface.
+This subcommand transforms a FOL question answering result into an RDF surface by replacing all blank nodes that are coreferences to the blank node graffiti defined on the given query surface.
 
 rs2fol currently supports only the 'Tuple Answer Form' specified in https://www.tptp.org/TPTP/Proposals/AnswerExtraction.html. <br>
 Following input types are possible:
@@ -36,7 +36,7 @@ Following input types are possible:
 2.  `--input-type szs`
     - accepts multiline input, extracts the answer tuple list from all lines containing 'SZS answers Tuple' and combines the results (this is especially useful for the combined use of Vampire's cascade mode)
     - Examples
-      - ```% SZS answers Tuple [['http://example.com/abc','"123"^^http://abc.de'],['http://example.com/abc','"123"^^http://www.w3.org/2001/XMLSchema#string']|_] for ANS001+1```
+      - ```% SZS answers Tuple [['http://example.com/abc','"123"^^http://www.w3.org/2001/XMLSchema#string'],['http://example.com/abc','"123"^^http://www.w3.org/2001/XMLSchema#string']|_] for ANS001+1```
       - ```% SZS answers Tuple [[list('http://example.com/abc','http://example.com/abc')]] for ANS001+1```
 
 
@@ -47,7 +47,7 @@ This way of quantification of all these variables is not implemented yet. They a
 
  Only the following structure types of answer elements are supported:
   - Literals
-    - ```'"123"^^http://abc.de'```
+    - ```'"123"^^http://www.w3.org/2001/XMLSchema#integer'```
     - ```'"cat"@en'```
   - Skolem functions
     - ```sK```
@@ -70,7 +70,9 @@ This subcommand performs the following steps:
 3. negates the consequence FOL formula
 4. combines the consequence FOL formula and the RDF surface FOL formula
 5. starts a Vampire process and passes the result of step 4 for satisfiability checking
-6. receives the output of the Vampire process and returns its result
+6. receives the output of the Vampire process and returns its result (unsat or sat)
+   - **unsat** -> the entered consequence is indeed a consequence of the RDF surface
+   - **sat** -> the entered consequence is not a consequence of the RDF surface
 
 
 ### transform-qa
@@ -79,16 +81,16 @@ This subcommand performs the following steps:
 1. transforms the given RDF surface into a FOL formula
 2. starts a Vampire process and passes the FOL formula for question answering
 3. receives the output of the Vampire process
-4. transforms the output into an RDF surfaces graph using the query surface within the input RDF surface graph
+4. transforms the output into an RDF surface using the query surface within the input RDF surface
 
 This means that the command 
 ```Bash
-$ ./bin/rs2fol transform-qa -i beetle4.n3 -q
+$ ./bin/rs2fol transform-qa -i src/test/resources/blogic/abc.n3s -q --vampire-exec $PATH_TO_VAMPIRE
 ```
 can be seen as an abbreviation for:
 
 ```Bash
-$ ./bin/rs2fol transform -i - < beetle4.n3 | vampire_z3_rel_qa_6176 -av off -qa answer_literal -om smtcomp -t 60s 2>&1 | ./bin/rs2fol qa-answer-to-rs -s beetle4.n3  -i - 
+$ ./bin/rs2fol transform -i - < src/test/resources/blogic/abc.n3s | $PATH_TO_VAMPIRE -av off -qa answer_literal -om smtcomp -t 60s 2>&1 | ./bin/rs2fol qa-answer-to-rs -s src/test/resources/blogic/abc.n3s  -i - 
 ```
 
 So if you want to use Vampire with other options or another FOL theorem prover, you can replace the middle part with the wanted command.
@@ -105,21 +107,21 @@ Maybe rs2fol just doesn't support the output format of the theorem prover, doesn
 I had the most success with these 3 option combinations:
 
 ```Bash
-$ ./bin/rs2fol transform-qa -i beetle4.n3 -q --vampire-option-mode 0
+$ ./bin/rs2fol transform-qa -i src/test/resources/blogic/abc.n3s --vampire-exec $PATH_TO_VAMPIRE -q --vampire-option-mode 0
 # which is the short form of
-$ ./bin/rs2fol transform -i beetle4.n3 | vampire_z3_rel_qa_6176 -av off -qa answer_literal -om smtcomp -t 60s 2>&1 | ./bin/rs2fol qa-answer-to-rs -s beetle4.n3  -i - 
+$ ./bin/rs2fol transform -i src/test/resources/blogic/abc.n3s | $PATH_TO_VAMPIRE -av off -qa answer_literal -om smtcomp -t 60s 2>&1 | ./bin/rs2fol qa-answer-to-rs -s src/test/resources/blogic/abc.n3s  -i - 
 
 ```
 
 ```Bash
-$ ./bin/rs2fol transform-qa -i beetle4.n3 -q --vampire-option-mode 1
+$ ./bin/rs2fol transform-qa -i src/test/resources/blogic/abc.n3s --vampire-exec $PATH_TO_VAMPIRE -q --vampire-option-mode 1
 # which is the short form of
-$ ./bin/rs2fol transform -i beetle4.n3 | vampire_z3_rel_qa_6176 -av off -sa discount -s 1 -add large -afp 4000 -afq 1.0 -anc none -gs on -gsem off -inw on -lcm reverse -lwlo on -nm 64 -nwc 1 -sas z3 -sos all -sac on -thi all -uwa all -updr off -uhcvi on -to lpo -qa answer_literal -om smtcomp -t 60s 2>&1 | ./bin/rs2fol qa-answer-to-rs -s beetle4.n3  -i - 
+$ ./bin/rs2fol transform -i src/test/resources/blogic/abc.n3s | $PATH_TO_VAMPIRE -av off -sa discount -s 1 -add large -afp 4000 -afq 1.0 -anc none -gs on -gsem off -inw on -lcm reverse -lwlo on -nm 64 -nwc 1 -sas z3 -sos all -sac on -thi all -uwa all -updr off -uhcvi on -to lpo -qa answer_literal -om smtcomp -t 60s 2>&1 | ./bin/rs2fol qa-answer-to-rs -s src/test/resources/blogic/abc.n3s  -i - 
 ```
 
 ```Bash
 # the time limit you specified (here '15s') is completely used up during execution
-$ ./bin/rs2fol transform -i beetle4.n3 | vampire_z3_rel_qa_6176 -av off -uhcvi on -qa answer_literal --mode casc -t 15s 2>&1 | ./bin/rs2fol qa-answer-to-rs -s beetle4.n3  -i - 
+$ ./bin/rs2fol transform -i src/test/resources/blogic/abc.n3s | $PATH_TO_VAMPIRE -av off -uhcvi on -qa answer_literal --mode casc -t 15s 2>&1 | ./bin/rs2fol qa-answer-to-rs -s src/test/resources/blogic/abc.n3s  -i - 
 ```
 
 It is planned to automate this.

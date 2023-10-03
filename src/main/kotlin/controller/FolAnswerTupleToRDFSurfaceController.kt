@@ -16,7 +16,7 @@ private val logger = KotlinLogging.logger {}
 
 class FolAnswerTupleToRDFSurfaceController {
 
-    fun getQuerySurfaceFromRdfSurfacesGraph(
+    fun getQuerySurfaceFromRdfSurface(
         rdfSurfacesGraph: String,
         baseIRI: IRI,
         rdfLists: Boolean,

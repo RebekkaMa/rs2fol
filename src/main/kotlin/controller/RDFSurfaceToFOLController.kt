@@ -12,14 +12,14 @@ import kotlin.Result.Companion.success
 
 class RDFSurfaceToFOLController {
 
-    fun transformRDFSurfaceGraphToFOL(
-        rdfSurfaceGraph: String,
+    fun transformRDFSurfaceToFOL(
+        rdfSurface: String,
         ignoreQuerySurface: Boolean,
-        rdfLists: Boolean = false,
+        rdfList: Boolean = false,
         baseIRI: IRI,
     ): Result<Pair<String, List<QuerySurface>>> {
         return try {
-            val parserResult = RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfaceGraph, baseIRI)
+            val parserResult = RDFSurfacesParser(rdfList).parseToEnd(rdfSurface, baseIRI)
             success(Transformer().toFOL(parserResult, ignoreQuerySurface) to parserResult.getQuerySurfaces())
         } catch (exc: Exception) {
             when (exc) {
@@ -30,13 +30,13 @@ class RDFSurfaceToFOLController {
         }
     }
 
-    fun transformRDFSurfaceGraphToFOLConjecture(
-        rdfSurfaceGraph: String,
-        rdfLists: Boolean = false,
+    fun transformRDFSurfaceToFOLConjecture(
+        rdfSurface: String,
+        rdfList: Boolean = false,
         baseIRI: IRI,
     ): Result<String> {
         return try {
-            val parserResult = RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfaceGraph, baseIRI)
+            val parserResult = RDFSurfacesParser(rdfList).parseToEnd(rdfSurface, baseIRI)
             success(Transformer().toFOL(parserResult, false, "conjecture", "conjecture"))
         } catch (exc: Exception) {
             when (exc) {
@@ -47,13 +47,13 @@ class RDFSurfaceToFOLController {
         }
     }
 
-    fun transformRDFSurfaceGraphToNotation3(
-        rdfSurfaceGraph: String,
-        rdfLists: Boolean = false,
+    fun transformRDFSurfaceToNotation3(
+        rdfSurface: String,
+        rdfList: Boolean = false,
         baseIRI: IRI,
     ): Result<String> {
         return try {
-            val parserResult = RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfaceGraph, baseIRI)
+            val parserResult = RDFSurfacesParser(rdfList).parseToEnd(rdfSurface, baseIRI)
             success(Transformer().toNotation3Sublanguage(parserResult))
         } catch (exc: Exception) {
             when (exc) {

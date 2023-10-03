@@ -338,8 +338,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
 
 
         context("blogic") {
-            should("transform blogic abc.n3") {
-                val file = Path("src/test/resources/blogic/abc.n3")
+            should("transform blogic abc.n3s") {
+                val file = Path("src/test/resources/blogic/abc.n3s")
                 val solutionFile = Path("src/test/resources/blogic/abc.p")
 
                 Transformer().toFOL(
@@ -349,8 +349,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                     )
                 ).replace("\\s+".toRegex(), "") shouldBeEqualComparingTo solutionFile.readText().replace("\\s+".toRegex(), "")
             }
-            should("transform blogic abcd.n3") {
-                val file = Path("src/test/resources/blogic/abcd.n3")
+            should("transform blogic abcd.n3s") {
+                val file = Path("src/test/resources/blogic/abcd.n3s")
                 val solutionFile = Path("src/test/resources/blogic/abcd.p")
 
                 Transformer().toFOL(

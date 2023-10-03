@@ -640,8 +640,8 @@ class RDFSurfacesParserTest : ShouldSpec(
         }
 
         context("blogic") {
-            should("transform blogic abc.n3") {
-                val file = Path("src/test/resources/blogic/abc.n3")
+            should("transform blogic abc.n3s") {
+                val file = Path("src/test/resources/blogic/abc.n3s")
 
                 val iri1 = IRI.from("http://example.org/ns#i")
                 val iri2 = IRI.from("http://example.org/ns#A")
@@ -674,8 +674,8 @@ class RDFSurfacesParserTest : ShouldSpec(
                     listOf(rdfTriple1, negativeSurface1, negativeSurface2, querySurface)
                 )
             }
-            should("transform blogic abcd.n3") {
-                val file = Path("src/test/resources/blogic/abcd.n3")
+            should("transform blogic abcd.n3s") {
+                val file = Path("src/test/resources/blogic/abcd.n3s")
 
                 val iri1 = IRI.from("http://example.org/ns#i")
                 val iri2 = IRI.from("http://example.org/ns#A")

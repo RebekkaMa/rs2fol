@@ -93,7 +93,7 @@ class TransformerTest
             }
 
             context("blogic") {
-                should("transform blogic abc.n3") {
+                should("transform blogic abc.n3s") {
                     val solutionFile = File("src/test/resources/blogic/abc.p")
 
                     val iri1 = IRI.from("http://example.org/ns#i")
@@ -127,7 +127,7 @@ class TransformerTest
                     ).replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
 
                 }
-                should("transform blogic abcd.n3") {
+                should("transform blogic abcd.n3s") {
                     val solutionFile = File("src/test/resources/blogic/abcd.p")
 
                     val iri1 = IRI.from("http://example.org/ns#i")
