@@ -13,7 +13,7 @@ fof(axiom,axiom,
          )
       )
 ).
-fof(question_0,question,
+fof(query_0,question,
    ? [S,C] : (
       triple(S,'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',C)
    )

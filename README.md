@@ -70,9 +70,9 @@ This subcommand performs the following steps:
 3. negates the consequence FOL formula
 4. combines the consequence FOL formula and the RDF surface FOL formula
 5. starts a Vampire process and passes the result of step 4 for satisfiability checking
-6. receives the output of the Vampire process and returns its result (unsat or sat)
-   - **unsat** -> the entered consequence is indeed a consequence of the RDF surface
-   - **sat** -> the entered consequence is not a consequence of the RDF surface
+6. receives the output of the Vampire process and returns its result (true (unsat) or false (sat))
+   - **true** -> the entered consequence is indeed a consequence of the RDF surface
+   - **false** -> the entered consequence is not a consequence of the RDF surface
 
 
 ### transform-qa
@@ -90,7 +90,7 @@ $ ./bin/rs2fol transform-qa -i src/test/resources/blogic/abc.n3s -q --vampire-ex
 can be seen as an abbreviation for:
 
 ```Bash
-$ ./bin/rs2fol transform -i - < src/test/resources/blogic/abc.n3s | $PATH_TO_VAMPIRE -av off -qa answer_literal -om smtcomp -t 60s 2>&1 | ./bin/rs2fol qa-answer-to-rs -s src/test/resources/blogic/abc.n3s  -i - 
+$ ./bin/rs2fol transform -i - < src/test/resources/blogic/abc.n3s | $PATH_TO_VAMPIRE -av off -qa answer_literal -om smtcomp -t 60s 2>&1 | ./bin/rs2fol qa-answer-to-rs -q src/test/resources/blogic/abc.n3s  -i - 
 ```
 
 So if you want to use Vampire with other options or another FOL theorem prover, you can replace the middle part with the wanted command.
@@ -109,19 +109,19 @@ I had the most success with these 3 option combinations:
 ```Bash
 $ ./bin/rs2fol transform-qa -i src/test/resources/blogic/abc.n3s --vampire-exec $PATH_TO_VAMPIRE -q --vampire-option-mode 0
 # which is the short form of
-$ ./bin/rs2fol transform -i src/test/resources/blogic/abc.n3s | $PATH_TO_VAMPIRE -av off -qa answer_literal -om smtcomp -t 60s 2>&1 | ./bin/rs2fol qa-answer-to-rs -s src/test/resources/blogic/abc.n3s  -i - 
+$ ./bin/rs2fol transform -i src/test/resources/blogic/abc.n3s | $PATH_TO_VAMPIRE -av off -qa answer_literal -om smtcomp -t 60s 2>&1 | ./bin/rs2fol qa-answer-to-rs -q src/test/resources/blogic/abc.n3s  -i - 
 
 ```
 
 ```Bash
 $ ./bin/rs2fol transform-qa -i src/test/resources/blogic/abc.n3s --vampire-exec $PATH_TO_VAMPIRE -q --vampire-option-mode 1
 # which is the short form of
-$ ./bin/rs2fol transform -i src/test/resources/blogic/abc.n3s | $PATH_TO_VAMPIRE -av off -sa discount -s 1 -add large -afp 4000 -afq 1.0 -anc none -gs on -gsem off -inw on -lcm reverse -lwlo on -nm 64 -nwc 1 -sas z3 -sos all -sac on -thi all -uwa all -updr off -uhcvi on -to lpo -qa answer_literal -om smtcomp -t 60s 2>&1 | ./bin/rs2fol qa-answer-to-rs -s src/test/resources/blogic/abc.n3s  -i - 
+$ ./bin/rs2fol transform -i src/test/resources/blogic/abc.n3s | $PATH_TO_VAMPIRE -av off -sa discount -s 1 -add large -afp 4000 -afq 1.0 -anc none -gs on -gsem off -inw on -lcm reverse -lwlo on -nm 64 -nwc 1 -sas z3 -sos all -sac on -thi all -uwa all -updr off -uhcvi on -to lpo -qa answer_literal -om smtcomp -t 60s 2>&1 | ./bin/rs2fol qa-answer-to-rs -q src/test/resources/blogic/abc.n3s  -i - 
 ```
 
 ```Bash
-# the time limit you specified (here '15s') is completely used up during execution
-$ ./bin/rs2fol transform -i src/test/resources/blogic/abc.n3s | $PATH_TO_VAMPIRE -av off -uhcvi on -qa answer_literal --mode casc -t 15s 2>&1 | ./bin/rs2fol qa-answer-to-rs -s src/test/resources/blogic/abc.n3s  -i - 
+# the process will not be terminated before the specified time limit expires (here '15s')
+$ ./bin/rs2fol transform -i src/test/resources/blogic/abc.n3s | $PATH_TO_VAMPIRE -av off -uhcvi on -qa answer_literal --mode casc -t 15s 2>&1 | ./bin/rs2fol qa-answer-to-rs -q src/test/resources/blogic/abc.n3s  -i - 
 ```
 
 It is planned to automate this.
@@ -132,7 +132,7 @@ It is planned to automate this.
 ### Encoding
 
 The TPTP syntax allows only a limited set of characters for the representation of variables and constants.
-Therefore, not allowed characters are encoded during the transformation to a FOL formula.
+Therefore, characters that are not allowed are encoded during transformation into a FOL formula.
 Since the choice of allowed characters is tiny, two different encoding types are used, which, for lack of options, are not standardized.
 However, both encodings use the UTF-16 encoding of a character.
 UTF-32 codepoints that go beyond this range are represented as usual with two UTF-16 characters (high surrogate, low surrogate).

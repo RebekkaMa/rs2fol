@@ -5,15 +5,13 @@ import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
-import com.github.h0tk3y.betterParse.parser.ParseResult
-import com.github.h0tk3y.betterParse.parser.Parser
-import com.github.h0tk3y.betterParse.parser.parseToEnd
-import com.github.h0tk3y.betterParse.parser.tryParseToEnd
+import com.github.h0tk3y.betterParse.parser.*
 import rdfSurfaces.*
 import rdfSurfaces.Collection
 import util.IRIConstants
 import util.IRIConstants.RDF_TYPE_IRI
 import util.InvalidInputException
+import util.InvalidSyntax
 import util.NotSupportedException
 
 class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
@@ -45,6 +43,8 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
     private val semicolon by literalToken(";")
     private val comma by literalToken(",")
     private val a by regexToken("\\ba\\b")
+    private val lqcurl by literalToken("<<")
+    private val rqcurl by literalToken(">>")
 
     private val prefixIdStart by literalToken("@prefix")
     private val baseStart by literalToken("@base")
@@ -174,7 +174,18 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
     }
 
     private val subject by iri or blankNode.map { varSet.add(it); it } or literal or collection
-    private val predicate by iri or blankNode.map { varSet.add(it); it } or literal
+    private val predicate by iri.map {
+        when (it.iri) {
+            IRIConstants.LOG_POSITIVE_SURFACE_IRI,
+            IRIConstants.LOG_NEGATIVE_TRIPLE_IRI,
+            IRIConstants.LOG_QUERY_SURFACE_IRI,
+            IRIConstants.LOG_NEGATIVE_SURFACE_IRI ,
+            IRIConstants.LOG_NEUTRAL_SURFACE_IRI,
+            IRIConstants.LOG_QUESTION_SURFACE_IRI,
+            IRIConstants.LOG_ANSWER_SURFACE_IRI -> throw ParseException(InvalidSyntax())
+            else -> it
+        }
+    } or blankNode.map { varSet.add(it); it } or literal
     private val rdfObject: Parser<RdfTripleElement> by iri or blankNode.map { varSet.add(it); it } or literal or blankNodePropertyList or collection
 
     private val verb by predicate or a.map { IRI.from(RDF_TYPE_IRI) }
@@ -233,11 +244,11 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
     private val rdfSurfacesParser: Parser<Triple<List<HayesGraphElement>, Set<BlankNode>, Set<BlankNode>>> by
     (variableList and
             (iri) and
-            -lparcurl and
-            (oneOrMore(parser(this::rdfSurfacesParser)) or optional(space).use {
-                listOf()
-            }) and
-            -rparcurl) map { (variableList, surface, rest) ->
+            (
+                    (-lparcurl and (oneOrMore(parser(this::rdfSurfacesParser)) or optional(space).use { listOf() }) and -rparcurl)
+                            or (-lqcurl and triples and -rqcurl).use { listOf(this) }
+                    )
+            ) map { (variableList, surface, rest) ->
         val (hayeGraph, freeVariables, freeCollectionBlankNodes) = rest.reduceOrNull { acc, triple ->
             Triple(acc.first.plus(triple.first), acc.second.plus(triple.second), acc.third.plus(triple.third))
         } ?: Triple(listOf(), setOf(), setOf())
@@ -249,6 +260,8 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
                 IRIConstants.LOG_QUERY_SURFACE_IRI -> this.add(QuerySurface(graffiti, hayeGraph))
                 IRIConstants.LOG_NEGATIVE_SURFACE_IRI -> this.add(NegativeSurface(graffiti, hayeGraph))
                 IRIConstants.LOG_NEUTRAL_SURFACE_IRI -> this.add(NeutralSurface(graffiti, hayeGraph))
+                IRIConstants.LOG_QUESTION_SURFACE_IRI -> this.add(QuestionSurface(graffiti, hayeGraph))
+                IRIConstants.LOG_ANSWER_SURFACE_IRI -> this.add(AnswerSurface(graffiti, hayeGraph))
                 else -> throw NotSupportedException(message = "Surface type '${surface.iri}' is not supported")
             }
         }

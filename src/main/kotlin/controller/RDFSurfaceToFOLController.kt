@@ -2,7 +2,7 @@ package controller
 import com.github.h0tk3y.betterParse.parser.ParseException
 import parser.RDFSurfacesParser
 import rdfSurfaces.IRI
-import rdfSurfaces.QuerySurface
+import rdfSurfaces.QSurface
 import util.InvalidInputException
 import util.NotSupportedException
 import util.TransformerException
@@ -17,10 +17,10 @@ class RDFSurfaceToFOLController {
         ignoreQuerySurface: Boolean,
         rdfList: Boolean = false,
         baseIRI: IRI,
-    ): Result<Pair<String, List<QuerySurface>>> {
+    ): Result<Pair<String, List<QSurface>>> {
         return try {
             val parserResult = RDFSurfacesParser(rdfList).parseToEnd(rdfSurface, baseIRI)
-            success(Transformer().toFOL(parserResult, ignoreQuerySurface) to parserResult.getQuerySurfaces())
+            success(Transformer().toFOL(parserResult, ignoreQuerySurface) to parserResult.getQSurfaces())
         } catch (exc: Exception) {
             when (exc) {
                 is ParseException -> failure(InvalidInputException(generalParseErrorString, exc))

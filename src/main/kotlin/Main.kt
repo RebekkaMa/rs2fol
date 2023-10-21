@@ -12,7 +12,6 @@ import com.github.ajalt.mordant.rendering.TextColors.red
 import com.github.ajalt.mordant.rendering.TextStyle
 import controller.FolAnswerTupleToRDFSurfaceController
 import controller.RDFSurfaceToFOLController
-import kotlinx.coroutines.runBlocking
 import rdfSurfaces.IRI
 import java.io.File
 import java.nio.file.Path
@@ -44,30 +43,30 @@ class CommonOptions : OptionGroup("Standard Options") {
 
 class Rewrite : CliktCommand(help = "Parses and returns an RDF surface using a sublanguage of Notation 3 ") {
     private val commonOptions by CommonOptions()
-    private val input by option("--input", "-i", help = "Get RDF surface from <path>").path()
-    private val output by option("--output", "-o", help = "Write output to <path>").path()
+    private val input by option("--input", "-i", help = "Get RDF surface from <path>").path().default(Path("-"))
+    private val output by option("--output", "-o", help = "Write output to <path>").path().default(Path("-"))
 
     override fun run() {
 
         try {
             val (inputStream, baseIRI) = when {
-                input == null || input!!.pathString == "-" -> System.`in` to workingDir
+                input.pathString == "-" -> System.`in` to workingDir
 
-                input!!.notExists() -> throw BadParameterValue(
+                input.notExists() -> throw BadParameterValue(
                     currentContext.localization.pathDoesNotExist(
                         "file",
-                        input!!.pathString
+                        input.pathString
                     )
                 )
 
-                input!!.isReadable().not() -> throw BadParameterValue(
+                input.isReadable().not() -> throw BadParameterValue(
                     currentContext.localization.pathIsNotReadable(
                         "file",
-                        input!!.pathString
+                        input.pathString
                     )
                 )
 
-                else -> input!!.inputStream() to IRI.from("file://" + input!!.absolute().parent.invariantSeparatorsPathString + "/")
+                else -> input.inputStream() to IRI.from("file://" + input.absolute().parent.invariantSeparatorsPathString + "/")
             }
 
             val rdfSurface = inputStream.bufferedReader().use { it.readText() }
@@ -77,15 +76,19 @@ class Rewrite : CliktCommand(help = "Parses and returns an RDF surface using a s
 
             result.fold(
                 onSuccess = { rewrittenRdfSurface ->
-                    output?.let {
+                    if (output.pathString == "-") {
+                        echo(rewrittenRdfSurface)
+                        return
+                    }
+                    output.let {
                         it.parent?.createDirectories()
                         if (it.exists().not()) it.createFile()
                         it.writeText(rewrittenRdfSurface)
-                    } ?: echo(rewrittenRdfSurface)
+                    }
                 },
                 onFailure = { throwable ->
-                    val failureMessage =  if (commonOptions.debug) throwable.stackTraceToString() else (throwable.message
-                            ?: throwable.toString())
+                    val failureMessage = if (commonOptions.debug) throwable.stackTraceToString() else (throwable.message
+                        ?: throwable.toString())
                     echoError(failureMessage)
                     throw ProgramResult(1)
                 }
@@ -101,7 +104,7 @@ class Rewrite : CliktCommand(help = "Parses and returns an RDF surface using a s
 class Transform : CliktCommand(help = "Transforms an RDF surface (--input) to a FOL formula in TPTP format") {
     private val commonOptions by CommonOptions()
     private val input by option("--input", "-i", help = "Get RDF surface from <path>").path()
-    private val output by option("--output", "-o", help = "Write output to <path>").path()
+    private val output by option("--output", "-o", help = "Write output to <path>").path().default(Path.of("-"))
 
     private val ignoreQuerySurface by option("--ignoreQuerySurface").flag(default = false, defaultForHelp = "false")
 
@@ -138,15 +141,19 @@ class Transform : CliktCommand(help = "Transforms an RDF surface (--input) to a 
 
             result.fold(
                 onSuccess = { (folFormula, _) ->
-                    output?.let {
+                    if (output.pathString == "-") {
+                        echo(folFormula)
+                        return
+                    }
+                    output.let {
                         it.parent?.createDirectories()
                         if (it.exists().not()) it.createFile()
                         it.writeText(folFormula)
-                    } ?: echo(folFormula)
+                    }
                 },
                 onFailure = { throwable ->
-                    val failureMessage =  if (commonOptions.debug) throwable.stackTraceToString() else (throwable.message
-                            ?: throwable.toString())
+                    val failureMessage = if (commonOptions.debug) throwable.stackTraceToString() else (throwable.message
+                        ?: throwable.toString())
                     echoError(failureMessage)
                     throw ProgramResult(1)
                 }
@@ -160,12 +167,12 @@ class Transform : CliktCommand(help = "Transforms an RDF surface (--input) to a 
 }
 
 class QaAnswerToRs :
-    CliktCommand(help = "Transforms a TPTP tuple answer (--input) into an RDF surface using a specified RDF query surface (--query-surface)") {
+    CliktCommand(help = "Transforms a TPTP tuple answer (--input) into an RDF surface using a specified RDF query or question surface (--q-surface)") {
     private val commonOptions by CommonOptions()
-    private val input by option("--input", "-i", help = "Get TPTP answer tuple from <path>").path()
-    private val output by option("--output", "-o", help = "Write output to <path>").path(mustExist = false)
+    private val input by option("--input", "-i", help = "Get TPTP answer tuple from <path>").path().default(Path("-"))
+    private val output by option("--output", "-o", help = "Write output to <path>").path(mustExist = false).default(Path("-"))
 
-    private val querySurface by option("--query-surface", "-s", help = "Get RDF query surface from <path>").path(
+    private val querySurface by option("--q-surface", "-q", help = "Get RDF query or question surface from <path>").path(
         mustExist = true,
         canBeDir = false,
         mustBeReadable = true
@@ -180,44 +187,49 @@ class QaAnswerToRs :
 
         try {
             val (inputStream, baseIri) = when {
-                input == null || input!!.pathString == "-" -> System.`in` to workingDir
+                input.pathString == "-" -> System.`in` to workingDir
 
-                input!!.notExists() -> throw BadParameterValue(
+                input.notExists() -> throw BadParameterValue(
                     currentContext.localization.pathDoesNotExist(
                         "file",
-                        input!!.pathString
+                        input.pathString
                     )
                 )
 
-                input!!.isReadable().not() -> throw BadParameterValue(
+                input.isReadable().not() -> throw BadParameterValue(
                     currentContext.localization.pathIsNotReadable(
                         "file",
-                        input!!.pathString
+                        input.pathString
                     )
                 )
 
-                else -> input!!.inputStream() to IRI.from("file://" + input!!.absolute().parent.invariantSeparatorsPathString + "/")
+                else -> input.inputStream() to IRI.from("file://" + input.absolute().parent.invariantSeparatorsPathString + "/")
 
             }
 
             val rdfSurfaces = querySurface.readText()
 
-            val querySurface = folAnswerTupleToRDFSurfaceController.getQuerySurfaceFromRdfSurface(rdfSurfaces, baseIri ,commonOptions.rdfList).fold(
-                onSuccess = {querySurface ->
+            val qSurface = folAnswerTupleToRDFSurfaceController.getQuerySurfaceFromRdfSurface(
+                rdfSurfaces,
+                baseIri,
+                commonOptions.rdfList
+            ).fold(
+                onSuccess = { querySurface ->
                     if (querySurface.isEmpty()) {
-                        echoError("--query-surface: RDF surface contains no query surface.")
+                        echoError("--q-surface: RDF surface contains no query or question surface.")
                         throw ProgramResult(1)
                     }
 
-                    if (querySurface.size > 1){
-                        echoError("--query-surface: Multiple query surfaces are not supported.")
+                    if (querySurface.size > 1) {
+                        echoError("--q-surface: Multiple query or question surfaces are not supported.")
                         throw ProgramResult(1)
                     }
                     querySurface.single()
                 },
-                onFailure = {throwable ->
-                    val failureMessage =  if (commonOptions.debug) throwable.stackTraceToString() else (throwable.message ?: throwable.toString())
-                    echoError("--query-surface: $failureMessage")
+                onFailure = { throwable ->
+                    val failureMessage = if (commonOptions.debug) throwable.stackTraceToString() else (throwable.message
+                        ?: throwable.toString())
+                    echoError("--q-surface: $failureMessage")
                     throw ProgramResult(1)
                 }
             )
@@ -226,12 +238,12 @@ class QaAnswerToRs :
             val result = if (inputType == "raw") {
                 folAnswerTupleToRDFSurfaceController.transformTPTPTupleAnswerToRDFSurfaces(
                     tptpTupleAnswer = inputStream.bufferedReader().use { it.readText() },
-                    querySurface = querySurface,
+                    qSurface = qSurface,
                 )
             } else {
                 inputStream.bufferedReader().useLines {
                     folAnswerTupleToRDFSurfaceController.questionAnsweringOutputToRDFSurfacesCasc(
-                        querySurface = querySurface,
+                        qSurface = qSurface,
                         questionAnsweringOutputLines = it,
                     )
                 }
@@ -239,15 +251,19 @@ class QaAnswerToRs :
 
             result.fold(
                 onSuccess = { succRes ->
-                    output?.let {
+                    if (output.pathString == "-") {
+                        echo(succRes)
+                        return
+                    }
+                    output.let {
                         it.parent?.createDirectories()
                         if (it.exists().not()) it.createFile()
                         it.writeText(succRes)
-                    } ?: echo(succRes)
+                    }
                 },
                 onFailure = { throwable ->
                     val failureMessage = if (commonOptions.debug) throwable.stackTraceToString() else (throwable.message
-                            ?: throwable.toString())
+                        ?: throwable.toString())
                     echoError(failureMessage)
                     throw ProgramResult(1)
                 }
@@ -268,14 +284,18 @@ class Check :
     private val input by option(
         "--input", "-i",
         help = "Get RDF surface from <path>"
-    ).path()
+    ).path().default(Path("-"))
 
     private val consequence by option(
         "--consequence", "-c",
-        help = "Path to the consequence (given as RDF surface) (default: <<--input>.n3s.out>)"
+        help = "Path to the consequence (given as RDF surface) (default: <<--input>.out>)"
     ).path()
 
-    private val vampireExec by option("--vampire-exec", "-e", help = "Path to the Vampire executable").path(mustExist = true).required()
+    private val vampireExec by option(
+        "--vampire-exec",
+        "-e",
+        help = "Path to the Vampire executable"
+    ).path(mustExist = true).required()
     private val quiet by option("--quiet", "-q", help = "Display less output").flag(default = false)
     private val output by option(
         "--output",
@@ -295,7 +315,7 @@ class Check :
             val computedConsequence: Path
 
             val (inputStream, baseIri) = when {
-                input == null || input!!.pathString == "-" -> {
+                input.pathString == "-" -> {
                     computedConsequence = when {
                         consequence == null -> throw BadParameterValue(currentContext.localization.missingOption("The option 'consequence' must not be null if the RDF surface is entered as a stream."))
                         consequence!!.notExists() -> throw BadParameterValue(
@@ -317,28 +337,28 @@ class Check :
                     System.`in` to workingDir
                 }
 
-                input!!.notExists() -> throw BadParameterValue(
+                input.notExists() -> throw BadParameterValue(
                     currentContext.localization.pathDoesNotExist(
                         "file",
-                        input!!.pathString
+                        input.pathString
                     )
                 )
 
-                input!!.isReadable().not() -> throw BadParameterValue(
+                input.isReadable().not() -> throw BadParameterValue(
                     currentContext.localization.pathIsNotReadable(
                         "file",
-                        input!!.pathString
+                        input.pathString
                     )
                 )
 
                 else -> {
                     computedConsequence = when {
-                        consequence == null -> Path( input!!.pathString + ".out").takeIf { it.exists() }
-                            ?: Path(input!!.pathString + ".out").takeIf { it.exists() }
+                        consequence == null -> Path(input.pathString + ".out").takeIf { it.exists() }
+                            ?: Path(input.pathString + ".out").takeIf { it.exists() }
                             ?: throw BadParameterValue(
                                 currentContext.localization.pathDoesNotExist(
                                     "file",
-                                    input!!.pathString + ".out"
+                                    input.pathString + ".out"
                                 )
                             )
 
@@ -358,7 +378,7 @@ class Check :
 
                         else -> consequence!!
                     }
-                    input!!.inputStream() to IRI.from("file://" + input!!.absolute().parent.invariantSeparatorsPathString + "/")
+                    input.inputStream() to IRI.from("file://" + input.absolute().parent.invariantSeparatorsPathString + "/")
                 }
             }
 
@@ -386,7 +406,7 @@ class Check :
                 },
                 onFailure = { throwable ->
                     val failureMessage = if (commonOptions.debug) throwable.stackTraceToString() else (throwable.message
-                            ?: throwable.toString())
+                        ?: throwable.toString())
                     echoError("--input: $failureMessage")
                     throw ProgramResult(1)
                 }
@@ -399,7 +419,7 @@ class Check :
                 },
                 onFailure = { throwable ->
                     val failureMessage = if (commonOptions.debug) throwable.stackTraceToString() else (throwable.message
-                            ?: throwable.toString())
+                        ?: throwable.toString())
                     echoError("--consequence: $failureMessage")
                     throw ProgramResult(1)
                 }
@@ -416,8 +436,8 @@ class Check :
             if (!quiet) echoNonQuiet("Starting Vampire...")
 
             val vampirePrompt =
-                if (vampireOption == 0) "$vampireExec --output_mode smtcomp" else {
-                    "$vampireExec -sa discount -awr 2 -s 1 -add large -afr on -afp 1000 -afq 2.0 -anc none -gsp on -lcm predicate -nm 64 -newcnf on -nwc 5 -sac on -urr ec_only -updr off --output_mode smtcomp"
+                if (vampireOption == 0) "$vampireExec --output_mode smtcomp -t ${timeLimit + 1}s" else {
+                    "$vampireExec -sa discount -awr 2 -s 1 -add large -afr on -afp 1000 -afq 2.0 -anc none -gsp on -lcm predicate -nm 64 -newcnf on -nwc 5 -sac on -urr ec_only -updr off --output_mode smtcomp -t ${timeLimit + 1}s"
                 }
 
             val vampireProcess = vampirePrompt.runCommand(File(System.getProperty("user.dir")))
@@ -436,7 +456,7 @@ class Check :
             val vampireResultString = vampireProcess.inputReader().readLines()
 
             vampireResultString.lastOrNull { it == "sat" || it == "unsat" }
-                ?.let { echo(if (it.startsWith('s')) TextColors.rgb("#ff9933")(it) else TextColors.green(it)); return }
+                ?.let { echo(if (it.startsWith('s')) TextColors.rgb("#ff9933")("false") else TextColors.green("true")); return }
             vampireResultString.lastOrNull { it.contains("error", true) }?.let { echoError(it); return }
 
             echoError(
@@ -469,7 +489,9 @@ class TransformQa :
     ).path()
 
 
-    private val vampireExecFile by option("--vampire-exec", "-e", help = "File to the Vampire executable").path(mustExist = true).required()
+    private val vampireExecFile by option("--vampire-exec", "-e", help = "File to the Vampire executable").path(
+        mustExist = true
+    ).required()
 
     private val quiet by option("--quiet", "-q", help = "Display less output").flag(default = false)
 
@@ -479,7 +501,7 @@ class TransformQa :
         .validate { it > 0 }
 
 
-    override fun run() = runBlocking {
+    override fun run()  {
         try {
             val baseIRI: IRI
 
@@ -516,23 +538,23 @@ class TransformQa :
                 baseIRI = baseIRI
             )
 
-            val (fol, querySurface) = parseResult.fold(
-                onSuccess = { (fol, querySurfaces) ->
+            val (fol, qSurface) = parseResult.fold(
+                onSuccess = { (fol, qSurfaces) ->
                     if (!quiet) echoNonQuiet("Transformation to FOL was successful!")
-                    if (querySurfaces.isEmpty()) {
-                        echoError("--input: RDF surface contains no query surface.")
+                    if (qSurfaces.isEmpty()) {
+                        echoError("--input: RDF surface contains no query or question surface.")
                         throw ProgramResult(1)
                     }
 
-                    if (querySurfaces.size > 1){
-                        echoError("--input: Multiple query surfaces are not supported.")
+                    if (qSurfaces.size > 1) {
+                        echoError("--input: Multiple query or question surfaces are not supported.")
                         throw ProgramResult(1)
                     }
-                    fol to querySurfaces.single()
+                    fol to qSurfaces.single()
                 },
                 onFailure = { throwable ->
                     val failureMessage = if (commonOptions.debug) throwable.stackTraceToString() else (throwable.message
-                            ?: throwable.toString())
+                        ?: throwable.toString())
                     echoError("--input: $failureMessage")
                     throw ProgramResult(1)
                 }
@@ -548,8 +570,8 @@ class TransformQa :
             if (!quiet) echoNonQuiet("Starting Vampire...")
 
             val vampirePrompt =
-                if (vampireOption == 0) "$vampireExecFile -av off -qa answer_literal -om smtcomp" else {
-                    "$vampireExecFile -av off -sa discount -s 1 -add large -afp 4000 -afq 1.0 -anc none -gs on -gsem off -inw on -lcm reverse -lwlo on -nm 64 -nwc 1 -sas z3 -sos all -sac on -thi all -uwa all -updr off -uhcvi on -to lpo -qa answer_literal -om smtcomp"
+                if (vampireOption == 0) "$vampireExecFile -av off -qa answer_literal -om smtcomp -t ${timeLimit + 1}s" else {
+                    "$vampireExecFile -av off -sa discount -s 1 -add large -afp 4000 -afq 1.0 -anc none -gs on -gsem off -inw on -lcm reverse -lwlo on -nm 64 -nwc 1 -sas z3 -sos all -sac on -thi all -uwa all -updr off -uhcvi on -to lpo -qa answer_literal -om smtcomp -t ${timeLimit + 1}s"
                 }
 
             val vampireProcess = vampirePrompt.runCommand(File(System.getProperty("user.dir")))
@@ -561,12 +583,12 @@ class TransformQa :
                 echo("timeout")
                 vampireProcess.destroy()
                 if (vampireProcess.isAlive) vampireProcess.destroyForcibly()
-                return@runBlocking
+                return
             }
 
             val vampireParsingResult = vampireProcess.inputReader().useLines { vampireOutput ->
                 FolAnswerTupleToRDFSurfaceController().questionAnsweringOutputToRDFSurfacesCasc(
-                    querySurface = querySurface,
+                    qSurface = qSurface,
                     questionAnsweringOutputLines = vampireOutput,
                 )
             }
@@ -577,7 +599,7 @@ class TransformQa :
                 },
                 onFailure = { throwable ->
                     val failureMessage = if (commonOptions.debug) throwable.stackTraceToString() else (throwable.message
-                            ?: throwable.toString())
+                        ?: throwable.toString())
                     echoError(failureMessage)
                     throw ProgramResult(1)
                 }

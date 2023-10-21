@@ -37,7 +37,7 @@ object TptpTupleAnswerFormTransformer :
     //TODO(defined Term + System Term)
     private val term: Parser<RdfTripleElement> by variable or parser(this::nonLogicalSymbol)
 
-    private val arguments: Parser<List<RdfTripleElement>> by (term and -comma and parser(this::arguments)).map {
+    private val arguments: Parser<List<RdfTripleElement>> by (term and oneOrMore(-comma and term)).map {
         buildList {
             add(it.t1)
             it.t2.forEach { rdfTripleElement ->

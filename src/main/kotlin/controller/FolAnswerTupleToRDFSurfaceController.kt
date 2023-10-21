@@ -1,18 +1,12 @@
 package controller
 import com.github.h0tk3y.betterParse.grammar.parseToEnd
 import com.github.h0tk3y.betterParse.parser.ParseException
-import mu.KotlinLogging
 import parser.RDFSurfacesParser
 import parser.TptpTupleAnswerFormTransformer
-import rdfSurfaces.IRI
-import rdfSurfaces.PositiveSurface
-import rdfSurfaces.QuerySurface
-import rdfSurfaces.RdfTripleElement
+import rdfSurfaces.*
 import util.InvalidInputException
 import util.NotSupportedException
 import util.generalParseErrorString
-
-private val logger = KotlinLogging.logger {}
 
 class FolAnswerTupleToRDFSurfaceController {
 
@@ -20,9 +14,9 @@ class FolAnswerTupleToRDFSurfaceController {
         rdfSurfacesGraph: String,
         baseIRI: IRI,
         rdfLists: Boolean,
-    ): Result<List<QuerySurface>> {
+    ): Result<List<QSurface>> {
         return try {
-            Result.success(RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfacesGraph, baseIRI).getQuerySurfaces())
+            Result.success(RDFSurfacesParser(rdfLists).parseToEnd(rdfSurfacesGraph, baseIRI).getQSurfaces())
         } catch (exc: Exception) {
             when (exc) {
                 is ParseException -> Result.failure(InvalidInputException(generalParseErrorString, exc))
@@ -33,7 +27,7 @@ class FolAnswerTupleToRDFSurfaceController {
     }
 
     fun questionAnsweringOutputToRDFSurfacesCasc(
-        querySurface: QuerySurface,
+        qSurface: QSurface,
         questionAnsweringOutputLines: Sequence<String>,
     ): Result<String> {
         val parsedResult = mutableSetOf<List<RdfTripleElement>>()
@@ -59,33 +53,26 @@ class FolAnswerTupleToRDFSurfaceController {
         }
 
         if (refutationFound) {
-            if (querySurface.graffiti.isEmpty()) return Result.success(
-                Transformer().toNotation3Sublanguage(
-                    PositiveSurface(
-                        emptyList(),
-                        querySurface.hayesGraph
-                    )
-                )
-            )
+            if (qSurface.graffiti.isEmpty()) return transformQuestionAnsweringResult(setOf(listOf()), qSurface)
             return Result.success("Refutation found")
         }
 
-        return if (parsedResult.isEmpty()) Result.success("No answers") else
+        return if (parsedResult.isEmpty()) Result.success("No answers found") else
             transformQuestionAnsweringResult(
                 parsedResult,
-                querySurface
+                qSurface
             )
     }
 
     fun transformTPTPTupleAnswerToRDFSurfaces(
-        querySurface: QuerySurface,
+        qSurface: QSurface,
         tptpTupleAnswer: String,
     ): Result<String> {
         return parseRawTPTPAnswerTupleList(tptpTupleAnswer).fold(
             onSuccess = {
                 transformQuestionAnsweringResult(
                     it.first.toSet(),
-                    querySurface
+                    qSurface
                 )
 
             },
@@ -93,8 +80,8 @@ class FolAnswerTupleToRDFSurfaceController {
         )
     }
 
-    private fun transformQuestionAnsweringResult(resultList: Set<List<RdfTripleElement>>, querySurface: QuerySurface) =
-        runCatching { querySurface.replaceBlankNodes(resultList).let { Transformer().toNotation3Sublanguage(it) } }
+    private fun transformQuestionAnsweringResult(resultList: Set<List<RdfTripleElement>>, qSurface: QSurface) =
+        runCatching { qSurface.replaceBlankNodes(resultList).let { Transformer().toNotation3Sublanguage(it) } }
 
 
     private fun parseRawTPTPAnswerTupleList(
