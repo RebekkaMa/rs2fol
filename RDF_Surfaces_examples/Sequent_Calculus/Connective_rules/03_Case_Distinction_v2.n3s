@@ -1,0 +1,113 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+
+# Case distinction
+# (Γ ψ ϕ, Γ ¬ψ ϕ) -> (Γ ϕ)
+
+# ψ ... :Mona :color :purple .
+# ϕ ... :Mona :has :acrophobia .
+#-----------------------------------------------------------------------------------------------------------------
+
+#--( ( (Γ ψ -> ϕ), (Γ ¬ψ -> ϕ) ) -> (Γ -> ϕ) ) -> :This :is :working .------
+() log:onNegativeSurface {
+#------ ( (Γ ψ -> ϕ), (Γ ¬ψ -> ϕ) ) -> (Γ -> ϕ) -----------------------
+        () log:onNegativeSurface {
+#---------- (Γ ψ -> ϕ) -----------------------------
+            () log:onNegativeSurface {
+                # ψ
+                :Mona :color :purple .
+
+                # Γ
+                :Mona a :Cow.
+                (_:X) log:onNegativeSurface {
+                    _:X a :Cow .
+                    _:X :color :purple .
+                    () log:onNegativeSurface {
+                         _:X :has :acrophobia.
+                    }.
+                }.
+                (_:X) log:onNegativeSurface {
+                    _:X a :Cow .
+                    () log:onNegativeSurface {
+                         _:X :color :purple .
+                     }.
+                    () log:onNegativeSurface {
+                          _:X :has :acrophobia.
+                    }.
+                }.
+
+                # -> ϕ
+                () log:onNegativeSurface {
+                    :Mona :has :acrophobia .
+                } .
+            }.
+#---------- (Γ ¬ψ -> ϕ) -----------------------------
+            () log:onNegativeSurface {
+                # ¬ψ
+                () log:onNegativeSurface {
+                     _:X :color :purple .
+                }.
+
+                # Γ
+                :Mona a :Cow.
+                (_:X) log:onNegativeSurface {
+                    _:X a :Cow .
+                    _:X :color :purple .
+                    () log:onNegativeSurface {
+                         _:X :has :acrophobia.
+                    }.
+                }.
+                (_:X) log:onNegativeSurface {
+                    _:X a :Cow .
+                    () log:onNegativeSurface {
+                         _:X :color :purple .
+                     }.
+                    () log:onNegativeSurface {
+                          _:X :has :acrophobia.
+                    }.
+                }.
+
+                # -> ϕ
+                () log:onNegativeSurface {
+                     :Mona :has :acrophobia .
+                } .
+            } .
+            # -> (Γ -> ϕ)
+            () log:onNegativeSurface {
+                () log:onNegativeSurface {
+                    # Γ
+                    :Mona a :Cow.
+                    (_:X) log:onNegativeSurface {
+                        _:X a :Cow .
+                        _:X :color :purple .
+                        () log:onNegativeSurface {
+                             _:X :has :acrophobia.
+                        }.
+                    }.
+
+                    (_:X) log:onNegativeSurface {
+                        _:X a :Cow .
+                        () log:onNegativeSurface {
+                             _:X :color :purple .
+                         }.
+                        () log:onNegativeSurface {
+                              _:X :has :acrophobia.
+                        }.
+                    }.
+                    # -> ϕ
+                    () log:onNegativeSurface {
+                         :Mona :has :acrophobia .
+                    } .
+                }.
+            } .
+        } .
+#------- ->
+        () log:onNegativeSurface {
+             :This :is :working .
+        } .
+} .
+
+# :Mona :has :acrophobia
+(_:X) log:onQuerySurface {
+    _:X :is :working.
+}.

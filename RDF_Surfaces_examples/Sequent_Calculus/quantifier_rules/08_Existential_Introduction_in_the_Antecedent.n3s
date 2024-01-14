@@ -1,0 +1,54 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+
+# Existential introduction in the antecedent
+#
+# Γ (ϕy/x) ψ -> Γ (∃xϕ) ψ, if y is not free within Γ ∃xϕ ψ
+#
+# ϕ ... :Mona a :Cow. , y = :Mona
+# ψ ... :Someone :eats :grass .
+# -----------------------------------------------------------------------------------------------------------------
+
+# Γ
+(_:X) log:onNegativeSurface {
+   _:X a :Cow .
+   () log:onNegativeSurface {
+        :Someone :eats :grass .
+   } .
+} .
+
+# ((ϕy/x) ψ -> (∃xϕ) ψ) -> (:This :is :working)
+() log:onNegativeSurface {
+    # (ϕy/x) ψ -> (∃xϕ) ψ
+    () log:onNegativeSurface {
+        # (ϕy/x) ψ
+        () log:onNegativeSurface {
+            # ϕy/x
+            :Mona a :Cow.
+            # -> ψ
+            () log:onNegativeSurface {
+                :Someone :eats :grass.
+            } .
+        } .
+        # -> ∃xϕ ψ
+        () log:onNegativeSurface {
+            () log:onNegativeSurface {
+                # ∃xϕ
+                (_:X) log:onPositiveSurface {
+                     _:X a :Cow .
+                } .
+                # -> ψ
+                () log:onNegativeSurface {
+                     :Someone :eats :grass .
+                } .
+            } .
+        }.
+    } .
+    () log:onNegativeSurface {
+       :This :is :working .
+    } .
+} .
+
+(_:X) log:onQuerySurface {
+    _:X :is :working .
+}.

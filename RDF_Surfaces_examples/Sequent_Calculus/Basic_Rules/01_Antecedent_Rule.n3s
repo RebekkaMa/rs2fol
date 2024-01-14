@@ -1,0 +1,52 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+
+# Antecedent Rule
+# (Γ ϕ) -> (Γ' ϕ) with Γ ⊆ Γ'
+
+# Γ'\Γ ... :Mona :likes :saltStone .
+# ϕ    ... :Mona :has :acrophobia .
+#-------------------------------------------------
+
+#-----------------Γ--------------------
+:Mona a :Cow .
+
+( _:X ) log:onNegativeSurface {
+    _:X a :Cow .
+    () log:onNegativeSurface {
+        _:X :has :acrophobia .
+    } .
+} .
+
+#--------------------------------------
+
+#---((Γ' -> ϕ) -> :This :is :working.)-
+() log:onNegativeSurface {
+    # (Γ' -> ϕ)
+    () log:onNegativeSurface {
+        # Γ'\Γ
+        :Mona :likes :saltStone .
+        # Γ
+        :Mona a :Cow .
+        ( _:X ) log:onNegativeSurface {
+            _:X a :Cow .
+            () log:onNegativeSurface {
+                _:X :has :acrophobia .
+            } .
+        } .
+        # -> ϕ
+        () log:onNegativeSurface {
+            :Mona :has :acrophobia .
+        } .
+    } .
+    # -->
+    () log:onNegativeSurface {
+        :This :is :working .
+    } .
+} .
+#------------------------------------
+
+
+(_:X) log:onQuerySurface {
+    _:X :is :working .
+}.
