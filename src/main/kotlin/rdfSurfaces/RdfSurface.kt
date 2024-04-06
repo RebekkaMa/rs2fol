@@ -1,9 +1,10 @@
 package rdfSurfaces
 
-sealed class RdfSurface(
-    val graffiti: List<BlankNode>,
-    val hayesGraph: List<HayesGraphElement>,
-) : HayesGraphElement() {
+sealed class RdfSurface : HayesGraphElement() {
+
+    abstract val graffiti: List<BlankNode>
+    abstract val hayesGraph: List<HayesGraphElement>
+
     fun containsVariables(rdfSurface: RdfSurface = this): Boolean {
         if (rdfSurface.hayesGraph.isEmpty()) return false
         return rdfSurface.hayesGraph.any {
@@ -23,12 +24,10 @@ sealed class RdfSurface(
             }
         }
     }
-
-
 }
 
-sealed class QSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
-    RdfSurface(graffiti, hayesGraph) {
+sealed class QSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
+    RdfSurface() {
     fun replaceBlankNodes(map: Map<BlankNode, RdfTripleElement>, rdfSurface: RdfSurface): RdfSurface {
 
         fun replaceBlankNodes(collection: Collection, map: Map<BlankNode, RdfTripleElement>): Collection {
@@ -79,11 +78,9 @@ sealed class QSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElem
 
 }
 
-//TODO(" check leanness ")
-//TODO(" isomorphic check ")
+data class PositiveSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
+    RdfSurface() {
 
-class PositiveSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
-    RdfSurface(graffiti, hayesGraph) {
 
     fun getQSurfaces(): List<QSurface> = hayesGraph.filterIsInstance<QSurface>()
 
@@ -102,8 +99,8 @@ class PositiveSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElem
     }
 }
 
-class NegativeSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
-    RdfSurface(graffiti, hayesGraph) {
+data class NegativeSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
+    RdfSurface() {
     override fun equals(other: Any?): Boolean {
         return when {
             other === this -> true
@@ -119,7 +116,7 @@ class NegativeSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElem
     }
 }
 
-class QuerySurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
+data class QuerySurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
     QSurface(graffiti, hayesGraph) {
 
     override fun replaceBlankNodes(list: Set<List<RdfTripleElement>>): PositiveSurface {
@@ -167,8 +164,8 @@ class QuerySurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement
     }
 }
 
-class NeutralSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
-    RdfSurface(graffiti, hayesGraph) {
+data class NeutralSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
+    RdfSurface() {
     override fun equals(other: Any?): Boolean {
         return when {
             other === this -> true
@@ -184,8 +181,8 @@ class NeutralSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphEleme
     }
 }
 
-class NegativeTripleSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
-    RdfSurface(graffiti, hayesGraph) {
+data class NegativeTripleSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
+    RdfSurface() {
     override fun equals(other: Any?): Boolean {
         return when {
             other === this -> true
@@ -201,7 +198,7 @@ class NegativeTripleSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGra
     }
 }
 
-class QuestionSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
+data class QuestionSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
     QSurface(graffiti, hayesGraph) {
 
     override fun replaceBlankNodes(list: Set<List<RdfTripleElement>>): PositiveSurface {
@@ -253,8 +250,8 @@ class QuestionSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElem
     }
 }
 
-class AnswerSurface(graffiti: List<BlankNode>, hayesGraph: List<HayesGraphElement>) :
-    RdfSurface(graffiti, hayesGraph) {
+data class AnswerSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
+    RdfSurface() {
 
     override fun equals(other: Any?): Boolean {
         return when {

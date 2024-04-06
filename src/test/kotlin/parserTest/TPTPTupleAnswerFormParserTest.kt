@@ -3,7 +3,7 @@ package parserTest
 import com.github.h0tk3y.betterParse.grammar.parseToEnd
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.ShouldSpec
-import io.kotest.matchers.equality.shouldBeEqualToComparingFields
+import io.kotest.matchers.equality.shouldNotBeEqualUsingFields
 import parser.TptpTupleAnswerFormTransformer
 import rdfSurfaces.BlankNode
 import rdfSurfaces.Collection
@@ -16,7 +16,7 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
         should("parse basic example without exception") {
             val str =
                 "[(['http://example.org/ns#beetle','http://example.org/ns#nice']|['http://example.org/ns#beetle','http://example.org/ns#green']),['http://example.org/ns#beetle','http://example.org/ns#beautiful']|_]"
-            parser.TptpTupleAnswerFormTransformer.parseToEnd(str) shouldBeEqualToComparingFields Pair(
+            parser.TptpTupleAnswerFormTransformer.parseToEnd(str) shouldNotBeEqualUsingFields Pair(
                 listOf(listOf(IRI.from("http://example.org/ns#beetle"), IRI.from("http://example.org/ns#beautiful"))),
                 listOf(
                     listOf(
@@ -30,7 +30,7 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
         should("parse example with lists without exception") {
             val str =
                 "[[list('http://example.org/ns#s',list('http://example.org/ns#s',list('http://example.org/ns#s','\"0\"^^http://www.w3.org/2001/XMLSchema#integer'))),list]|_]"
-            TptpTupleAnswerFormTransformer.parseToEnd(str) shouldBeEqualToComparingFields Pair(
+            TptpTupleAnswerFormTransformer.parseToEnd(str) shouldNotBeEqualUsingFields Pair(
                 listOf(
                     listOf(
                         Collection(
@@ -62,7 +62,7 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
         should("parse example with rdf literals without exception") {
             val str =
                 "[['\"0\"^^http://www.w3.org/2001/XMLSchema#string','\"0\"@en'],['http://example.org/ns#s', sK5]|_]"
-            TptpTupleAnswerFormTransformer.parseToEnd(str) shouldBeEqualToComparingFields Pair(
+            TptpTupleAnswerFormTransformer.parseToEnd(str) shouldNotBeEqualUsingFields Pair(
                 listOf(
                     listOf(
                         Literal.fromNonNumericLiteral(
@@ -86,7 +86,7 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
 
         should("parse example with skolem function without exception") {
             val str = "[[sK1('http://example.org/ns#b','http://example.org/ns#c')]|_]"
-            TptpTupleAnswerFormTransformer.parseToEnd(str) shouldBeEqualToComparingFields Pair(
+            TptpTupleAnswerFormTransformer.parseToEnd(str) shouldNotBeEqualUsingFields Pair(
                 listOf(
                     listOf(
                         BlankNode(TptpTupleAnswerFormTransformer.encodeToValidBlankNodeLabel("sK1-${listOf(IRI.from("http://example.org/ns#b"), IRI.from("http://example.org/ns#c")).hashCode()}"))
@@ -98,13 +98,13 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
 
         should("parse empty result") {
             val str = "[|_]"
-            TptpTupleAnswerFormTransformer.parseToEnd(str) shouldBeEqualToComparingFields Pair(listOf(), listOf())
+            TptpTupleAnswerFormTransformer.parseToEnd(str) shouldNotBeEqualUsingFields Pair(listOf(), listOf())
         }
 
         should("parse another basic example without exception") {
             val str =
                 "[['http://example.org/ns#beetle','\"RDF/XML Syntax Specification (Revised)\"^^http://www.w3.org/2001/XMLSchema#string'],[list('http://example.org/ns#s'),'\"That Seventies Show\"@en'],['http://example.org/ns#beetle','\"http://www.w3.org/2001/XMLSchema#string\"^^http://www.w3.org/2001/XMLSchema#string']|_]"
-            TptpTupleAnswerFormTransformer.parseToEnd(str) shouldBeEqualToComparingFields Pair(
+            TptpTupleAnswerFormTransformer.parseToEnd(str) shouldNotBeEqualUsingFields Pair(
                 listOf(
                     listOf(
                         IRI.from("http://example.org/ns#beetle"),

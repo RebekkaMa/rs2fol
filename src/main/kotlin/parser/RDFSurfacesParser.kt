@@ -14,6 +14,12 @@ import util.InvalidInputException
 import util.InvalidSyntax
 import util.NotSupportedException
 
+typealias HayesGraph = List<HayesGraphElement>
+typealias FreeVariables = Set<BlankNode>
+typealias CollectionBlankNodes = Set<BlankNode>
+typealias InterimParseResult = Triple<HayesGraph,FreeVariables,CollectionBlankNodes>
+
+
 class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
 
     val lineComment by regexToken("^\\s*#.*$".toRegex(RegexOption.MULTILINE), ignore = true)
@@ -234,14 +240,13 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
         varSet.clear()
         val collectionBlankNodes = blankNodeToDirectParentSet.toSet()
         blankNodeToDirectParentSet.clear()
-        Triple(triplesResult, freeVariables, collectionBlankNodes)
+        InterimParseResult(triplesResult, freeVariables, collectionBlankNodes)
     }
 
     private val emptyVarList by (lpar and rpar) use { listOf<BlankNode>() }
     private val variableList by emptyVarList or (-lpar and oneOrMore(blankNode) and -rpar)
 
-    // Triple(hayesGraph, freeVariables, collectionBlankNodes)
-    private val rdfSurfacesParser: Parser<Triple<List<HayesGraphElement>, Set<BlankNode>, Set<BlankNode>>> by
+    private val rdfSurfacesParser: Parser<InterimParseResult> by
     (variableList and
             (iri) and
             (
@@ -250,8 +255,8 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
                     )
             ) map { (variableList, surface, rest) ->
         val (hayeGraph, freeVariables, freeCollectionBlankNodes) = rest.reduceOrNull { acc, triple ->
-            Triple(acc.first.plus(triple.first), acc.second.plus(triple.second), acc.third.plus(triple.third))
-        } ?: Triple(listOf(), setOf(), setOf())
+            InterimParseResult(acc.first.plus(triple.first), acc.second.plus(triple.second), acc.third.plus(triple.third))
+        } ?: InterimParseResult(listOf(), setOf(), setOf())
         val graffiti = variableList.plus(freeCollectionBlankNodes)
         val newHayeGraph = buildList<HayesGraphElement> {
             when (surface.iri) {
@@ -265,7 +270,11 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
                 else -> throw NotSupportedException(message = "Surface type '${surface.iri}' is not supported")
             }
         }
-        Triple(newHayeGraph, freeVariables.minus(variableList.toSet()), setOf<BlankNode>())
+        InterimParseResult(
+            first = newHayeGraph,
+            second = freeVariables.minus(variableList.toSet()),
+            third = setOf<BlankNode>()
+        )
     } or triples and -optional(dot)
 
     private val directive by (prefixID or sparqlPrefix).map { (prefix, iriStr) ->
@@ -284,16 +293,16 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
             when {
                 acc == null -> triple
                 triple == null -> acc
-                else -> Triple(
+                else -> InterimParseResult(
                     acc.first.plus(triple.first),
                     acc.second.plus(triple.second),
                     acc.third.plus(triple.third)
                 )
             }
-        } ?: Triple(listOf(), setOf(), setOf())
+        } ?: InterimParseResult(listOf(), setOf(), setOf())
         hayesGraph.singleOrNull() as? PositiveSurface ?: PositiveSurface(
-            freeCollectionBlankNodes.plus(freeVariables).toList(),
-            hayesGraph
+            graffiti = freeCollectionBlankNodes.plus(freeVariables).toList(),
+            hayesGraph = hayesGraph
         )
     }
 
@@ -336,19 +345,6 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
         .replace("\\\"", "\u0022")
         .replace("\\'", "\u0027")
         .replace("\\\\'", "\u005C")
-
-
-    fun tryParseToEnd(input: String, baseIRI: IRI): ParseResult<PositiveSurface> {
-        var bnLabel = "BN_"
-        var i = 0
-        while (input.contains("_:$bnLabel\\d+".toRegex()) && i++ in 0..10) {
-            bnLabel += '0'
-        }
-        if (i == 11) throw InvalidInputException("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
-        this.bnLabel = bnLabel
-        this.baseIri = baseIRI
-        return rootParser.tryParseToEnd(tokenizer.tokenize(input), 0)
-    }
 
     fun parseToEnd(input: String, baseIRI: IRI): PositiveSurface {
         var bnLabel = "BN_"

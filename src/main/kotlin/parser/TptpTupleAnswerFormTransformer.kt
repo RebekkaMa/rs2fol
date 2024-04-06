@@ -62,15 +62,11 @@ object TptpTupleAnswerFormTransformer :
             atomicWord.text.startsWith("sK") -> BlankNode(atomicWord.text)
             atomicWord.text.startsWith("list") -> Collection(emptyList())
             else -> {
-                ("\"(.*)\"\\^\\^(.+)".toRegex()).matchEntire(atomicWord.text.removeSurrounding("'"))?.let {
-                    val (literalValue, datatypeIri) = it.destructured
-                    Literal.fromNonNumericLiteral(literalValue, IRI.from(datatypeIri))
-                } ?: ("\"(.*)\"@(.+)".toRegex()).matchEntire(atomicWord.text.removeSurrounding("'"))?.let {
-                    val (literalValue, languageTag) = it.destructured
-                    Literal.fromNonNumericLiteral(literalValue, languageTag)
-                } ?: IRI.from(atomicWord.text.removeSurrounding("'"))
-                    .takeUnless { it.isRelativeReference() || it.iri.contains("\\s".toRegex()) }
-                ?: throw NotSupportedException("Element \"${atomicWord.text}\" could not be parsed.")
+                getLiteralFromStringOrNull(atomicWord.text)
+                    ?: getLangLiteralFromStringOrNull(atomicWord.text)
+                    ?: IRI.from(atomicWord.text.removeSurrounding("'"))
+                        .takeUnless { it.isRelativeReference() || it.iri.contains("\\s".toRegex()) }
+                    ?: throw NotSupportedException("Element \"${atomicWord.text}\" could not be parsed.")
             }
         }
     }
@@ -118,4 +114,16 @@ object TptpTupleAnswerFormTransformer :
         }
     }
 
+    private fun getLiteralFromStringOrNull(literal: String) =
+        ("\"(.*)\"\\^\\^(.+)".toRegex()).matchEntire(literal.removeSurrounding("'"))?.let {
+            val (literalValue, datatypeIri) = it.destructured
+            Literal.fromNonNumericLiteral(literalValue, IRI.from(datatypeIri))
+        }
+
+
+    private fun getLangLiteralFromStringOrNull(literal: String) =
+        ("\"(.*)\"@(.+)".toRegex()).matchEntire(literal.removeSurrounding("'"))?.let {
+            val (literalValue, languageTag) = it.destructured
+            Literal.fromNonNumericLiteral(literalValue, languageTag)
+        }
 }

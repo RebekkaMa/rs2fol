@@ -20,18 +20,19 @@ data class IRI(
     companion object {
 
         fun from(fullIRI: String): IRI {
-            return "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?".toRegex().matchEntire(fullIRI)
+            return "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?"
+                .toRegex()
+                .matchEntire(fullIRI)
                 ?.let { matchResult ->
+                    val (component1, component2, component3,
+                        component4, component5, component6,
+                        component7, component8, component9) = matchResult.destructured
                     IRI(
-                        matchResult.destructured.component2()
-                            .takeUnless { matchResult.destructured.component1().isEmpty() },
-                        matchResult.destructured.component4()
-                            .takeUnless { matchResult.destructured.component3().isEmpty() },
-                        matchResult.destructured.component5(),
-                        matchResult.destructured.component7()
-                            .takeUnless { matchResult.destructured.component6().isEmpty() },
-                        matchResult.destructured.component9()
-                            .takeUnless { matchResult.destructured.component8().isEmpty() }
+                        scheme = component2.takeUnless { component1.isEmpty() },
+                        authority = component4.takeUnless { component3.isEmpty() },
+                        path = component5,
+                        query = component7.takeUnless { component6.isEmpty() },
+                        fragment = component9.takeUnless {component8.isEmpty() }
                     )
                 } ?: IRI(path = fullIRI)
         }
