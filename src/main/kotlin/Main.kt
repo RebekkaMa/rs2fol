@@ -12,7 +12,7 @@ import com.github.ajalt.mordant.rendering.TextColors.red
 import com.github.ajalt.mordant.rendering.TextStyle
 import controller.FolAnswerTupleToRDFSurfaceController
 import controller.RDFSurfaceToFOLController
-import rdfSurfaces.IRI
+import rdfSurfaces.rdfTerm.IRI
 import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
@@ -641,5 +641,3 @@ fun CliktCommand.echoError(string: String) {
 fun CliktCommand.echoNonQuiet(string: String) {
     echo("%  $string")
 }
-
-

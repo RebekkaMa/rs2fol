@@ -7,7 +7,8 @@ import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import parser.RDFSurfacesParser
 import rdfSurfaces.*
-import rdfSurfaces.Collection
+import rdfSurfaces.rdfTerm.*
+import rdfSurfaces.rdfTerm.Collection
 import util.IRIConstants
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
@@ -42,7 +43,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val iri2 = IRI.from("http://www.perceive.net/schemas/relationship/enemyOf")
                 val iri3 = IRI.from("http://example.org/#green-goblin")
                 val iri4 = IRI.from("http://xmlns.com/foaf/0.1/name")
-                val literal = Literal("Spiderman", XSDDatatype.XSDstring)
+                val literal = DefaultLiteral("Spiderman", XSDDatatype.XSDstring)
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, iri3)
                 val rdfTriple2 = RdfTriple(iri1, iri4, literal)
@@ -64,7 +65,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val iri2 = IRI.from("http://www.perceive.net/schemas/relationship/enemyOf")
                 val iri3 = IRI.from("http://example.org/#green-goblin")
                 val iri4 = IRI.from("http://xmlns.com/foaf/0.1/name")
-                val literal = Literal("Spiderman", XSDDatatype.XSDstring)
+                val literal = DefaultLiteral("Spiderman", XSDDatatype.XSDstring)
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, iri3)
                 val rdfTriple2 = RdfTriple(iri1, iri4, literal)
@@ -82,8 +83,8 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val iri1 = IRI.from("http://example.org/#spiderman")
                 val iri2 = IRI.from("http://xmlns.com/foaf/0.1/name")
-                val literal1 = Literal("Spiderman", XSDDatatype.XSDstring)
-                val literal2 = LanguageTaggedString("Человек-паук" to "ru")
+                val literal1 = DefaultLiteral("Spiderman", XSDDatatype.XSDstring)
+                val literal2 = LanguageTaggedString("Человек-паук" , "ru")
 
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
@@ -102,8 +103,8 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val iri1 = IRI.from("http://example.org/#spiderman")
                 val iri2 = IRI.from("http://xmlns.com/foaf/0.1/name")
-                val literal1 = Literal("Spiderman", XSDDatatype.XSDstring)
-                val literal2 = LanguageTaggedString("Человек-паук" to "ru")
+                val literal1 = DefaultLiteral("Spiderman", XSDDatatype.XSDstring)
+                val literal2 = LanguageTaggedString("Человек-паук" , "ru")
 
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
@@ -214,8 +215,8 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val iri2 = IRI.from("http://xmlns.com/foaf/0.1/name")
                 val iri3 = IRI.from("http://example.org/#spiderman")
 
-                val literal1 = Literal("Green Goblin", XSDDatatype.XSDstring)
-                val literal2 = Literal("Spiderman", XSDDatatype.XSDstring)
+                val literal1 = DefaultLiteral("Green Goblin", XSDDatatype.XSDstring)
+                val literal2 = DefaultLiteral("Spiderman", XSDDatatype.XSDstring)
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
                 val rdfTriple2 = RdfTriple(iri3, iri2, literal2)
@@ -236,11 +237,15 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val iri3 = IRI.from("http://example.org/vocab/show/localName")
                 val iri4 = IRI.from("http://example.org/vocab/show/blurb")
 
-                val literal1 = Literal("That Seventies Show", XSDDatatype.XSDstring)
-                val literal2 = LanguageTaggedString("That Seventies Show" to "en")
-                val literal3 = LanguageTaggedString("Cette Série des Années Soixante-dix" to "fr")
-                val literal4 = LanguageTaggedString("Cette Série des Années Septante" to "fr-be")
-                val literal5 = Literal(
+                val literal1 =
+                    DefaultLiteral("That Seventies Show", XSDDatatype.XSDstring)
+                val literal2 =
+                    LanguageTaggedString("That Seventies Show" , "en")
+                val literal3 =
+                    LanguageTaggedString("Cette Série des Années Soixante-dix" , "fr")
+                val literal4 =
+                    LanguageTaggedString("Cette Série des Années Septante" , "fr-be")
+                val literal5 = DefaultLiteral(
                     "This is a multi-line                        # literal with embedded new lines and quotes\n" +
                             "literal with many quotes (\"\"\"\"\")\n" +
                             "and up to two sequential apostrophes ('').", XSDDatatype.XSDstring
@@ -271,9 +276,12 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val iri3 = IRI.from("http://example.org/elementsatomicMass")
                 val iri4 = IRI.from("http://example.org/elementsspecificGravity")
 
-                val literal1 = Literal(2, XSDDatatype.XSDinteger)
-                val literal2 = Literal(XSDDatatype.XSDdecimal.parse("4.002602"), XSDDatatype.XSDdecimal)
-                val literal3 = Literal(1.663E-4, XSDDatatype.XSDdouble)
+                val literal1 = DefaultLiteral(2, XSDDatatype.XSDinteger)
+                val literal2 = DefaultLiteral(
+                    XSDDatatype.XSDdecimal.parse("4.002602"),
+                    XSDDatatype.XSDdecimal
+                )
+                val literal3 = DefaultLiteral(1.663E-4, XSDDatatype.XSDdouble)
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
                 val rdfTriple2 = RdfTriple(iri1, iri3, literal2)
@@ -294,7 +302,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val iri1 = IRI.from("http://somecountry.example/census2007")
                 val iri2 = IRI.from("http://example.org/statsisLandlocked")
 
-                val literal1 = Literal(false, XSDDatatype.XSDboolean)
+                val literal1 = DefaultLiteral(false, XSDDatatype.XSDboolean)
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
 
@@ -339,7 +347,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val bn1 = BlankNode("BN_1")
                 val bn2 = BlankNode("BN_2")
 
-                val literal = Literal("Bob", XSDDatatype.XSDstring)
+                val literal = DefaultLiteral("Bob", XSDDatatype.XSDstring)
 
 
                 val rdfTriple1 = RdfTriple(bn1, iri1, bn2)
@@ -370,9 +378,9 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val bn3 = BlankNode("BN_3")
 
 
-                val literal1 = Literal("Alice", XSDDatatype.XSDstring)
-                val literal2 = Literal("Bob", XSDDatatype.XSDstring)
-                val literal3 = Literal("Eve", XSDDatatype.XSDstring)
+                val literal1 = DefaultLiteral("Alice", XSDDatatype.XSDstring)
+                val literal2 = DefaultLiteral("Bob", XSDDatatype.XSDstring)
+                val literal3 = DefaultLiteral("Eve", XSDDatatype.XSDstring)
 
 
                 val rdfTriple1 = RdfTriple(bn1, iri1, bn3)
@@ -408,9 +416,9 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val bn3 = BlankNode("c")
 
 
-                val literal1 = Literal("Alice", XSDDatatype.XSDstring)
-                val literal2 = Literal("Bob", XSDDatatype.XSDstring)
-                val literal3 = Literal("Eve", XSDDatatype.XSDstring)
+                val literal1 = DefaultLiteral("Alice", XSDDatatype.XSDstring)
+                val literal2 = DefaultLiteral("Bob", XSDDatatype.XSDstring)
+                val literal3 = DefaultLiteral("Eve", XSDDatatype.XSDstring)
 
 
                 val rdfTriple1 = RdfTriple(bn1, iri2, literal1)
@@ -438,8 +446,8 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val iri1 = IRI.from("http://example.org/stuff/1.0/a")
                 val iri2 = IRI.from("http://example.org/stuff/1.0/b")
 
-                val literal1 = Literal("apple", XSDDatatype.XSDstring)
-                val literal2 = Literal("banana", XSDDatatype.XSDstring)
+                val literal1 = DefaultLiteral("apple", XSDDatatype.XSDstring)
+                val literal2 = DefaultLiteral("banana", XSDDatatype.XSDstring)
 
                 val collection1 = Collection(listOf(literal1, literal2))
 
@@ -466,8 +474,8 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val bn1 = BlankNode("BN_1")
                 val bn2 = BlankNode("BN_2")
 
-                val literal1 = Literal("apple", XSDDatatype.XSDstring)
-                val literal2 = Literal("banana", XSDDatatype.XSDstring)
+                val literal1 = DefaultLiteral("apple", XSDDatatype.XSDstring)
+                val literal2 = DefaultLiteral("banana", XSDDatatype.XSDstring)
 
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, bn2)
@@ -490,7 +498,10 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val iri1 = IRI.from("http://example.org/stuff/1.0/a")
                 val iri2 = IRI.from("http://example.org/stuff/1.0/b")
 
-                val literal1 = Literal("The first line\nThe second line\n  more", XSDDatatype.XSDstring)
+                val literal1 = DefaultLiteral(
+                    "The first line\nThe second line\n  more",
+                    XSDDatatype.XSDstring
+                )
 
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
@@ -507,13 +518,17 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val iri1 = IRI.from("http://example.org/stuff/1.0/p")
 
-                val literal1 = Literal("w", XSDDatatype.XSDstring)
-                val literal2 = Literal(1, XSDDatatype.XSDinteger)
-                val literal3 = Literal(XSDDatatype.XSDdecimal.parse("2.0"), XSDDatatype.XSDdecimal)
-                val literal4 = Literal(3E1, XSDDatatype.XSDdouble)
+                val literal1 = DefaultLiteral("w", XSDDatatype.XSDstring)
+                val literal2 = DefaultLiteral(1, XSDDatatype.XSDinteger)
+                val literal3 = DefaultLiteral(
+                    XSDDatatype.XSDdecimal.parse("2.0"),
+                    XSDDatatype.XSDdecimal
+                )
+                val literal4 = DefaultLiteral(3E1, XSDDatatype.XSDdouble)
 
 
-                val collection1 = Collection(listOf(literal2, literal3, literal4))
+                val collection1 =
+                    Collection(listOf(literal2, literal3, literal4))
 
                 val rdfTriple1 = RdfTriple(collection1, iri1, literal1)
 
@@ -536,10 +551,13 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val bn1 = BlankNode("b1")
                 val bn2 = BlankNode("b2")
 
-                val literal1 = Literal("w", XSDDatatype.XSDstring)
-                val literal2 = Literal(1, XSDDatatype.XSDinteger)
-                val literal3 = Literal(XSDDatatype.XSDdecimal.parse("2.0"), XSDDatatype.XSDdecimal)
-                val literal4 = Literal(3E1, XSDDatatype.XSDdouble)
+                val literal1 = DefaultLiteral("w", XSDDatatype.XSDstring)
+                val literal2 = DefaultLiteral(1, XSDDatatype.XSDinteger)
+                val literal3 = DefaultLiteral(
+                    XSDDatatype.XSDdecimal.parse("2.0"),
+                    XSDDatatype.XSDdecimal
+                )
+                val literal4 = DefaultLiteral(3E1, XSDDatatype.XSDdouble)
 
                 val rdfTriple1 = RdfTriple(bn0, iri2, literal2)
                 val rdfTriple2 = RdfTriple(bn0, iri3, bn1)
@@ -568,8 +586,8 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val bn0 = BlankNode("BN_1")
 
-                val literal1 = Literal(1, XSDDatatype.XSDinteger)
-                val literal2 = Literal(2, XSDDatatype.XSDinteger)
+                val literal1 = DefaultLiteral(1, XSDDatatype.XSDinteger)
+                val literal2 = DefaultLiteral(2, XSDDatatype.XSDinteger)
 
                 val collection1 = Collection(listOf(literal2))
                 val collection2 = Collection(listOf(literal1, bn0, collection1))
@@ -604,8 +622,8 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val bn4 = BlankNode("B4")
 
 
-                val literal1 = Literal(1, XSDDatatype.XSDinteger)
-                val literal2 = Literal(2, XSDDatatype.XSDinteger)
+                val literal1 = DefaultLiteral(1, XSDDatatype.XSDinteger)
+                val literal2 = DefaultLiteral(2, XSDDatatype.XSDinteger)
 
                 val rdfTriple1 = RdfTriple(bn0, iri2, literal1)
                 val rdfTriple2 = RdfTriple(bn0, iri3, bn1)
@@ -751,7 +769,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val iri1 = IRI.from("http://example.org#prefix")
                 val iri2 = IRI.from("http://example.de#a")
 
-                val literal = Literal.fromNonNumericLiteral("base", IRI.from(IRIConstants.XSD_STRING_IRI))
+                val literal = DefaultLiteral.fromNonNumericLiteral("base", IRI.from(IRIConstants.XSD_STRING_IRI))
 
                 rdfSurfaceParser.parseToEnd(
                     testStr,

@@ -1,11 +1,4 @@
-package rdfSurfaces
-
-import org.apache.jena.datatypes.BaseDatatype
-import org.apache.jena.datatypes.xsd.XSDDatatype
-import org.apache.jena.datatypes.xsd.XSDDatatype.*
-import util.IRIConstants
-
-sealed class RdfTripleElement
+package rdfSurfaces.rdfTerm
 
 data class IRI(
     val scheme: String? = null,
@@ -13,9 +6,15 @@ data class IRI(
     val path: String,
     val query: String? = null,
     val fragment: String? = null,
-) : RdfTripleElement() {
+) : RdfTerm() {
 
-    val iri: String = componentRecomposition(scheme, authority, path, query, fragment)
+    val iri: String = componentRecomposition(
+        scheme,
+        authority,
+        path,
+        query,
+        fragment
+    )
 
     companion object {
 
@@ -32,7 +31,7 @@ data class IRI(
                         authority = component4.takeUnless { component3.isEmpty() },
                         path = component5,
                         query = component7.takeUnless { component6.isEmpty() },
-                        fragment = component9.takeUnless {component8.isEmpty() }
+                        fragment = component9.takeUnless { component8.isEmpty() }
                     )
                 } ?: IRI(path = fullIRI)
         }
@@ -52,7 +51,10 @@ data class IRI(
                 if (fragment != null) append("#$fragment")
             }
 
-        fun transformReference(R: IRI, B: IRI): IRI {
+        fun transformReference(
+            R: IRI,
+            B: IRI
+        ): IRI {
             fun merge(): String =
                 if (B.authority != null && B.path.isEmpty()) "/${R.path}" else (B.path.dropLastWhile { it != '/' } + R.path)
 
@@ -123,7 +125,13 @@ data class IRI(
 
             val targetURIfragment: String? = R.fragment
 
-            return IRI(targetURIScheme, targetURIauthority, targetURIpath, targetURIquery, targetURIfragment)
+            return IRI(
+                targetURIScheme,
+                targetURIauthority,
+                targetURIpath,
+                targetURIquery,
+                targetURIfragment
+            )
         }
     }
 
@@ -136,108 +144,4 @@ data class IRI(
 
     override fun toString(): String = iri
 
-}
-
-data class BlankNode(val blankNodeId: String) : RdfTripleElement()
-
-data class Collection(val list: List<RdfTripleElement> = listOf()) : RdfTripleElement(), List<RdfTripleElement> by list
-
-open class Literal(val literalValue: Any, val datatype: BaseDatatype) : RdfTripleElement() {
-
-    companion object {
-        fun fromNonNumericLiteral(lexicalForm: String, datatypeIRI: IRI): Literal {
-            val datatype = when {
-                datatypeIRI.iri.startsWith(IRIConstants.XSD_IRI) -> when (datatypeIRI.fragment) {
-                    "string" -> XSDstring
-                    "boolean" -> XSDboolean
-                    "decimal" -> XSDdecimal
-                    "integer" -> XSDinteger
-                    "double" -> XSDdouble
-                    "float" -> XSDfloat
-                    "date" -> XSDdate
-                    "time" -> XSDtime
-                    "dateTime" -> XSDdateTime
-                    "dateTimeStamp" -> XSDdateTimeStamp
-                    "gYear" -> XSDgYear
-                    "gMonth" -> XSDgMonth
-                    "gDay" -> XSDgYear
-                    "gYearMonth" -> XSDgYearMonth
-                    "duration" -> XSDduration
-                    "yearMonthDuration" -> XSDyearMonthDuration
-                    "dayTimeDuration" -> XSDdayTimeDuration
-                    "byte" -> XSDbyte
-                    "short" -> XSDshort
-                    "int" -> XSDint
-                    "long" -> XSDlong
-                    "unsignedByte" -> XSDunsignedByte
-                    "unsignedShort" -> XSDshort
-                    "unsignedInt" -> XSDunsignedInt
-                    "unsignedLong" -> XSDunsignedLong
-                    "positiveInteger" -> XSDpositiveInteger
-                    "nonNegativeInteger" -> XSDnonNegativeInteger
-                    "negativeInteger" -> XSDnegativeInteger
-                    "nonPositiveInteger" -> XSDnonPositiveInteger
-                    "hexBinary" -> XSDhexBinary
-                    "base64Binary" -> XSDbase64Binary
-                    "anyURI" -> XSDanyURI
-                    "language" -> XSDlanguage
-                    "normalizedString" -> XSDnormalizedString
-                    "token" -> XSDtoken
-                    "NMTOKEN" -> XSDNMTOKEN
-                    "Name" -> XSDName
-                    "NCName" -> XSDNCName
-                    else -> BaseDatatype(datatypeIRI.iri)
-                }
-
-                else -> BaseDatatype(datatypeIRI.iri)
-            }
-
-            return Literal(
-                runCatching {
-                    lexicalForm.takeUnless { datatype is XSDDatatype } ?: datatype.parse(lexicalForm)
-                }.getOrDefault(lexicalForm),
-                datatype
-            )
-        }
-
-        fun fromNonNumericLiteral(lexicalValue: String, langTag: String): LanguageTaggedString =
-            LanguageTaggedString(Pair(lexicalValue, langTag.lowercase()))
-
-        fun fromNumericLiteral(numericLiteral: String): Literal =
-            when {
-                numericLiteral.contains("E", ignoreCase = true) -> fromNonNumericLiteral(
-                    numericLiteral,
-                    IRI.from(IRIConstants.XSD_DOUBLE)
-                )
-
-                numericLiteral.contains(".", ignoreCase = true) -> fromNonNumericLiteral(
-                    numericLiteral,
-                    IRI.from(IRIConstants.XSD_DECIMAL)
-                )
-
-                else -> fromNonNumericLiteral(numericLiteral, IRI.from(IRIConstants.XSD_INTEGER))
-            }
-
-    }
-
-    override fun equals(other: Any?): Boolean {
-        return when {
-            other === this -> true
-            other is Literal -> other.literalValue == literalValue && other.datatype.uri == datatype.uri
-            else -> false
-        }
-    }
-
-    override fun hashCode(): Int {
-        var result = literalValue.hashCode()
-        result = 31 * result + datatype.uri.hashCode()
-        return result
-    }
-}
-
-
-class LanguageTaggedString(lexicalValue: Pair<String, String>) :
-    Literal(literalValue = lexicalValue, datatype = BaseDatatype(IRIConstants.RDF_LANG_STRING_IRI)) {
-    val lexicalForm = lexicalValue.first
-    val languageTag = lexicalValue.second
 }

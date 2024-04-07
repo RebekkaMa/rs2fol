@@ -4,6 +4,8 @@ import com.github.h0tk3y.betterParse.parser.ParseException
 import parser.RDFSurfacesParser
 import parser.TptpTupleAnswerFormTransformer
 import rdfSurfaces.*
+import rdfSurfaces.rdfTerm.IRI
+import rdfSurfaces.rdfTerm.RdfTerm
 import util.InvalidInputException
 import util.NotSupportedException
 import util.generalParseErrorString
@@ -30,7 +32,7 @@ class FolAnswerTupleToRDFSurfaceController {
         qSurface: QSurface,
         questionAnsweringOutputLines: Sequence<String>,
     ): Result<String> {
-        val parsedResult = mutableSetOf<List<RdfTripleElement>>()
+        val parsedResult = mutableSetOf<List<RdfTerm>>()
 
         var refutationFound = false
 
@@ -80,13 +82,13 @@ class FolAnswerTupleToRDFSurfaceController {
         )
     }
 
-    private fun transformQuestionAnsweringResult(resultList: Set<List<RdfTripleElement>>, qSurface: QSurface) =
+    private fun transformQuestionAnsweringResult(resultList: Set<List<RdfTerm>>, qSurface: QSurface) =
         runCatching { qSurface.replaceBlankNodes(resultList).let { Transformer().toNotation3Sublanguage(it) } }
 
 
     private fun parseRawTPTPAnswerTupleList(
         tptpTupleAnswer: String,
-    ): Result<Pair<List<List<RdfTripleElement>>, List<List<List<RdfTripleElement>>>>> {
+    ): Result<Pair<List<List<RdfTerm>>, List<List<List<RdfTerm>>>>> {
         return try {
             Result.success(TptpTupleAnswerFormTransformer.parseToEnd(tptpTupleAnswer))
         } catch (exc: Exception) {

@@ -6,7 +6,8 @@ import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.shouldBe
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import rdfSurfaces.*
-import rdfSurfaces.Collection
+import rdfSurfaces.rdfTerm.*
+import rdfSurfaces.rdfTerm.Collection
 import java.io.File
 
 class TransformerTest
@@ -43,11 +44,15 @@ class TransformerTest
                 val iri3 = IRI.from("http://example.org/vocab/show/localName")
                 val iri4 = IRI.from("http://example.org/vocab/show/blurb")
 
-                val literal1 = Literal("That Seventies Show", XSDDatatype.XSDstring)
-                val literal2 = LanguageTaggedString("That Seventies Show" to "en")
-                val literal3 = LanguageTaggedString("Cette Série des Années Soixante-dix" to "fr")
-                val literal4 = LanguageTaggedString("Cette Série des Années Septante" to "fr-be")
-                val literal5 = Literal(
+                val literal1 =
+                    DefaultLiteral("That Seventies Show", XSDDatatype.XSDstring)
+                val literal2 =
+                    LanguageTaggedString("That Seventies Show" , "en")
+                val literal3 =
+                    LanguageTaggedString("Cette Série des Années Soixante-dix" , "fr")
+                val literal4 =
+                    LanguageTaggedString("Cette Série des Années Septante" , "fr-be")
+                val literal5 = DefaultLiteral(
                     "This is a multi-line                        # literal with embedded new lines and quotes\n" +
                             "literal with many quotes (\"\"\"\"\")\n" +
                             "and up to two sequential apostrophes ('').", XSDDatatype.XSDstring
@@ -75,13 +80,17 @@ class TransformerTest
 
                 val iri1 = IRI.from("http://example.org/stuff/1.0/p")
 
-                val literal1 = Literal("w", XSDDatatype.XSDstring)
-                val literal2 = Literal(1, XSDDatatype.XSDinteger)
-                val literal3 = Literal(XSDDatatype.XSDdecimal.parse("2.0"), XSDDatatype.XSDdecimal)
-                val literal4 = Literal(3E1, XSDDatatype.XSDdouble)
+                val literal1 = DefaultLiteral("w", XSDDatatype.XSDstring)
+                val literal2 = DefaultLiteral(1, XSDDatatype.XSDinteger)
+                val literal3 = DefaultLiteral(
+                    XSDDatatype.XSDdecimal.parse("2.0"),
+                    XSDDatatype.XSDdecimal
+                )
+                val literal4 = DefaultLiteral(3E1, XSDDatatype.XSDdouble)
 
 
-                val collection1 = Collection(listOf(literal2, literal3, literal4))
+                val collection1 =
+                    Collection(listOf(literal2, literal3, literal4))
 
                 val rdfTriple1 = RdfTriple(collection1, iri1, literal1)
 

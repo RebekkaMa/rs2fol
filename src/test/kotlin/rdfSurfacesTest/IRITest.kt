@@ -2,8 +2,8 @@ package rdfSurfacesTest
 
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.shouldBe
-import rdfSurfaces.IRI
-import rdfSurfaces.IRI.Companion.transformReference
+import rdfSurfaces.rdfTerm.IRI
+import rdfSurfaces.rdfTerm.IRI.Companion.transformReference
 
 class IRITest : ShouldSpec(
     {

@@ -3,6 +3,10 @@ package rdfSurfacesTest
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import rdfSurfaces.*
+import rdfSurfaces.rdfTerm.BlankNode
+import rdfSurfaces.rdfTerm.DefaultLiteral
+import rdfSurfaces.rdfTerm.IRI
+import rdfSurfaces.rdfTerm.LanguageTaggedString
 
 class QuerySurfaceTest : ShouldSpec({
 
@@ -16,7 +20,7 @@ class QuerySurfaceTest : ShouldSpec({
 
             val bn1_r = BlankNode("Bn1_r")
             val bn2_r = IRI.from("http://example.com#bn2_r")
-            val bn3_r = Literal.fromNonNumericLiteral("bn3_r", "en")
+            val bn3_r = LanguageTaggedString("bn3_r", "en")
 
             val bn4 = BlankNode("Bn4")
 
@@ -24,9 +28,9 @@ class QuerySurfaceTest : ShouldSpec({
             val iri2 = IRI.from("http://example.com#2")
             val iri3 = IRI.from("http://example.com#3")
 
-            val literal1 = Literal.fromNumericLiteral("4545")
-            val literal2 = Literal.fromNonNumericLiteral("cat", "en")
-            val literal3 = Literal.fromNonNumericLiteral("Tomatensalat", IRI.from("http://www.w3.org/2001/XMLSchema#string"))
+            val literal1 = DefaultLiteral.fromNumericLiteral("4545")
+            val literal2 = LanguageTaggedString("cat", "en")
+            val literal3 = DefaultLiteral.fromNonNumericLiteral("Tomatensalat", IRI.from("http://www.w3.org/2001/XMLSchema#string"))
 
             val triple11 = RdfTriple(bn1, iri1, literal1)
             val triple12 = RdfTriple(literal3, bn2, bn4)

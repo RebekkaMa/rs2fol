@@ -1,9 +1,10 @@
 package controllerTest
+
 import controller.Transformer
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import parser.RDFSurfacesParser
-import rdfSurfaces.IRI
+import rdfSurfaces.rdfTerm.IRI
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
 import kotlin.io.path.invariantSeparatorsPathString
@@ -347,7 +348,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                         file.readText(),
                         IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                     )
-                ).replace("\\s+".toRegex(), "") shouldBeEqualComparingTo solutionFile.readText().replace("\\s+".toRegex(), "")
+                ).replace("\\s+".toRegex(), "") shouldBeEqualComparingTo solutionFile.readText()
+                    .replace("\\s+".toRegex(), "")
             }
             should("transform blogic abcd.n3s") {
                 val file = Path("src/test/resources/blogic/abcd.n3s")
@@ -358,7 +360,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                         file.readText(),
                         IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                     )
-                ).replace("\\s+".toRegex(), "") shouldBeEqualComparingTo solutionFile.readText().replace("\\s+".toRegex(), "")
+                ).replace("\\s+".toRegex(), "") shouldBeEqualComparingTo solutionFile.readText()
+                    .replace("\\s+".toRegex(), "")
             }
         }
         context("lists") {

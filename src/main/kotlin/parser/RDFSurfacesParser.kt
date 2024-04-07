@@ -7,7 +7,8 @@ import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.*
 import rdfSurfaces.*
-import rdfSurfaces.Collection
+import rdfSurfaces.rdfTerm.*
+import rdfSurfaces.rdfTerm.Collection
 import util.IRIConstants
 import util.IRIConstants.RDF_TYPE_IRI
 import util.InvalidInputException
@@ -22,14 +23,23 @@ typealias InterimParseResult = Triple<HayesGraph,FreeVariables,CollectionBlankNo
 
 class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
 
-    val lineComment by regexToken("^\\s*#.*$".toRegex(RegexOption.MULTILINE), ignore = true)
-    val inlineComment by regexToken("\\s#.*$".toRegex(RegexOption.MULTILINE), ignore = true)
+    private object BlankNodeCounter {
+        private var count: Int = 0
+
+        fun reset() {
+            count = 0
+        }
+
+        fun getAndIncrement() = ++count
+    }
 
     private lateinit var bnLabel: String
 
+    private val lineComment by regexToken("^\\s*#.*$".toRegex(RegexOption.MULTILINE), ignore = true)
+    private val inlineComment by regexToken("\\s#.*$".toRegex(RegexOption.MULTILINE), ignore = true)
+
     private val space by regexToken("\\s+", ignore = true)
 
-    private var blankNodeCounter = 0
     private val blankNodeTriplesSet = mutableListOf<RdfTriple>()
     private val prefixMap = mutableMapOf<String, String>()
     private var baseIri: IRI = IRI.from("file://" + System.getProperty("user.dir") + "/")
@@ -83,12 +93,22 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
     } or prefixedName
 
 
-    private val blankNodeLabel by blankNodeLabelToken.use { BlankNode(this.text.drop(2)) }
+    private val blankNodeLabel by blankNodeLabelToken.use {
+        BlankNode(
+            this.text.drop(
+                2
+            )
+        )
+    }
     private val anon by lparBracket and rparBracket
-    private val blankNode by blankNodeLabel or anon.use { BlankNode(createBlankNodeId()) }
+    private val blankNode by blankNodeLabel or anon.use {
+        BlankNode(
+            createBlankNodeId()
+        )
+    }
 
     private val numericLiteralToken by regexToken("(?<!:)\\b((([+-]?([0-9]+\\.[0-9]*([eE][+-]?[0-9]+)))|(\\.[0-9]+([eE][+-]?[0-9]+))|([0-9]+([eE][+-]?[0-9]+)))|([+-]?[0-9]*\\.[0-9]+)|([+-]?[0-9]+))\\b")
-    private val numericLiteral by numericLiteralToken use { Literal.fromNumericLiteral(this.text) }
+    private val numericLiteral by numericLiteralToken use { DefaultLiteral.fromNumericLiteral(this.text) }
 
     private val stringLiteralLongSingleQuote by regexToken("('''(('|(''))?([^'\\\\]|$echar|$uchar))*''')")
     private val stringLiteralLongQuote by regexToken("(\"\"\"((\"|(\"\"))?([^\"\\\\]|$echar|$uchar))*\"\"\")")
@@ -106,17 +126,17 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
     private val circumflex by circumflexToken use { text }
     private val rdfLiteral by string and optional(langTag or ((circumflex and iri) use { t2 })) use {
         when (val part = this.t2) {
-            null -> Literal.fromNonNumericLiteral(
+            null -> DefaultLiteral.fromNonNumericLiteral(
                 replaceStringEscapes(replaceNumericEscapeSequences(this.t1)),
                 datatypeIRI = IRI.from(IRIConstants.XSD_STRING_IRI)
             )
 
-            is String -> Literal.fromNonNumericLiteral(this.t1, langTag = part.drop(1))
+            is String -> LanguageTaggedString(lexicalForm = this.t1, languageTag = part.drop(1))
             is IRI -> {
                 val literalValue = this.t1.takeUnless { part == IRIConstants.XSD_STRING_IRI } ?: replaceStringEscapes(
                     replaceNumericEscapeSequences(this.t1)
                 )
-                Literal.fromNonNumericLiteral(literalValue, datatypeIRI = part)
+                DefaultLiteral.fromNonNumericLiteral(literalValue, datatypeIRI = part)
             }
 
             else -> throw NotSupportedException("RDF Literal type is not supported")
@@ -124,7 +144,7 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
     }
     private val booleanLiteralToken by regexToken("(true)|(false)")
     private val booleanLiteral by booleanLiteralToken use {
-        Literal.fromNonNumericLiteral(
+        DefaultLiteral.fromNonNumericLiteral(
             text,
             datatypeIRI = IRI.from(IRIConstants.XSD_BOOLEAN_IRI)
         )
@@ -147,7 +167,7 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
         }
     }
 
-    private val collection: Parser<RdfTripleElement> by -lpar and zeroOrMore(parser(this::rdfObject)) and -rpar use {
+    private val collection: Parser<RdfTerm> by -lpar and zeroOrMore(parser(this::rdfObject)) and -rpar use {
         if (useRDFLists) {
             if (this.isEmpty()) IRI.from(IRIConstants.RDF_NIL_IRI) else {
                 val collectionStart = BlankNode(createBlankNodeId())
@@ -192,7 +212,7 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
             else -> it
         }
     } or blankNode.map { varSet.add(it); it } or literal
-    private val rdfObject: Parser<RdfTripleElement> by iri or blankNode.map { varSet.add(it); it } or literal or blankNodePropertyList or collection
+    private val rdfObject: Parser<RdfTerm> by iri or blankNode.map { varSet.add(it); it } or literal or blankNodePropertyList or collection
 
     private val verb by predicate or a.map { IRI.from(RDF_TYPE_IRI) }
 
@@ -255,8 +275,8 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
                     )
             ) map { (variableList, surface, rest) ->
         val (hayeGraph, freeVariables, freeCollectionBlankNodes) = rest.reduceOrNull { acc, triple ->
-            InterimParseResult(acc.first.plus(triple.first), acc.second.plus(triple.second), acc.third.plus(triple.third))
-        } ?: InterimParseResult(listOf(), setOf(), setOf())
+            Triple(acc.first.plus(triple.first), acc.second.plus(triple.second), acc.third.plus(triple.third))
+        } ?: Triple(listOf(), setOf(), setOf())
         val graffiti = variableList.plus(freeCollectionBlankNodes)
         val newHayeGraph = buildList<HayesGraphElement> {
             when (surface.iri) {
@@ -313,10 +333,10 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
         }
 
 
-    private fun createBlankNodeId(): String = "$bnLabel${++blankNodeCounter}"
+    private fun createBlankNodeId(): String = "$bnLabel${BlankNodeCounter.getAndIncrement()}"
 
     private fun resetAll() {
-        blankNodeCounter = 0
+        BlankNodeCounter.reset()
         varSet.clear()
         blankNodeTriplesSet.clear()
         prefixMap.clear()

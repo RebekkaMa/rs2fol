@@ -1,7 +1,7 @@
 package controller
 import com.github.h0tk3y.betterParse.parser.ParseException
 import parser.RDFSurfacesParser
-import rdfSurfaces.IRI
+import rdfSurfaces.rdfTerm.IRI
 import rdfSurfaces.QSurface
 import util.InvalidInputException
 import util.NotSupportedException

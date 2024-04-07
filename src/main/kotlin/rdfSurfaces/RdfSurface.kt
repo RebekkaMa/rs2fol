@@ -1,5 +1,10 @@
 package rdfSurfaces
 
+import rdfSurfaces.rdfTerm.BlankNode
+import rdfSurfaces.rdfTerm.RdfTerm
+import rdfSurfaces.rdfTerm.Collection
+
+
 sealed class RdfSurface : HayesGraphElement() {
 
     abstract val graffiti: List<BlankNode>
@@ -28,9 +33,9 @@ sealed class RdfSurface : HayesGraphElement() {
 
 sealed class QSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
     RdfSurface() {
-    fun replaceBlankNodes(map: Map<BlankNode, RdfTripleElement>, rdfSurface: RdfSurface): RdfSurface {
+    fun replaceBlankNodes(map: Map<BlankNode, RdfTerm>, rdfSurface: RdfSurface): RdfSurface {
 
-        fun replaceBlankNodes(collection: Collection, map: Map<BlankNode, RdfTripleElement>): Collection {
+        fun replaceBlankNodes(collection: Collection, map: Map<BlankNode, RdfTerm>): Collection {
             return Collection(collection.map {
                 when (it) {
                     is BlankNode -> map[it] ?: it
@@ -74,52 +79,24 @@ sealed class QSurface(override val graffiti: List<BlankNode>, override val hayes
         }
     }
 
-    abstract fun replaceBlankNodes(list: Set<List<RdfTripleElement>>): PositiveSurface
+    abstract fun replaceBlankNodes(list: Set<List<RdfTerm>>): PositiveSurface
 
 }
 
 data class PositiveSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
     RdfSurface() {
 
-
     fun getQSurfaces(): List<QSurface> = hayesGraph.filterIsInstance<QSurface>()
 
-    override fun equals(other: Any?): Boolean {
-        return when {
-            other === this -> true
-            other is PositiveSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
-            else -> false
-        }
-    }
-
-    override fun hashCode(): Int {
-        var result = graffiti.hashCode()
-        result = 31 * result + hayesGraph.hashCode()
-        return result
-    }
 }
 
 data class NegativeSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
-    RdfSurface() {
-    override fun equals(other: Any?): Boolean {
-        return when {
-            other === this -> true
-            other is NegativeSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
-            else -> false
-        }
-    }
-
-    override fun hashCode(): Int {
-        var result = graffiti.hashCode()
-        result = 31 * result + hayesGraph.hashCode()
-        return result
-    }
-}
+    RdfSurface()
 
 data class QuerySurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
     QSurface(graffiti, hayesGraph) {
 
-    override fun replaceBlankNodes(list: Set<List<RdfTripleElement>>): PositiveSurface {
+    override fun replaceBlankNodes(list: Set<List<RdfTerm>>): PositiveSurface {
 
         val maps = list.map {
             if (containsVariables().not()) return PositiveSurface(listOf(), this.hayesGraph)
@@ -147,61 +124,18 @@ data class QuerySurface(override val graffiti: List<BlankNode>, override val hay
             }.distinct()
         )
     }
-
-
-    override fun equals(other: Any?): Boolean {
-        return when {
-            other === this -> true
-            other is QuerySurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
-            else -> false
-        }
-    }
-
-    override fun hashCode(): Int {
-        var result = graffiti.hashCode()
-        result = 31 * result + hayesGraph.hashCode()
-        return result
-    }
 }
 
 data class NeutralSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
-    RdfSurface() {
-    override fun equals(other: Any?): Boolean {
-        return when {
-            other === this -> true
-            other is NeutralSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
-            else -> false
-        }
-    }
-
-    override fun hashCode(): Int {
-        var result = graffiti.hashCode()
-        result = 31 * result + hayesGraph.hashCode()
-        return result
-    }
-}
+    RdfSurface()
 
 data class NegativeTripleSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
-    RdfSurface() {
-    override fun equals(other: Any?): Boolean {
-        return when {
-            other === this -> true
-            other is NegativeTripleSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
-            else -> false
-        }
-    }
-
-    override fun hashCode(): Int {
-        var result = graffiti.hashCode()
-        result = 31 * result + hayesGraph.hashCode()
-        return result
-    }
-}
+    RdfSurface()
 
 data class QuestionSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
     QSurface(graffiti, hayesGraph) {
 
-    override fun replaceBlankNodes(list: Set<List<RdfTripleElement>>): PositiveSurface {
+    override fun replaceBlankNodes(list: Set<List<RdfTerm>>): PositiveSurface {
         val maps = list.map {
             if (it.isEmpty() || this.containsVariables().not()) return PositiveSurface(
                 listOf(),
@@ -233,37 +167,7 @@ data class QuestionSurface(override val graffiti: List<BlankNode>, override val 
             }.distinct()
         )
     }
-
-
-    override fun equals(other: Any?): Boolean {
-        return when {
-            other === this -> true
-            other is QuestionSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
-            else -> false
-        }
-    }
-
-    override fun hashCode(): Int {
-        var result = graffiti.hashCode()
-        result = 31 * result + hayesGraph.hashCode()
-        return result
-    }
 }
 
 data class AnswerSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
-    RdfSurface() {
-
-    override fun equals(other: Any?): Boolean {
-        return when {
-            other === this -> true
-            other is AnswerSurface -> other.graffiti == graffiti && other.hayesGraph == hayesGraph
-            else -> false
-        }
-    }
-
-    override fun hashCode(): Int {
-        var result = graffiti.hashCode()
-        result = 31 * result + hayesGraph.hashCode()
-        return result
-    }
-}
+    RdfSurface()

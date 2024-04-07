@@ -5,7 +5,8 @@ import parser.stringLiteralLongSingleQuote
 import parser.stringLiteralQuote
 import parser.stringLiteralSingleQuote
 import rdfSurfaces.*
-import rdfSurfaces.Collection
+import rdfSurfaces.rdfTerm.*
+import rdfSurfaces.rdfTerm.Collection
 import util.IRIConstants
 import util.NotSupportedException
 import util.TransformerException
@@ -82,11 +83,11 @@ class Transformer {
             separator = " "
         ) { transform(it) }
 
-        fun transform(rdfTripleElement: RdfTripleElement): String = when (rdfTripleElement) {
-            is BlankNode -> transform(rdfTripleElement)
-            is Literal -> transform(rdfTripleElement)
-            is IRI -> transform(rdfTripleElement)
-            is Collection -> rdfTripleElement.list.joinToString(
+        fun transform(rdfTerm: RdfTerm): String = when (rdfTerm) {
+            is BlankNode -> transform(rdfTerm)
+            is Literal -> transform(rdfTerm)
+            is IRI -> transform(rdfTerm)
+            is Collection -> rdfTerm.list.joinToString(
                 prefix = "(",
                 separator = " ",
                 postfix = ")"
@@ -174,12 +175,12 @@ class Transformer {
             }
         ) + "'"
 
-        fun transform(rdfTripleElement: RdfTripleElement): String = when (rdfTripleElement) {
-            is BlankNode -> transform(rdfTripleElement)
-            is Literal -> transform(rdfTripleElement)
-            is IRI -> transform(rdfTripleElement)
-            is Collection -> "list".takeIf { rdfTripleElement.list.isEmpty() }
-                ?: ("list(" + rdfTripleElement.list.joinToString(",") { transform(it) } + ")")
+        fun transform(rdfTerm: RdfTerm): String = when (rdfTerm) {
+            is BlankNode -> transform(rdfTerm)
+            is Literal -> transform(rdfTerm)
+            is IRI -> transform(rdfTerm)
+            is Collection -> "list".takeIf { rdfTerm.list.isEmpty() }
+                ?: ("list(" + rdfTerm.list.joinToString(",") { transform(it) } + ")")
         }
 
         fun transform(blankNodeList: List<BlankNode>) = blankNodeList.joinToString(separator = ",") { transform(it) }

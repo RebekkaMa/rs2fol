@@ -6,15 +6,15 @@ import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.Parser
-import rdfSurfaces.*
-import rdfSurfaces.Collection
+import rdfSurfaces.rdfTerm.*
+import rdfSurfaces.rdfTerm.Collection
 import util.NotSupportedException
 
 object TptpTupleAnswerFormTransformer :
-    Grammar<Pair<List<List<RdfTripleElement>>, List<List<List<RdfTripleElement>>>>>() {
+    Grammar<Pair<List<List<RdfTerm>>, List<List<List<RdfTerm>>>>>() {
 
-    private val results = mutableListOf<List<RdfTripleElement>>()
-    private val orResults = mutableListOf<List<List<RdfTripleElement>>>()
+    private val results = mutableListOf<List<RdfTerm>>()
+    private val orResults = mutableListOf<List<List<RdfTerm>>>()
 
     val space by regexToken("\\s+", ignore = true)
 
@@ -35,9 +35,9 @@ object TptpTupleAnswerFormTransformer :
     private val variable by variableToken use { BlankNode(this.text) }
 
     //TODO(defined Term + System Term)
-    private val term: Parser<RdfTripleElement> by variable or parser(this::nonLogicalSymbol)
+    private val term: Parser<RdfTerm> by variable or parser(this::nonLogicalSymbol)
 
-    private val arguments: Parser<List<RdfTripleElement>> by (term and oneOrMore(-comma and term)).map {
+    private val arguments: Parser<List<RdfTerm>> by (term and oneOrMore(-comma and term)).map {
         buildList {
             add(it.t1)
             it.t2.forEach { rdfTripleElement ->
@@ -46,7 +46,7 @@ object TptpTupleAnswerFormTransformer :
         }
     } or term.map { listOf(it) }
 
-    private val nonLogicalSymbol: Parser<RdfTripleElement> by (atomicWord and -lpar and arguments and -rpar).map { (atomicWord, arguments) ->
+    private val nonLogicalSymbol: Parser<RdfTerm> by (atomicWord and -lpar and arguments and -rpar).map { (atomicWord, arguments) ->
         return@map when {
             atomicWord.text.startsWith("sK") -> BlankNode(
                 encodeToValidBlankNodeLabel(
@@ -88,7 +88,7 @@ object TptpTupleAnswerFormTransformer :
         verticalBar
     ) and -optional(underscore) and -rparBracket) or (-lparBracket and -verticalBar and underscore and -rparBracket)
 
-    override val rootParser: Parser<Pair<List<List<RdfTripleElement>>, List<List<List<RdfTripleElement>>>>>
+    override val rootParser: Parser<Pair<List<List<RdfTerm>>, List<List<List<RdfTerm>>>>>
         get() {
             results.clear()
             orResults.clear()
@@ -117,13 +117,13 @@ object TptpTupleAnswerFormTransformer :
     private fun getLiteralFromStringOrNull(literal: String) =
         ("\"(.*)\"\\^\\^(.+)".toRegex()).matchEntire(literal.removeSurrounding("'"))?.let {
             val (literalValue, datatypeIri) = it.destructured
-            Literal.fromNonNumericLiteral(literalValue, IRI.from(datatypeIri))
+            DefaultLiteral.fromNonNumericLiteral(literalValue, IRI.from(datatypeIri))
         }
 
 
     private fun getLangLiteralFromStringOrNull(literal: String) =
         ("\"(.*)\"@(.+)".toRegex()).matchEntire(literal.removeSurrounding("'"))?.let {
             val (literalValue, languageTag) = it.destructured
-            Literal.fromNonNumericLiteral(literalValue, languageTag)
+            LanguageTaggedString(literalValue, languageTag)
         }
 }

@@ -5,10 +5,8 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.equality.shouldNotBeEqualUsingFields
 import parser.TptpTupleAnswerFormTransformer
-import rdfSurfaces.BlankNode
-import rdfSurfaces.Collection
-import rdfSurfaces.IRI
-import rdfSurfaces.Literal
+import rdfSurfaces.rdfTerm.*
+import rdfSurfaces.rdfTerm.Collection
 import util.NotSupportedException
 
 class TPTPTupleAnswerFormParserTest : ShouldSpec(
@@ -42,7 +40,7 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
                                         Collection(
                                             listOf(
                                                 IRI.from("http://example.org/ns#s"),
-                                                Literal.fromNonNumericLiteral(
+                                                DefaultLiteral.fromNonNumericLiteral(
                                                     "0",
                                                     IRI.from("http://www.w3.org/2001/XMLSchema#integer")
                                                 )
@@ -65,11 +63,11 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
             TptpTupleAnswerFormTransformer.parseToEnd(str) shouldNotBeEqualUsingFields Pair(
                 listOf(
                     listOf(
-                        Literal.fromNonNumericLiteral(
+                        DefaultLiteral.fromNonNumericLiteral(
                             "0",
                             IRI.from("http://www.w3.org/2001/XMLSchema#string")
                         ),
-                        Literal.fromNonNumericLiteral(
+                        LanguageTaggedString(
                             "0",
                             "en"
                         )
@@ -89,7 +87,16 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
             TptpTupleAnswerFormTransformer.parseToEnd(str) shouldNotBeEqualUsingFields Pair(
                 listOf(
                     listOf(
-                        BlankNode(TptpTupleAnswerFormTransformer.encodeToValidBlankNodeLabel("sK1-${listOf(IRI.from("http://example.org/ns#b"), IRI.from("http://example.org/ns#c")).hashCode()}"))
+                        BlankNode(
+                            TptpTupleAnswerFormTransformer.encodeToValidBlankNodeLabel(
+                                "sK1-${
+                                    listOf(
+                                        IRI.from("http://example.org/ns#b"),
+                                        IRI.from("http://example.org/ns#c")
+                                    ).hashCode()
+                                }"
+                            )
+                        )
                     )
                 ),
                 listOf()
@@ -108,18 +115,24 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
                 listOf(
                     listOf(
                         IRI.from("http://example.org/ns#beetle"),
-                        Literal.Companion.fromNonNumericLiteral(
+                        DefaultLiteral.Companion.fromNonNumericLiteral(
                             "RDF/XML Syntax Specification (Revised)",
                             IRI.from("http://www.w3.org/2001/XMLSchema#string")
                         )
                     ),
                     listOf(
-                        Collection(listOf(IRI.from("http://example.org/ns#s"))),
-                        Literal.fromNonNumericLiteral("That Seventies Show", "en")
+                        Collection(
+                            listOf(
+                                IRI.from(
+                                    "http://example.org/ns#s"
+                                )
+                            )
+                        ),
+                        LanguageTaggedString("That Seventies Show", "en")
                     ),
                     listOf(
                         IRI.from("http://example.org/ns#beetle"),
-                        Literal.Companion.fromNonNumericLiteral(
+                        DefaultLiteral.Companion.fromNonNumericLiteral(
                             "http://www.w3.org/2001/XMLSchema#string",
                             IRI.from("http://www.w3.org/2001/XMLSchema#string")
                         )
