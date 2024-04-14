@@ -4,7 +4,7 @@ import controller.Transformer
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import parser.RDFSurfacesParser
-import rdfSurfaces.rdfTerm.IRI
+import model.rdf_term.IRI
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
 import kotlin.io.path.invariantSeparatorsPathString

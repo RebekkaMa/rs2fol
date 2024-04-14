@@ -1,0 +1,12 @@
+#!/bin/bash
+FILES="*.n3"
+PATH_TO_VAMPIRE="PATH/tmp/build/bin/vampire_z3_rel_qa_6176"
+RE=0
+for f in $FILES
+do
+  echo -n "Processing $f file...  -   "
+  new_path="out/$f"
+  /home/PATH/rs2fol/bin/rs2fol check -q -i "$f" -e $PATH_TO_VAMPIRE -c "$new_path" # --rdf-list
+  ((RE++))
+done
+echo "Number of processed files: $RE"

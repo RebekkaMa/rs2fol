@@ -2,7 +2,7 @@
 
 This repository is a tool for RDF surface reasoning using FOL theorem provers.
 
-For my tests and sample data, I used [EYE](https://github.com/eyereasoner/eye) and [EYE's Blogic examples](https://github.com/eyereasoner/eye/tree/master/reasoning/blogic).
+For my tests and sample data, I used [EYE](https://github.com/eyereasoner/eye/tree/blogic) and [EYE's Blogic examples](https://github.com/eyereasoner/eye/tree/b81e05163e21e93e9fc0ab27c369af7f98a16658/reasoning/blogic).
 
 ## Source Build
 
@@ -85,12 +85,12 @@ This subcommand performs the following steps:
 
 This means that the command 
 ```Bash
-$ ./bin/rs2fol transform-qa -i src/test/resources/blogic/abc.n3s -q --vampire-exec $PATH_TO_VAMPIRE
+$ ./bin/rs2fol transform-qa -i examples/blogic/abc.n3 -q --vampire-exec $PATH_TO_VAMPIRE
 ```
 can be seen as an abbreviation for:
 
 ```Bash
-$ ./bin/rs2fol transform -i - < src/test/resources/blogic/abc.n3s | $PATH_TO_VAMPIRE -av off -qa answer_literal -om smtcomp -t 60s 2>&1 | ./bin/rs2fol qa-answer-to-rs -q src/test/resources/blogic/abc.n3s  -i - 
+$ ./bin/rs2fol transform -i - < examples/blogic/abc.n3 | $PATH_TO_VAMPIRE -av off -qa answer_literal -om smtcomp -t 60s 2>&1 | ./bin/rs2fol qa-answer-to-rs -q examples/blogic/abc.n3  -i - 
 ```
 
 So if you want to use Vampire with other options or another FOL theorem prover, you can replace the middle part with the wanted command.
@@ -107,21 +107,21 @@ Maybe rs2fol just doesn't support the output format of the theorem prover, doesn
 I had the most success with these 3 option combinations:
 
 ```Bash
-$ ./bin/rs2fol transform-qa -i src/test/resources/blogic/abc.n3s --vampire-exec $PATH_TO_VAMPIRE -q --vampire-option-mode 0
+$ ./bin/rs2fol transform-qa -i examples/blogic/abc.n3 --vampire-exec $PATH_TO_VAMPIRE -q --vampire-option-mode 0
 # which is the short form of
-$ ./bin/rs2fol transform -i src/test/resources/blogic/abc.n3s | $PATH_TO_VAMPIRE -av off -qa answer_literal -om smtcomp -t 60s 2>&1 | ./bin/rs2fol qa-answer-to-rs -q src/test/resources/blogic/abc.n3s  -i - 
+$ ./bin/rs2fol transform -i examples/blogic/abc.n3 | $PATH_TO_VAMPIRE -av off -qa answer_literal -om smtcomp -t 60s 2>&1 | ./bin/rs2fol qa-answer-to-rs -q examples/blogic/abc.n3  -i - 
 
 ```
 
 ```Bash
-$ ./bin/rs2fol transform-qa -i src/test/resources/blogic/abc.n3s --vampire-exec $PATH_TO_VAMPIRE -q --vampire-option-mode 1
+$ ./bin/rs2fol transform-qa -i examples/blogic/abc.n3 --vampire-exec $PATH_TO_VAMPIRE -q --vampire-option-mode 1
 # which is the short form of
-$ ./bin/rs2fol transform -i src/test/resources/blogic/abc.n3s | $PATH_TO_VAMPIRE -av off -sa discount -s 1 -add large -afp 4000 -afq 1.0 -anc none -gs on -gsem off -inw on -lcm reverse -lwlo on -nm 64 -nwc 1 -sas z3 -sos all -sac on -thi all -uwa all -updr off -uhcvi on -to lpo -qa answer_literal -om smtcomp -t 60s 2>&1 | ./bin/rs2fol qa-answer-to-rs -q src/test/resources/blogic/abc.n3s  -i - 
+$ ./bin/rs2fol transform -i examples/blogic/abc.n3 | $PATH_TO_VAMPIRE -av off -sa discount -s 1 -add large -afp 4000 -afq 1.0 -anc none -gs on -gsem off -inw on -lcm reverse -lwlo on -nm 64 -nwc 1 -sas z3 -sos all -sac on -thi all -uwa all -updr off -uhcvi on -to lpo -qa answer_literal -om smtcomp -t 60s 2>&1 | ./bin/rs2fol qa-answer-to-rs -q examples/blogic/abc.n3  -i - 
 ```
 
 ```Bash
 # the process will not be terminated before the specified time limit expires (here '15s')
-$ ./bin/rs2fol transform -i src/test/resources/blogic/abc.n3s | $PATH_TO_VAMPIRE -av off -uhcvi on -qa answer_literal --mode casc -t 15s 2>&1 | ./bin/rs2fol qa-answer-to-rs -q src/test/resources/blogic/abc.n3s  -i - 
+$ ./bin/rs2fol transform -i examples/blogic/abc.n3 | $PATH_TO_VAMPIRE -av off -uhcvi on -qa answer_literal --mode casc -t 15s 2>&1 | ./bin/rs2fol qa-answer-to-rs -q examples/blogic/abc.n3  -i - 
 ```
 
 It is planned to automate this.

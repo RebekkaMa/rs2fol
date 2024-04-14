@@ -6,8 +6,8 @@ import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.Parser
-import rdfSurfaces.rdfTerm.*
-import rdfSurfaces.rdfTerm.Collection
+import model.rdf_term.*
+import model.rdf_term.Collection
 import util.NotSupportedException
 
 object TptpTupleAnswerFormTransformer :

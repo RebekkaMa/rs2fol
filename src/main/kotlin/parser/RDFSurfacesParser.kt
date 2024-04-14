@@ -6,9 +6,9 @@ import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.*
-import rdfSurfaces.*
-import rdfSurfaces.rdfTerm.*
-import rdfSurfaces.rdfTerm.Collection
+import model.*
+import model.rdf_term.*
+import model.rdf_term.Collection
 import util.IRIConstants
 import util.IRIConstants.RDF_TYPE_IRI
 import util.InvalidInputException
@@ -18,7 +18,7 @@ import util.NotSupportedException
 typealias HayesGraph = List<HayesGraphElement>
 typealias FreeVariables = Set<BlankNode>
 typealias CollectionBlankNodes = Set<BlankNode>
-typealias InterimParseResult = Triple<HayesGraph,FreeVariables,CollectionBlankNodes>
+typealias InterimParseResult = Triple<HayesGraph, FreeVariables, CollectionBlankNodes>
 
 
 class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
@@ -205,10 +205,11 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
             IRIConstants.LOG_POSITIVE_SURFACE_IRI,
             IRIConstants.LOG_NEGATIVE_TRIPLE_IRI,
             IRIConstants.LOG_QUERY_SURFACE_IRI,
-            IRIConstants.LOG_NEGATIVE_SURFACE_IRI ,
+            IRIConstants.LOG_NEGATIVE_SURFACE_IRI,
             IRIConstants.LOG_NEUTRAL_SURFACE_IRI,
             IRIConstants.LOG_QUESTION_SURFACE_IRI,
             IRIConstants.LOG_ANSWER_SURFACE_IRI -> throw ParseException(InvalidSyntax())
+
             else -> it
         }
     } or blankNode.map { varSet.add(it); it } or literal
@@ -227,7 +228,9 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
     private val sparqlPrefix by -sparqlPrefixStart and pNameNs and iriRef
 
 
-    private val triples by (subject and predicateObjectList) or (blankNodePropertyList and optional(predicateObjectList)) map { (subj, predObjList) ->
+    private val triples: Parser<InterimParseResult> by (subject and predicateObjectList) or (blankNodePropertyList and optional(
+        predicateObjectList
+    )) map { (subj, predObjList) ->
         val triplesResult = buildList {
             if (predObjList != null) {
                 val (pred, objList, semicolonRestList) = predObjList
@@ -273,7 +276,8 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
                     (-lparcurl and (oneOrMore(parser(this::rdfSurfacesParser)) or optional(space).use { listOf() }) and -rparcurl)
                             or (-lqcurl and triples and -rqcurl).use { listOf(this) }
                     )
-            ) map { (variableList, surface, rest) ->
+            ) map { hayesTriple ->
+        val (variableList, surface, rest) = hayesTriple
         val (hayeGraph, freeVariables, freeCollectionBlankNodes) = rest.reduceOrNull { acc, triple ->
             Triple(acc.first.plus(triple.first), acc.second.plus(triple.second), acc.third.plus(triple.third))
         } ?: Triple(listOf(), setOf(), setOf())
@@ -293,7 +297,7 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
         InterimParseResult(
             first = newHayeGraph,
             second = freeVariables.minus(variableList.toSet()),
-            third = setOf<BlankNode>()
+            third = setOf()
         )
     } or triples and -optional(dot)
 

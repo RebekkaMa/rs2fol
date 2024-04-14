@@ -2,11 +2,11 @@ package rdfSurfacesTest
 
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
-import rdfSurfaces.*
-import rdfSurfaces.rdfTerm.BlankNode
-import rdfSurfaces.rdfTerm.DefaultLiteral
-import rdfSurfaces.rdfTerm.IRI
-import rdfSurfaces.rdfTerm.LanguageTaggedString
+import model.*
+import model.rdf_term.BlankNode
+import model.rdf_term.DefaultLiteral
+import model.rdf_term.IRI
+import model.rdf_term.LanguageTaggedString
 
 class QuerySurfaceTest : ShouldSpec({
 

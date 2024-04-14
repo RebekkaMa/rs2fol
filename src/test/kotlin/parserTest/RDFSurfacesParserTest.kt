@@ -6,9 +6,9 @@ import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import parser.RDFSurfacesParser
-import rdfSurfaces.*
-import rdfSurfaces.rdfTerm.*
-import rdfSurfaces.rdfTerm.Collection
+import model.*
+import model.rdf_term.*
+import model.rdf_term.Collection
 import util.IRIConstants
 import kotlin.io.path.Path
 import kotlin.io.path.absolute

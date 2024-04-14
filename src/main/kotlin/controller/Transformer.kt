@@ -4,9 +4,9 @@ import parser.stringLiteralLongQuote
 import parser.stringLiteralLongSingleQuote
 import parser.stringLiteralQuote
 import parser.stringLiteralSingleQuote
-import rdfSurfaces.*
-import rdfSurfaces.rdfTerm.*
-import rdfSurfaces.rdfTerm.Collection
+import model.*
+import model.rdf_term.*
+import model.rdf_term.Collection
 import util.IRIConstants
 import util.NotSupportedException
 import util.TransformerException

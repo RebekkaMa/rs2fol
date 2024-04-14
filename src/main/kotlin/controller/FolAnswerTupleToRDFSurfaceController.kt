@@ -3,9 +3,9 @@ import com.github.h0tk3y.betterParse.grammar.parseToEnd
 import com.github.h0tk3y.betterParse.parser.ParseException
 import parser.RDFSurfacesParser
 import parser.TptpTupleAnswerFormTransformer
-import rdfSurfaces.*
-import rdfSurfaces.rdfTerm.IRI
-import rdfSurfaces.rdfTerm.RdfTerm
+import model.*
+import model.rdf_term.IRI
+import model.rdf_term.RdfTerm
 import util.InvalidInputException
 import util.NotSupportedException
 import util.generalParseErrorString

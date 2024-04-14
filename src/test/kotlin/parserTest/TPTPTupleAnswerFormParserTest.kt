@@ -5,8 +5,8 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.equality.shouldNotBeEqualUsingFields
 import parser.TptpTupleAnswerFormTransformer
-import rdfSurfaces.rdfTerm.*
-import rdfSurfaces.rdfTerm.Collection
+import model.rdf_term.*
+import model.rdf_term.Collection
 import util.NotSupportedException
 
 class TPTPTupleAnswerFormParserTest : ShouldSpec(

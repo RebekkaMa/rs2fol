@@ -12,7 +12,7 @@ import com.github.ajalt.mordant.rendering.TextColors.red
 import com.github.ajalt.mordant.rendering.TextStyle
 import controller.FolAnswerTupleToRDFSurfaceController
 import controller.RDFSurfaceToFOLController
-import rdfSurfaces.rdfTerm.IRI
+import model.rdf_term.IRI
 import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
@@ -288,7 +288,7 @@ class Check :
 
     private val consequence by option(
         "--consequence", "-c",
-        help = "Path to the consequence (given as RDF surface) (default: <<--input>.out>)"
+        help = "Path to the consequence (given as RDF surface) (default: <input-parent>/out/<input-name>)"
     ).path()
 
     private val vampireExec by option(
@@ -305,7 +305,7 @@ class Check :
 
     private val vampireOption by option("--vampire-option-mode", "-v").choice("0", "1").int().default(0)
 
-    private val timeLimit by option("--time-limit", "-t", help = "Time limit in seconds").long().default(60)
+    private val timeLimit by option("--time-limit", "-t", help = "Time limit in seconds").long().default(120)
         .validate { it > 0 }
 
 
@@ -353,7 +353,7 @@ class Check :
 
                 else -> {
                     computedConsequence = when {
-                        consequence == null -> Path(input.pathString + ".out").takeIf { it.exists() }
+                        consequence == null -> Path(input.parent.pathString + "/out/" + input.name).takeIf { it.exists() }
                             ?: Path(input.pathString + ".out").takeIf { it.exists() }
                             ?: throw BadParameterValue(
                                 currentContext.localization.pathDoesNotExist(
@@ -436,8 +436,8 @@ class Check :
             if (!quiet) echoNonQuiet("Starting Vampire...")
 
             val vampirePrompt =
-                if (vampireOption == 0) "$vampireExec --output_mode smtcomp -t ${timeLimit + 1}s" else {
-                    "$vampireExec -sa discount -awr 2 -s 1 -add large -afr on -afp 1000 -afq 2.0 -anc none -gsp on -lcm predicate -nm 64 -newcnf on -nwc 5 -sac on -urr ec_only -updr off --output_mode smtcomp -t ${timeLimit + 1}s"
+                if (vampireOption == 0) "$vampireExec --output_mode smtcomp -t ${timeLimit + 5}s" else {
+                    "$vampireExec -sa discount -awr 2 -s 1 -add large -afr on -afp 1000 -afq 2.0 -anc none -gsp on -lcm predicate -nm 64 -newcnf on -nwc 5 -sac on -urr ec_only -updr off --output_mode smtcomp -t ${timeLimit + 5}s"
                 }
 
             val vampireProcess = vampirePrompt.runCommand(File(System.getProperty("user.dir")))

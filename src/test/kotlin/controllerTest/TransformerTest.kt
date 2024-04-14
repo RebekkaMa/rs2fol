@@ -5,9 +5,9 @@ import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.shouldBe
 import org.apache.jena.datatypes.xsd.XSDDatatype
-import rdfSurfaces.*
-import rdfSurfaces.rdfTerm.*
-import rdfSurfaces.rdfTerm.Collection
+import model.*
+import model.rdf_term.*
+import model.rdf_term.Collection
 import java.io.File
 
 class TransformerTest
