@@ -17,6 +17,7 @@ import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.*
+import kotlin.time.TimeSource
 
 val errorKeyWordTextStyle = TextStyle(color = red)
 val workingDir = IRI.from("file://" + System.getProperty("user.dir") + "/")
@@ -170,9 +171,14 @@ class QaAnswerToRs :
     CliktCommand(help = "Transforms a TPTP tuple answer (--input) into an RDF surface using a specified RDF query or question surface (--q-surface)") {
     private val commonOptions by CommonOptions()
     private val input by option("--input", "-i", help = "Get TPTP answer tuple from <path>").path().default(Path("-"))
-    private val output by option("--output", "-o", help = "Write output to <path>").path(mustExist = false).default(Path("-"))
+    private val output by option("--output", "-o", help = "Write output to <path>").path(mustExist = false)
+        .default(Path("-"))
 
-    private val querySurface by option("--q-surface", "-q", help = "Get RDF query or question surface from <path>").path(
+    private val querySurface by option(
+        "--q-surface",
+        "-q",
+        help = "Get RDF query or question surface from <path>"
+    ).path(
         mustExist = true,
         canBeDir = false,
         mustBeReadable = true
@@ -308,7 +314,6 @@ class Check :
     private val timeLimit by option("--time-limit", "-t", help = "Time limit in seconds").long().default(120)
         .validate { it > 0 }
 
-
     override fun run() {
         try {
 
@@ -317,7 +322,12 @@ class Check :
             val (inputStream, baseIri) = when {
                 input.pathString == "-" -> {
                     computedConsequence = when {
-                        consequence == null -> throw BadParameterValue(currentContext.localization.missingOption("The option 'consequence' must not be null if the RDF surface is entered as a stream."))
+                        consequence == null -> throw BadParameterValue(
+                            currentContext.localization.missingOption(
+                                "The option 'consequence' must not be null if the RDF surface is entered as a stream."
+                            )
+                        )
+
                         consequence!!.notExists() -> throw BadParameterValue(
                             currentContext.localization.pathDoesNotExist(
                                 "file",
@@ -440,19 +450,25 @@ class Check :
                     "$vampireExec -sa discount -awr 2 -s 1 -add large -afr on -afp 1000 -afq 2.0 -anc none -gsp on -lcm predicate -nm 64 -newcnf on -nwc 5 -sac on -urr ec_only -updr off --output_mode smtcomp -t ${timeLimit + 5}s"
                 }
 
+            //val timeSource = TimeSource.Monotonic
+            //val vampireMark1 = timeSource.markNow()
             val vampireProcess = vampirePrompt.runCommand(File(System.getProperty("user.dir")))
             vampireProcess.outputWriter()
                 ?.use { it.write(folAtom + System.lineSeparator() + folConjecture) }
 
             val noTimeout = vampireProcess.waitFor(timeLimit, TimeUnit.SECONDS)
+            //val vampireMark2 = timeSource.markNow()
+            //val vampireDuration = vampireMark2 - vampireMark1
 
             if (noTimeout.not()) {
                 echo("timeout")
+                //echo("timeout, vampire duration: ${vampireDuration.inWholeNanoseconds}", trailingNewline = false)
                 vampireProcess.destroy()
                 if (vampireProcess.isAlive) vampireProcess.destroyForcibly()
                 return
             }
 
+            //echo("vampire duration: ${vampireDuration.inWholeNanoseconds} - ", trailingNewline = false)
             val vampireResultString = vampireProcess.inputReader().readLines()
 
             vampireResultString.lastOrNull { it == "sat" || it == "unsat" }
@@ -497,11 +513,11 @@ class TransformQa :
 
     private val vampireOption by option("--vampire-option-mode", "-v").choice("0", "1").int().default(0)
 
-    private val timeLimit by option("--time-limit", "-t", help = "Time limit in seconds").long().default(60)
+    private val timeLimit by option("--time-limit", "-t", help = "Time limit in seconds").long().default(120)
         .validate { it > 0 }
 
 
-    override fun run()  {
+    override fun run() {
         try {
             val baseIRI: IRI
 
@@ -570,21 +586,29 @@ class TransformQa :
             if (!quiet) echoNonQuiet("Starting Vampire...")
 
             val vampirePrompt =
-                if (vampireOption == 0) "$vampireExecFile -av off -qa answer_literal -om smtcomp -t ${timeLimit + 1}s" else {
-                    "$vampireExecFile -av off -sa discount -s 1 -add large -afp 4000 -afq 1.0 -anc none -gs on -gsem off -inw on -lcm reverse -lwlo on -nm 64 -nwc 1 -sas z3 -sos all -sac on -thi all -uwa all -updr off -uhcvi on -to lpo -qa answer_literal -om smtcomp -t ${timeLimit + 1}s"
+                if (vampireOption == 0) "$vampireExecFile -av off -qa answer_literal -om smtcomp -t ${timeLimit + 5}s" else {
+                    "$vampireExecFile -av off -sa discount -s 1 -add large -afp 4000 -afq 1.0 -anc none -gs on -gsem off -inw on -lcm reverse -lwlo on -nm 64 -nwc 1 -sas z3 -sos all -sac on -thi all -uwa all -updr off -uhcvi on -to lpo -qa answer_literal -om smtcomp -t ${timeLimit + 5}s"
                 }
 
+            //val timeSource = TimeSource.Monotonic
+            //val vampireMark1 = timeSource.markNow()
             val vampireProcess = vampirePrompt.runCommand(File(System.getProperty("user.dir")))
             vampireProcess.outputWriter().use { it.write(fol) }
 
             val noTimeout = vampireProcess.waitFor(timeLimit, TimeUnit.SECONDS)
+            //val vampireMark2 = timeSource.markNow()
+            //val vampireDuration = vampireMark2 - vampireMark1
+
 
             if (noTimeout.not()) {
                 echo("timeout")
+                //echo("timeout, vampire duration: ${vampireDuration.inWholeNanoseconds}", trailingNewline = false)
                 vampireProcess.destroy()
                 if (vampireProcess.isAlive) vampireProcess.destroyForcibly()
                 return
             }
+
+            //echo("vampire duration: ${vampireDuration.inWholeNanoseconds} - ", trailingNewline = false)
 
             val vampireParsingResult = vampireProcess.inputReader().useLines { vampireOutput ->
                 FolAnswerTupleToRDFSurfaceController().questionAnsweringOutputToRDFSurfacesCasc(

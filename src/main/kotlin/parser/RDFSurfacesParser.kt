@@ -215,7 +215,7 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
     } or blankNode.map { varSet.add(it); it } or literal
     private val rdfObject: Parser<RdfTerm> by iri or blankNode.map { varSet.add(it); it } or literal or blankNodePropertyList or collection
 
-    private val verb by predicate or a.map { IRI.from(RDF_TYPE_IRI) }
+    private val verb by predicate or a.map { IRI.from(RDF_TYPE_IRI) } or literal or iri
 
     private val objectList by rdfObject and zeroOrMore(-comma and rdfObject) use { listOf(this.t1).plus(this.t2) }
     private val predicateObjectList by verb and objectList and zeroOrMore(
