@@ -1,0 +1,33 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+
+# Conjunction Introduction in the Consequent 01
+#
+# Γ ϕ, Γ ψ -> Γ (ϕ ∧ ψ)
+#
+# ϕ ... :Mona :likes :salt .
+# ψ ... :Bella :likes salt .
+# -----------------------------------------------------------------------------------------------------------------
+
+:Mona a :Cow.
+
+(_:X) log:onNegativeSurface {
+    _:X a :Cow .
+    () log:onNegativeSurface {
+       _:X :likes :salt.
+    } .
+}.
+
+# (ϕ ∧ ψ) -> (:This :is :working)
+() log:onNegativeSurface {
+    :Mona :likes :salt .
+    :Bella :likes :salt.
+    () log:onNegativeSurface {
+       :This :is :working .
+    } .
+} .
+
+# :This :is :working .
+(_:X) log:onQuerySurface {
+    _:X :is :working.
+}.
