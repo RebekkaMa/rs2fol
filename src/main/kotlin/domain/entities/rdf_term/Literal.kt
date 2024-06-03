@@ -1,9 +1,9 @@
-package model.rdf_term
+package domain.entities.rdf_term
 
 import org.apache.jena.datatypes.BaseDatatype
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.datatypes.xsd.XSDDatatype.*
-import model.rdf_term.IRI.Companion.from
+import domain.entities.rdf_term.IRI.Companion.from
 import util.IRIConstants
 
 sealed class Literal : RdfTerm {

@@ -1,16 +1,23 @@
-package parser
+package interface_adapters.services.parsing
 
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
+import com.github.h0tk3y.betterParse.parser.ParseException
 import com.github.h0tk3y.betterParse.parser.Parser
-import model.rdf_term.*
-import model.rdf_term.Collection
-import util.NotSupportedException
+import com.github.h0tk3y.betterParse.parser.parseToEnd
+import domain.entities.rdf_term.*
+import domain.entities.rdf_term.Collection
+import domain.error.Error
+import domain.error.Result
+import interface_adapters.services.parsing.TptpTupleAnswerFormParserError.*
+import interface_adapters.services.parsing.util.pnChars
+import interface_adapters.services.parsing.util.pnCharsU
 
-object TptpTupleAnswerFormTransformer :
+
+object TptpTupleAnswerFormParserService :
     Grammar<Pair<List<List<RdfTerm>>, List<List<List<RdfTerm>>>>>() {
 
     private val results = mutableListOf<List<RdfTerm>>()
@@ -54,24 +61,19 @@ object TptpTupleAnswerFormTransformer :
                 )
             )
 
-            atomicWord.text.startsWith("list") -> {
-                if (arguments.size != 2) throw NotSupportedException("A list can only have two arguments")
-                val left = arguments[0]
-                val right = arguments[1] as? Collection ?: throw NotSupportedException("Malformed list input")
-                CollectionPair(left, right)
-            }
-            else -> throw NotSupportedException("Function/Predicate Symbol of TPTP tuple answer not supported")
+            atomicWord.text.startsWith("list") -> Collection(arguments)
+            else -> throw InvalidFunctionOrPredicateException(element = atomicWord.text)
         }
     } or atomicWord.map { atomicWord ->
         return@map when {
             atomicWord.text.startsWith("sK") -> BlankNode(atomicWord.text)
-            atomicWord.text.startsWith("'http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'") -> CollectionEnd
+            atomicWord.text.startsWith("list") -> Collection(emptyList())
             else -> {
                 getLiteralFromStringOrNull(atomicWord.text)
                     ?: getLangLiteralFromStringOrNull(atomicWord.text)
                     ?: IRI.from(atomicWord.text.removeSurrounding("'"))
                         .takeUnless { it.isRelativeReference() || it.iri.contains("\\s".toRegex()) }
-                    ?: throw NotSupportedException("Element \"${atomicWord.text}\" could not be parsed.")
+                    ?: throw InvalidElementException(element = atomicWord.text)
             }
         }
     }
@@ -131,4 +133,29 @@ object TptpTupleAnswerFormTransformer :
             val (literalValue, languageTag) = it.destructured
             LanguageTaggedString(literalValue, languageTag)
         }
+
+    fun parseToEnd(answerTuple: String): Result<Pair<List<List<RdfTerm>>, List<List<List<RdfTerm>>>>, TptpTupleAnswerFormParserError> {
+        return try {
+            Result.Success(rootParser.parseToEnd(tokenizer.tokenize(answerTuple)))
+        } catch (exc: Throwable) {
+            when (exc) {
+                is InvalidFunctionOrPredicateException -> InvalidFunctionOrPredicate(element = exc.element)
+                is InvalidElementException -> InvalidElement(element = exc.element)
+                is ParseException -> GenericInvalidInput(throwable = exc)
+                else -> throw exc
+            }.let { Result.Error(it) }
+        }
+    }
 }
+
+sealed interface TptpTupleAnswerFormParserError : Error {
+    data class InvalidFunctionOrPredicate(val element: String) : TptpTupleAnswerFormParserError
+    data class InvalidElement(val element: String) : TptpTupleAnswerFormParserError
+    data class GenericInvalidInput(val throwable: Throwable) : TptpTupleAnswerFormParserError
+}
+
+class InvalidFunctionOrPredicateException(val element: String) :
+    Exception("Function/predicate \"$element\" is invalid or not supported.")
+
+class InvalidElementException(val element: String) :
+    Exception("Element \"$element\" could not be parsed.")

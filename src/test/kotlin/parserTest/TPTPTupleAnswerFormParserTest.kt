@@ -1,21 +1,21 @@
 package parserTest
 
-import com.github.h0tk3y.betterParse.grammar.parseToEnd
-import io.kotest.assertions.throwables.shouldThrow
+import com.github.h0tk3y.betterParse.parser.ParseException
+import domain.entities.rdf_term.*
+import domain.entities.rdf_term.Collection
+import domain.error.getOrNull
 import io.kotest.core.spec.style.ShouldSpec
-import io.kotest.matchers.equality.shouldNotBeEqualUsingFields
+import interface_adapters.services.parsing.TptpTupleAnswerFormParserService
 import io.kotest.matchers.equals.shouldBeEqual
-import parser.TptpTupleAnswerFormTransformer
-import model.rdf_term.*
-import model.rdf_term.Collection
-import util.NotSupportedException
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
 
 class TPTPTupleAnswerFormParserTest : ShouldSpec(
     {
         should("parse basic example without exception") {
             val str =
                 "[(['http://example.org/ns#beetle','http://example.org/ns#nice']|['http://example.org/ns#beetle','http://example.org/ns#green']),['http://example.org/ns#beetle','http://example.org/ns#beautiful']|_]"
-            TptpTupleAnswerFormTransformer.parseToEnd(str) shouldBeEqual Pair(
+            TptpTupleAnswerFormParserService.parseToEnd(str).getOrNull().shouldNotBeNull() shouldBeEqual Pair(
                 listOf(listOf(IRI.from("http://example.org/ns#beetle"), IRI.from("http://example.org/ns#beautiful"))),
                 listOf(
                     listOf(
@@ -28,21 +28,31 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
 
         should("parse example with lists without exception") {
             val str =
-                "[[list('http://example.org/ns#s',list('http://example.org/ns#s',list('http://example.org/ns#s',list('\"0\"^^http://www.w3.org/2001/XMLSchema#integer','http://www.w3.org/1999/02/22-rdf-syntax-ns#nil')))),'http://www.w3.org/1999/02/22-rdf-syntax-ns#nil']|_]"
-            TptpTupleAnswerFormTransformer.parseToEnd(str) shouldBeEqual Pair(
+                "[[list('http://example.org/ns#s',list('http://example.org/ns#s',list('http://example.org/ns#s','\"0\"^^http://www.w3.org/2001/XMLSchema#integer'))),list]|_]"
+            TptpTupleAnswerFormParserService.parseToEnd(str).getOrNull().shouldNotBeNull() shouldBeEqual Pair(
                 listOf(
                     listOf(
-                        Collection.fromTerms(
-                            IRI.from("http://example.org/ns#s"),
-                            IRI.from("http://example.org/ns#s"),
-                            IRI.from("http://example.org/ns#s"),
-                            DefaultLiteral.fromNonNumericLiteral(
-                                "0",
-                                IRI.from("http://www.w3.org/2001/XMLSchema#integer")
+                        Collection(
+                            listOf(
+                                IRI.from("http://example.org/ns#s"),
+                                Collection(
+                                    listOf(
+                                        IRI.from("http://example.org/ns#s"),
+                                        Collection(
+                                            listOf(
+                                                IRI.from("http://example.org/ns#s"),
+                                                DefaultLiteral.fromNonNumericLiteral(
+                                                    "0",
+                                                    IRI.from("http://www.w3.org/2001/XMLSchema#integer")
+                                                )
+                                            )
+                                        )
+                                    )
+                                )
                             )
                         ),
-                        CollectionEnd
-                    ),
+                        Collection()
+                    )
                 ),
                 listOf()
             )
@@ -51,7 +61,7 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
         should("parse example with rdf literals without exception") {
             val str =
                 "[['\"0\"^^http://www.w3.org/2001/XMLSchema#string','\"0\"@en'],['http://example.org/ns#s', sK5]|_]"
-            TptpTupleAnswerFormTransformer.parseToEnd(str) shouldBeEqual Pair(
+            TptpTupleAnswerFormParserService.parseToEnd(str).getOrNull().shouldNotBeNull() shouldBeEqual Pair(
                 listOf(
                     listOf(
                         DefaultLiteral.fromNonNumericLiteral(
@@ -62,7 +72,7 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
                             "0",
                             "en"
                         )
-                    ),
+                        ),
                     listOf(
                         IRI.from("http://example.org/ns#s"),
                         BlankNode("sK5")
@@ -75,11 +85,11 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
 
         should("parse example with skolem function without exception") {
             val str = "[[sK1('http://example.org/ns#b','http://example.org/ns#c')]|_]"
-            TptpTupleAnswerFormTransformer.parseToEnd(str) shouldBeEqual Pair(
+            TptpTupleAnswerFormParserService.parseToEnd(str).getOrNull().shouldNotBeNull() shouldBeEqual Pair(
                 listOf(
                     listOf(
                         BlankNode(
-                            TptpTupleAnswerFormTransformer.encodeToValidBlankNodeLabel(
+                            TptpTupleAnswerFormParserService.encodeToValidBlankNodeLabel(
                                 "sK1-${
                                     listOf(
                                         IRI.from("http://example.org/ns#b"),
@@ -96,13 +106,13 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
 
         should("parse empty result") {
             val str = "[|_]"
-            TptpTupleAnswerFormTransformer.parseToEnd(str) shouldBeEqual Pair(listOf(), listOf())
+            TptpTupleAnswerFormParserService.parseToEnd(str).getOrNull().shouldNotBeNull() shouldBeEqual Pair(listOf(), listOf())
         }
 
         should("parse another basic example without exception") {
             val str =
-                "[['http://example.org/ns#beetle','\"RDF/XML Syntax Specification (Revised)\"^^http://www.w3.org/2001/XMLSchema#string'],[list('http://example.org/ns#s','http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'),'\"That Seventies Show\"@en'],['http://example.org/ns#beetle','\"http://www.w3.org/2001/XMLSchema#string\"^^http://www.w3.org/2001/XMLSchema#string']|_]"
-            TptpTupleAnswerFormTransformer.parseToEnd(str) shouldBeEqual Pair(
+                "[['http://example.org/ns#beetle','\"RDF/XML Syntax Specification (Revised)\"^^http://www.w3.org/2001/XMLSchema#string'],[list('http://example.org/ns#s'),'\"That Seventies Show\"@en'],['http://example.org/ns#beetle','\"http://www.w3.org/2001/XMLSchema#string\"^^http://www.w3.org/2001/XMLSchema#string']|_]"
+            TptpTupleAnswerFormParserService.parseToEnd(str).getOrNull().shouldNotBeNull() shouldBeEqual Pair(
                 listOf(
                     listOf(
                         IRI.from("http://example.org/ns#beetle"),
@@ -112,9 +122,11 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
                         )
                     ),
                     listOf(
-                        Collection.fromTerms(
-                            IRI.from(
-                                "http://example.org/ns#s"
+                        Collection(
+                            listOf(
+                                IRI.from(
+                                    "http://example.org/ns#s"
+                                )
                             )
                         ),
                         LanguageTaggedString("That Seventies Show", "en")
@@ -133,11 +145,9 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
 
         should("throw an exception") {
             val str =
-                "[['http://example.org/ns#beetle','RDF/XML Syntax Specification (Revised)'],[list('http://example.org/ns#s','http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'),'\"That Seventies Show\"@en']|_]"
+                "[['http://example.org/ns#beetle','RDF/XML Syntax Specification (Revised)'],[list('http://example.org/ns#s'),'\"That Seventies Show\"@en']|_]"
 
-            shouldThrow<NotSupportedException> {
-                TptpTupleAnswerFormTransformer.parseToEnd(str)
-            }
+                TptpTupleAnswerFormParserService.parseToEnd(str).isFailure.shouldBe(true)
         }
     }
 )

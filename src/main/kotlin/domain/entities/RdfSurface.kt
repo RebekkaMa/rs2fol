@@ -1,7 +1,8 @@
-package model
+package domain.entities
 
-import model.rdf_term.*
-import model.rdf_term.Collection
+import domain.entities.rdf_term.BlankNode
+import domain.entities.rdf_term.RdfTerm
+import domain.entities.rdf_term.Collection
 
 
 sealed class RdfSurface : HayesGraphElement() {
@@ -19,12 +20,12 @@ sealed class RdfSurface : HayesGraphElement() {
         }
     }
 
-    fun isBounded(blankNode: BlankNode, rdfSurface: RdfSurface = this): Boolean {
-        if (rdfSurface.hayesGraph.isEmpty()) return false
-        return rdfSurface.hayesGraph.any {
-            when (it) {
-                is RdfTriple -> (it.rdfSubject == blankNode || it.rdfPredicate == blankNode || it.rdfObject == blankNode)
-                is RdfSurface -> if (blankNode in it.graffiti) false else isBounded(blankNode, it)
+    fun isBounded(blankNode: BlankNode): Boolean {
+        if (hayesGraph.isEmpty()) return false
+        return hayesGraph.any { child ->
+            when (child) {
+                is RdfTriple -> (child.rdfSubject == blankNode || child.rdfPredicate == blankNode || child.rdfObject == blankNode)
+                is RdfSurface -> if (blankNode in child.graffiti) false else child.isBounded(blankNode = blankNode)
             }
         }
     }
@@ -35,18 +36,13 @@ sealed class QSurface(override val graffiti: List<BlankNode>, override val hayes
     fun replaceBlankNodes(map: Map<BlankNode, RdfTerm>, rdfSurface: RdfSurface): RdfSurface {
 
         fun replaceBlankNodes(collection: Collection, map: Map<BlankNode, RdfTerm>): Collection {
-            return when (collection) {
-                is CollectionPair -> {
-                   val left = when (collection.left) {
-                       is BlankNode -> map[collection.left] ?: collection.left
-                       is Collection -> replaceBlankNodes(collection.left, map)
-                       else -> collection.left
-                   }
-                   val right = replaceBlankNodes(collection.right, map)
-                    collection.copy(left = left, right = right)
+            return Collection(collection.map {
+                when (it) {
+                    is BlankNode -> map[it] ?: it
+                    is Collection -> replaceBlankNodes(it, map)
+                    else -> it
                 }
-                is CollectionEnd -> collection
-            }
+            })
         }
 
         val hayesGraph = rdfSurface.hayesGraph.map { hayesGraphElement ->
@@ -80,8 +76,6 @@ sealed class QSurface(override val graffiti: List<BlankNode>, override val hayes
             is NegativeTripleSurface -> NegativeTripleSurface(rdfSurface.graffiti, hayesGraph)
             is QuestionSurface -> QuestionSurface(rdfSurface.graffiti, hayesGraph)
             is AnswerSurface -> AnswerSurface(rdfSurface.graffiti, hayesGraph)
-            is NegativeAnswerSurface -> NegativeAnswerSurface(rdfSurface.graffiti, hayesGraph)
-            is NegativeComponentSurface -> NegativeComponentSurface(rdfSurface.graffiti, hayesGraph)
         }
     }
 
@@ -176,10 +170,4 @@ data class QuestionSurface(override val graffiti: List<BlankNode>, override val 
 }
 
 data class AnswerSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
-    RdfSurface()
-
-data class NegativeAnswerSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
-    RdfSurface()
-
-data class NegativeComponentSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
     RdfSurface()

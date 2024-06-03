@@ -1,4 +1,4 @@
-package model.rdf_term
+package domain.entities.rdf_term
 
 data class IRI(
     val scheme: String? = null,
@@ -9,11 +9,11 @@ data class IRI(
 ) : RdfTerm {
 
     val iri: String = componentRecomposition(
-        scheme,
-        authority,
-        path,
-        query,
-        fragment
+        scheme = scheme,
+        authority = authority,
+        path = path,
+        query = query,
+        fragment = fragment
     )
 
     companion object {
@@ -71,20 +71,35 @@ data class IRI(
                         inputBuffer.contentEquals("/.") -> inputBuffer.setRange(0, 2, "/")
                         inputBuffer.startsWith("/../") -> {
                             inputBuffer.setRange(0, 4, "/")
-                            outputBuffer.delete(outputBuffer.indexOfLast { it == '/' }.takeUnless { it == -1 } ?: 0,
-                                outputBuffer.lastIndex + 1)
+                            outputBuffer
+                                .delete(
+                                    outputBuffer
+                                        .indexOfLast { it == '/' }
+                                        .takeUnless { it == -1 }
+                                        ?: 0,
+                                    outputBuffer.lastIndex + 1
+                                )
                         }
 
                         inputBuffer.contentEquals("/..") -> {
                             inputBuffer.setRange(0, 3, "/")
-                            outputBuffer.delete(outputBuffer.indexOfLast { it == '/' }.takeUnless { it == -1 } ?: 0,
-                                outputBuffer.lastIndex + 1)
+                            outputBuffer
+                                .delete(outputBuffer
+                                    .indexOfLast { it == '/' }
+                                    .takeUnless { it == -1 }
+                                    ?: 0,
+                                    outputBuffer.lastIndex + 1)
                         }
 
                         inputBuffer.contentEquals("..") || inputBuffer.contentEquals(".") -> inputBuffer.clear()
                         else -> {
                             val switch =
-                                "^(/?[^/]*)(/|$)".toRegex().find(inputBuffer)?.groups?.get(1)?.range
+                                "^(/?[^/]*)(/|$)"
+                                    .toRegex()
+                                    .find(inputBuffer)
+                                    ?.groups
+                                    ?.get(1)
+                                    ?.range
                             if (switch != null) {
                                 outputBuffer.append(inputBuffer, switch.first, switch.last + 1)
                                 inputBuffer.delete(switch.first, switch.last + 1)
@@ -126,11 +141,11 @@ data class IRI(
             val targetURIfragment: String? = R.fragment
 
             return IRI(
-                targetURIScheme,
-                targetURIauthority,
-                targetURIpath,
-                targetURIquery,
-                targetURIfragment
+                scheme = targetURIScheme,
+                authority = targetURIauthority,
+                path = targetURIpath,
+                query = targetURIquery,
+                fragment = targetURIfragment
             )
         }
     }

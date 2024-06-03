@@ -1,4 +1,4 @@
-package parser
+package interface_adapters.services.parsing
 
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
@@ -6,14 +6,15 @@ import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.*
-import model.*
-import model.rdf_term.*
-import model.rdf_term.Collection
-import util.IRIConstants
+import domain.entities.*
+import domain.entities.rdf_term.*
+import domain.entities.rdf_term.Collection
+import domain.error.Error
+import domain.error.Result
+import domain.use_cases.transform.SurfaceNotSupportedError
+import interface_adapters.services.parsing.util.*
+import util.*
 import util.IRIConstants.RDF_TYPE_IRI
-import util.InvalidInputException
-import util.InvalidSyntax
-import util.NotSupportedException
 
 typealias HayesGraph = List<HayesGraphElement>
 typealias FreeVariables = Set<BlankNode>
@@ -21,7 +22,7 @@ typealias CollectionBlankNodes = Set<BlankNode>
 typealias InterimParseResult = Triple<HayesGraph, FreeVariables, CollectionBlankNodes>
 
 
-class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
+class RDFSurfaceParseService(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
 
     private object BlankNodeCounter {
         private var count: Int = 0
@@ -77,13 +78,9 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
     private val prefixedName by pNameLn.use {
         val (prefix, local) = text.split(':', limit = 2)
         return@use (prefixMap[prefix]
-            ?: throw InvalidInputException("Undefined prefix: $prefix")) + replaceReservedCharacterEscapes(local)
+            ?: throw UndefinedPrefixException(prefix = prefix)) + replaceReservedCharacterEscapes(local)
     } or pNameNs.use {
-        prefixMap[text.trimEnd().dropLast(1)] ?: throw InvalidInputException(
-            "Undefined prefix: ${
-                text.trimEnd().dropLast(1)
-            }"
-        )
+        prefixMap[text.trimEnd().dropLast(1)] ?: throw UndefinedPrefixException(text.trimEnd().dropLast(1))
     } map { IRI.from(it) }
 
     private val iri by iriRef.map { iriString ->
@@ -139,7 +136,7 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
                 DefaultLiteral.fromNonNumericLiteral(literalValue, datatypeIRI = part)
             }
 
-            else -> throw NotSupportedException("RDF Literal type is not supported")
+            else -> throw LiteralNotValidException(value = t1, iri = (t2.toString()))
         }
     }
     private val booleanLiteralToken by regexToken("(true)|(false)")
@@ -178,8 +175,8 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
                         collectionTripleSet.add(
                             RdfTriple(
                                 acc,
-                                IRI.from(IRIConstants.RDF_REST_IRI),
-                                IRI.from(IRIConstants.RDF_NIL_IRI)
+                                domain.entities.rdf_term.IRI.from(IRIConstants.RDF_REST_IRI),
+                                domain.entities.rdf_term.IRI.from(IRIConstants.RDF_NIL_IRI)
                             )
                         )
                         return@foldIndexed collectionStart
@@ -189,16 +186,14 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
                     collectionTripleSet.add(
                         RdfTriple(
                             acc,
-                            IRI.from(IRIConstants.RDF_REST_IRI),
+                            domain.entities.rdf_term.IRI.from(IRIConstants.RDF_REST_IRI),
                             nextRestBlankNode
                         )
                     )
                     return@foldIndexed nextRestBlankNode
                 }
             }
-        } else {
-            Collection.fromTerms(*this.toTypedArray())
-        }
+        } else (Collection(this))
     }
 
     private val subject by iri or blankNode.map { varSet.add(it); it } or literal or collection
@@ -210,9 +205,7 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
             IRIConstants.LOG_NEGATIVE_SURFACE_IRI,
             IRIConstants.LOG_NEUTRAL_SURFACE_IRI,
             IRIConstants.LOG_QUESTION_SURFACE_IRI,
-            IRIConstants.LOG_ANSWER_SURFACE_IRI,
-            IRIConstants.LOG_NEGATIVE_COMPONENT_SURFACE_IRI,
-            IRIConstants.LOG_NEGATIVE_ANSWER_SURFACE_IRI -> throw ParseException(InvalidSyntax())
+            IRIConstants.LOG_ANSWER_SURFACE_IRI -> throw ParseException(InvalidSyntax())
 
             else -> it
         }
@@ -282,28 +275,20 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
                     )
             ) map { hayesTriple ->
         val (variableList, surface, rest) = hayesTriple
-        val (hayeGraph, freeVariables, freeCollectionBlankNodes) = rest.reduceOrNull { acc, triple ->
-            Triple(acc.first.plus(triple.first), acc.second.plus(triple.second), acc.third.plus(triple.third))
+        val (hayesGraph, freeVariables, freeCollectionBlankNodes) = rest.reduceOrNull { acc, (hayesGraph, freeVariables, freeCollectionBlankNodes) ->
+            Triple(acc.first.plus(hayesGraph), acc.second.plus(freeVariables), acc.third.plus(freeCollectionBlankNodes))
         } ?: Triple(listOf(), setOf(), setOf())
         val graffiti = variableList.plus(freeCollectionBlankNodes)
         val newHayeGraph = buildList<HayesGraphElement> {
             when (surface.iri) {
-                IRIConstants.LOG_POSITIVE_SURFACE_IRI -> this.add(PositiveSurface(graffiti, hayeGraph))
-                IRIConstants.LOG_NEGATIVE_TRIPLE_IRI -> this.add(NegativeTripleSurface(graffiti, hayeGraph))
-                IRIConstants.LOG_QUERY_SURFACE_IRI -> this.add(QuerySurface(graffiti, hayeGraph))
-                IRIConstants.LOG_NEGATIVE_SURFACE_IRI -> this.add(NegativeSurface(graffiti, hayeGraph))
-                IRIConstants.LOG_NEUTRAL_SURFACE_IRI -> this.add(NeutralSurface(graffiti, hayeGraph))
-                IRIConstants.LOG_QUESTION_SURFACE_IRI -> this.add(QuestionSurface(graffiti, hayeGraph))
-                IRIConstants.LOG_ANSWER_SURFACE_IRI -> this.add(AnswerSurface(graffiti, hayeGraph))
-                IRIConstants.LOG_NEGATIVE_ANSWER_SURFACE_IRI -> this.add(NegativeAnswerSurface(graffiti, hayeGraph))
-                IRIConstants.LOG_NEGATIVE_COMPONENT_SURFACE_IRI -> this.add(
-                    NegativeComponentSurface(
-                        graffiti,
-                        hayeGraph
-                    )
-                )
-
-                else -> throw NotSupportedException(message = "Surface type '${surface.iri}' is not supported")
+                IRIConstants.LOG_POSITIVE_SURFACE_IRI -> this.add(PositiveSurface(graffiti, hayesGraph))
+                IRIConstants.LOG_NEGATIVE_TRIPLE_IRI -> this.add(NegativeTripleSurface(graffiti, hayesGraph))
+                IRIConstants.LOG_QUERY_SURFACE_IRI -> this.add(QuerySurface(graffiti, hayesGraph))
+                IRIConstants.LOG_NEGATIVE_SURFACE_IRI -> this.add(NegativeSurface(graffiti, hayesGraph))
+                IRIConstants.LOG_NEUTRAL_SURFACE_IRI -> this.add(NeutralSurface(graffiti, hayesGraph))
+                IRIConstants.LOG_QUESTION_SURFACE_IRI -> this.add(QuestionSurface(graffiti, hayesGraph))
+                IRIConstants.LOG_ANSWER_SURFACE_IRI -> this.add(AnswerSurface(graffiti, hayesGraph))
+                else -> throw SurfaceNotSupportedException(surface = surface.iri)
             }
         }
         InterimParseResult(
@@ -382,15 +367,33 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
         .replace("\\'", "\u0027")
         .replace("\\\\'", "\u005C")
 
-    fun parseToEnd(input: String, baseIRI: IRI): PositiveSurface {
+    fun parseToEnd(input: String, baseIRI: IRI): Result<PositiveSurface, Error> {
         var bnLabel = "BN_"
         var i = 0
         while (input.contains("_:$bnLabel\\d+".toRegex()) && i++ in 0..10) {
             bnLabel += '0'
         }
-        if (i > 10) throw InvalidInputException("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
+        if (i > 10) return Result.Error(RdfSurfaceParserError.BlankNodeLabelCollision) //("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
         this.bnLabel = bnLabel
         this.baseIri = baseIRI
-        return rootParser.parseToEnd(tokenizer.tokenize(input))
+        return try {
+            Result.Success(rootParser.parseToEnd(tokenizer.tokenize(input)))
+        } catch (exc: Throwable) {
+            when (exc) {
+                is SurfaceNotSupportedException -> SurfaceNotSupportedError(surface = exc.surface)
+                is UndefinedPrefixException -> RdfSurfaceParserError.UndefinedPrefix(prefix = exc.prefix)
+                is LiteralNotValidException -> RdfSurfaceParserError.LiteralNotValid(value = exc.value, iri = exc.iri)
+                is ParseException -> RdfSurfaceParserError.GenericInvalidInput(throwable = exc)
+                else -> throw exc
+            }.let { Result.Error(it) }
+        }
     }
+}
+
+
+sealed interface RdfSurfaceParserError : Error {
+    data object BlankNodeLabelCollision : RdfSurfaceParserError
+    data class UndefinedPrefix(val prefix: String) : RdfSurfaceParserError
+    data class LiteralNotValid(val value: String, val iri: String) : RdfSurfaceParserError
+    data class GenericInvalidInput(val throwable: Throwable) : RdfSurfaceParserError
 }

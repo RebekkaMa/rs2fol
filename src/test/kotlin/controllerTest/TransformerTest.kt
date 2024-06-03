@@ -1,21 +1,23 @@
 package controllerTest
 
-import controller.Transformer
+import domain.entities.NegativeSurface
+import domain.entities.PositiveSurface
+import domain.entities.QuerySurface
+import domain.entities.RdfTriple
+import domain.entities.rdf_term.*
+import domain.error.getOrNull
+import domain.use_cases.transform.RdfSurfaceModelToFolUseCase
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.shouldBe
 import org.apache.jena.datatypes.xsd.XSDDatatype
-import model.*
-import model.rdf_term.*
-import model.rdf_term.Collection
+import interface_adapters.services.transforming.TptpElementCoderService
+import io.kotest.matchers.shouldNotBe
 import java.io.File
 
 class TransformerTest
     : ShouldSpec(
     {
-
-        val transformer = Transformer()
-
         context("toFOLTest") {
             should("transform example2.n3 without exception") {
                 val solutionFile = File("src/test/resources/turtle/example2.p")
@@ -26,12 +28,14 @@ class TransformerTest
 
                 val rdfTriple = RdfTriple(iri1, iri2, iri3)
 
-                transformer.toFOL(
+                val result = RdfSurfaceModelToFolUseCase(
                     PositiveSurface(
                         listOf(),
                         listOf(rdfTriple)
                     )
-                ).replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
+                ).getOrNull()
+                result shouldNotBe null
+                result!!.replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
 
 
             }
@@ -47,11 +51,11 @@ class TransformerTest
                 val literal1 =
                     DefaultLiteral("That Seventies Show", XSDDatatype.XSDstring)
                 val literal2 =
-                    LanguageTaggedString("That Seventies Show" , "en")
+                    LanguageTaggedString("That Seventies Show", "en")
                 val literal3 =
-                    LanguageTaggedString("Cette Série des Années Soixante-dix" , "fr")
+                    LanguageTaggedString("Cette Série des Années Soixante-dix", "fr")
                 val literal4 =
-                    LanguageTaggedString("Cette Série des Années Septante" , "fr-be")
+                    LanguageTaggedString("Cette Série des Années Septante", "fr-be")
                 val literal5 = DefaultLiteral(
                     "This is a multi-line                        # literal with embedded new lines and quotes\n" +
                             "literal with many quotes (\"\"\"\"\")\n" +
@@ -66,12 +70,14 @@ class TransformerTest
                 val rdfTriple6 = RdfTriple(iri1, iri3, literal4)
                 val rdfTriple7 = RdfTriple(iri1, iri4, literal5)
 
-                transformer.toFOL(
+                val result = RdfSurfaceModelToFolUseCase(
                     PositiveSurface(
                         listOf(),
                         listOf(rdfTriple1, rdfTriple2, rdfTriple3, rdfTriple4, rdfTriple5, rdfTriple6, rdfTriple7)
                     )
-                ).replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
+                ).getOrNull()
+                result shouldNotBe null
+                result!!.replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
             }
 
 
@@ -89,15 +95,18 @@ class TransformerTest
                 val literal4 = DefaultLiteral(3E1, XSDDatatype.XSDdouble)
 
 
-                val collection1 = Collection.fromTerms(literal2,literal3,literal4)
+                val collection1 =
+                    Collection(listOf(literal2, literal3, literal4))
 
                 val rdfTriple1 = RdfTriple(collection1, iri1, literal1)
 
-                transformer.toFOL(
+                val result = RdfSurfaceModelToFolUseCase(
                     PositiveSurface(
                         listOf(), listOf(rdfTriple1)
                     )
-                ).replace("\\s+".toRegex(), "") shouldBeEqualComparingTo solutionFile.readText().replace("\\s+".toRegex(), "")
+                ).getOrNull()
+                result shouldNotBe null
+                result!!.replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
             }
 
             context("blogic") {
@@ -127,12 +136,14 @@ class TransformerTest
                         NegativeSurface(listOf(bnS), listOf(rdfTriple3, negativeSurface21, negativeSurface22))
                     val querySurface = QuerySurface(listOf(bnS, bnC), listOf(rdfTriple6))
 
-                    transformer.toFOL(
+                    val result = RdfSurfaceModelToFolUseCase(
                         PositiveSurface(
                             listOf(),
                             listOf(rdfTriple1, negativeSurface1, negativeSurface2, querySurface)
                         )
-                    ).replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
+                    ).getOrNull()
+                    result shouldNotBe null
+                    result!!.replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
 
                 }
                 should("transform blogic abcd.n3s") {
@@ -174,12 +185,14 @@ class TransformerTest
                     val querySurface = QuerySurface(listOf(bnS, bnC), listOf(rdfTriple8))
 
 
-                    transformer.toFOL(
+                    val result = RdfSurfaceModelToFolUseCase(
                         PositiveSurface(
                             listOf(),
                             listOf(rdfTriple1, negativeSurface1, negativeSurface2, negativeSurface3, querySurface)
                         )
-                    ).replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
+                    ).getOrNull()
+                    result shouldNotBe null
+                    result!!.replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
 
                 }
             }
@@ -190,59 +203,59 @@ class TransformerTest
                 val testStr = "The first line\n" +
                         "The second line\n" +
                         "  more"
-                val encoded = transformer.encodeToValidTPTPLiteral(testStr)
+                val encoded = TptpElementCoderService.encodeToValidTPTPLiteral(testStr)
 //                println(encoded)
-//                println(transformer.decodeValidTPTPLiteral(encoded))
-                testStr shouldBe transformer.decodeValidTPTPLiteral(encoded)
+//                println(DecodeStringToValidTPTPLiteralUseCase()(encoded))
+                testStr shouldBe TptpElementCoderService.decodeToValidTPTPLiteral(encoded)
             }
 
             should("encode and decode 2") {
                 val testStr = "The first line\\nThe second line\\n  more"
-                val encoded = transformer.encodeToValidTPTPLiteral(testStr)
-                testStr shouldBe transformer.decodeValidTPTPLiteral(encoded)
+                val encoded = TptpElementCoderService.encodeToValidTPTPLiteral(testStr)
+                testStr shouldBe TptpElementCoderService.decodeToValidTPTPLiteral(encoded)
             }
 
             should("encode and decode 3") {
                 val testStr = "The first line\\nThe second line\\n  more"
-                val encoded = transformer.encodeToValidTPTPLiteral(testStr)
-                testStr shouldBe transformer.decodeValidTPTPLiteral(encoded)
+                val encoded = TptpElementCoderService.encodeToValidTPTPLiteral(testStr)
+                testStr shouldBe TptpElementCoderService.decodeToValidTPTPLiteral(encoded)
             }
             should("encode and decode 4") {
                 val testStr =
                     "This is a multi-line                        # literal with embedded new lines and quotes\n" +
                             "\uD800\uDC00 literal with many quotes (\"\"\"\"\")\n" +
                             "and up to two sequential apostrophes ('')."
-                val encoded = transformer.encodeToValidTPTPLiteral(testStr)
-                testStr shouldBe transformer.decodeValidTPTPLiteral(encoded)
+                val encoded = TptpElementCoderService.encodeToValidTPTPLiteral(testStr)
+                testStr shouldBe TptpElementCoderService.decodeToValidTPTPLiteral(encoded)
             }
         }
         context("decode and encode to TPTP Variable compatible CHAR Set") {
             should("encode and decode 1") {
                 val testStr = "BN_1"
-                val encoded = transformer.encodeToValidTPTPVariable(testStr)
-                testStr shouldBe transformer.decodeValidTPTPVariable(encoded)
+                val encoded = TptpElementCoderService.encodeToValidTPTPVariable(testStr)
+                testStr shouldBe TptpElementCoderService.decodeToValidTPTPVariable(encoded)
             }
 
             should("encode and decode 2") {
                 val testStr = "bn_1"
-                val encoded = transformer.encodeToValidTPTPVariable(testStr)
-                testStr shouldBe transformer.decodeValidTPTPVariable(encoded)
+                val encoded = TptpElementCoderService.encodeToValidTPTPVariable(testStr)
+                testStr shouldBe TptpElementCoderService.decodeToValidTPTPVariable(encoded)
             }
 
             should("encode and decode 3") {
                 val testStr = "jiUd_.a\uD800\uDC00"
-                val encoded = transformer.encodeToValidTPTPVariable(testStr)
-                testStr shouldBe transformer.decodeValidTPTPVariable(encoded)
+                val encoded = TptpElementCoderService.encodeToValidTPTPVariable(testStr)
+                testStr shouldBe TptpElementCoderService.decodeToValidTPTPVariable(encoded)
             }
             should("encode and decode 4") {
                 val testStr = "Ox3A23n_3"
-                val encoded = transformer.encodeToValidTPTPVariable(testStr)
-                testStr shouldBe transformer.decodeValidTPTPVariable(encoded)
+                val encoded = TptpElementCoderService.encodeToValidTPTPVariable(testStr)
+                testStr shouldBe TptpElementCoderService.decodeToValidTPTPVariable(encoded)
             }
             should("encode and decode 5") {
                 val testStr = "Ox3A2P3n_3"
-                val encoded = transformer.encodeToValidTPTPVariable(testStr)
-                testStr shouldBe transformer.decodeValidTPTPVariable(encoded)
+                val encoded = TptpElementCoderService.encodeToValidTPTPVariable(testStr)
+                testStr shouldBe TptpElementCoderService.decodeToValidTPTPVariable(encoded)
             }
         }
     })

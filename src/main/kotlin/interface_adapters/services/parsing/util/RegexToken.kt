@@ -1,4 +1,4 @@
-package parser
+package interface_adapters.services.parsing.util
 
 val pnLocalESC = "(\\\\[-_~.!$&'()*+,;=/?#@%])".toRegex()
 val hex = "([0-9]|[A-F]|[a-f])".toRegex()
