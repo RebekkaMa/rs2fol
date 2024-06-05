@@ -37,6 +37,6 @@
 
 #------- Query Surface ----------
 
-() log:onQuerySurface {
-    :This :is :working.
+(_:X) log:onQuerySurface {
+    _:X :is :working.
 }.
