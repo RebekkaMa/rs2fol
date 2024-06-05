@@ -52,3 +52,9 @@
 (_:X) log:onQuerySurface {
     _:X :is :working .
 }.
+
+#------- Query Surface ----------
+
+() log:onQuerySurface {
+    :This :is :working.
+}.

@@ -86,3 +86,9 @@
         :This :is :working.
     }.
 }.
+
+#------- Query Surface ----------
+
+() log:onQuerySurface {
+    :This :is :working.
+}.
