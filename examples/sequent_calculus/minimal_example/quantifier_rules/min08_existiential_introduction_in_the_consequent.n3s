@@ -7,7 +7,7 @@
 #
 # Γ ... :Mona a :Cow. ¬( :Mona a :Cow. ¬( :Mona :has :acrophobia. ) ). 
 # ϕ ... :Mona :has :acrophobia
-# ψ ... :Earth :is :inhabited
+# ψ ... :acrophobia :is :present
 # -----------------------------------------------------------------------------------------------------------------
 
 #----------------- (Γ ϕy/x -> ψ) ------------------
@@ -28,7 +28,7 @@
 
     () log:onNegativeSurface {
         #----- ψ ----
-        :Earth :is :inhabited.
+        :acrophobia :is :present.
     }.
 }.
 
@@ -53,7 +53,7 @@
 
         () log:onNegativeSurface {
             #----- ψ ----
-            :Earth :is :inhabited.
+            :acrophobia :is :present.
         }
     }.
 
