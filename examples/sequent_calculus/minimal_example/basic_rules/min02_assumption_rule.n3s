@@ -1,0 +1,42 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+
+# Assumption Rule
+# () -> (Γ ϕ) if ϕ is an element of Γ.
+
+# Γ    ... :Mona a :Cow. ¬( :Mona a :Cow. ¬( :Mona :has :acrophobia. ) )
+# ϕ    ... :Mona a :Cow.
+
+#-----------------------------------------------------------------------------------------------------------------
+
+#----------------- (Γ -> ϕ) -> :This :is :working ------------------
+() log:onNegativeSurface {
+    #----------------- (Γ -> ϕ) ------------------
+    () log:onNegativeSurface {
+
+        #------ Γ -----
+        :Mona a :Cow.
+
+        () log:onNegativeSurface {
+            :Mona a :Cow.
+            () log:onNegativeSurface {
+                :Mona :has :acrophobia.
+            }.
+        }.
+
+        () log:onNegativeSurface {
+            #----- ϕ ----
+            :Mona a :Cow.
+        }.
+    }.
+
+    () log:onNegativeSurface {
+        :This :is :working.
+    }.
+}.
+
+#------- Query Surface ----------
+
+(_:X) log:onQuerySurface {
+    _:X :is :working.
+}.
