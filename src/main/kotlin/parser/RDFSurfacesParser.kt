@@ -208,7 +208,9 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
             IRIConstants.LOG_NEGATIVE_SURFACE_IRI,
             IRIConstants.LOG_NEUTRAL_SURFACE_IRI,
             IRIConstants.LOG_QUESTION_SURFACE_IRI,
-            IRIConstants.LOG_ANSWER_SURFACE_IRI -> throw ParseException(InvalidSyntax())
+            IRIConstants.LOG_ANSWER_SURFACE_IRI,
+            IRIConstants.LOG_NEGATIVE_COMPONENT_SURFACE_IRI,
+            IRIConstants.LOG_NEGATIVE_ANSWER_SURFACE_IRI -> throw ParseException(InvalidSyntax())
 
             else -> it
         }
@@ -291,6 +293,8 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
                 IRIConstants.LOG_NEUTRAL_SURFACE_IRI -> this.add(NeutralSurface(graffiti, hayeGraph))
                 IRIConstants.LOG_QUESTION_SURFACE_IRI -> this.add(QuestionSurface(graffiti, hayeGraph))
                 IRIConstants.LOG_ANSWER_SURFACE_IRI -> this.add(AnswerSurface(graffiti, hayeGraph))
+                IRIConstants.LOG_NEGATIVE_ANSWER_SURFACE_IRI -> this.add(NegativeAnswerSurface(graffiti, hayeGraph))
+                IRIConstants.LOG_NEGATIVE_COMPONENT_SURFACE_IRI -> this.add(NegativeComponentSurface(graffiti, hayeGraph))
                 else -> throw NotSupportedException(message = "Surface type '${surface.iri}' is not supported")
             }
         }

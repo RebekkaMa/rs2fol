@@ -13,6 +13,9 @@ object IRIConstants {
     const val LOG_NEGATIVE_TRIPLE_IRI = LOG_IRI + "negativeTriple"
     const val LOG_QUESTION_SURFACE_IRI = LOG_IRI + "onQuestionSurface"
     const val LOG_ANSWER_SURFACE_IRI = LOG_IRI + "onAnswerSurface"
+    const val LOG_NEGATIVE_ANSWER_SURFACE_IRI = LOG_IRI + "onNegativeAnswerSurface"
+    const val LOG_NEGATIVE_COMPONENT_SURFACE_IRI = LOG_IRI + "onNegativeComponentSurface"
+
 
 
     const val XSD_STRING_IRI = XSD_IRI + "string"

@@ -106,6 +106,8 @@ class Transformer {
                         is NeutralSurface -> "log:onNeutralSurface"
                         is QuestionSurface -> "log:onQuestionSurface"
                         is AnswerSurface -> "log:onAnswerSurface"
+                        is NegativeAnswerSurface -> "log:onNegativeAnswerSurface"
+                        is NegativeComponentSurface -> "log:onNegativeComponentSurface"
                     }
                     val graffitiStringList = transform(hayesGraphElement.graffiti)
                     val hayesGraphString =
@@ -210,7 +212,7 @@ class Transformer {
                             }
 
 
-                        is NegativeSurface, is QuerySurface, is NegativeTripleSurface -> if (hayesGraphElement.graffiti.isEmpty()) {
+                        is NegativeSurface, is QuerySurface, is NegativeTripleSurface, is NegativeAnswerSurface, is NegativeComponentSurface -> if (hayesGraphElement.graffiti.isEmpty()) {
                             if (hayesGraphElement.hayesGraph.isEmpty()) "\$false" else
                             hayesGraphElement.hayesGraph.joinToString(
                                     prefix = "~(${System.lineSeparator()}$nextDepthSpace",
