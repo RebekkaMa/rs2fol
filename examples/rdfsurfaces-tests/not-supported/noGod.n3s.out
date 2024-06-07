@@ -1,0 +1,7 @@
+@prefix : <urn:example:>.
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+
+:cardinalCount a log:GraphCounter.
+_:sk_46 a :God.
+<file:///home/rebekka/Programs/EyeReasoner/rdfsurfaces-tests/test/noGod.n3s> a :MissingGodTest.
+:test :is true.

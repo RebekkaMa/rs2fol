@@ -1,0 +1,73 @@
+@prefix : <urn:example:> .
+@prefix log: <http://www.w3.org/2000/10/swap/log#> .
+@prefix math: <http://www.w3.org/2000/10/swap/math#> .
+
+10 a :NaturalNumber .
+
+# All x : (X a EvenNumber) OR (X a OddNumber)
+(_:x) log:onNegativeSurface {
+    () log:onNegativeSurface {
+        _:x a :EvenNumber .
+    } .
+    () log:onNegativeSurface {
+        _:x a :OddNumber .
+    } .
+} . 
+
+# All x,y : (X a NaturalNumber) ->  (y = x-1, y > 0 a NaturalNumber)
+(_:x _:y) log:onNegativeSurface {
+    _:x a :NaturalNumber .
+
+    (_:x -1 ) math:sum _:y .
+
+    _:y math:greaterThan 0 .
+
+    () log:onNegativeSurface {
+        _:y a :NaturalNumber .
+    } .
+} . 
+
+# All x : (X a NaturalNumber) -> ( x : 2 = 0 , not(X a OddNumber) )
+(_:x) log:onNegativeSurface {
+    _:x a :NaturalNumber .
+
+    (_:x 2) math:remainder 0 .
+
+    () log:onNegativeSurface {
+      () log:onNegativeSurface {
+        _:x a :OddNumber .
+      } .
+    } .
+} .
+
+(_:S _:O) log:onNegativeSurface {
+    _:S a _:O .
+    () log:onNegativeAnswerSurface {
+        _:S a _:O .
+    } .
+} .
+
+(_:S _:O) log:onNegativeSurface {
+    () log:onNegativeSurface {
+        _:S a _:O .
+    } .
+    () log:onNegativeAnswerSurface {
+        () log:onNegativeSurface {
+            _:S a _:O .
+        } .
+    } .
+} .
+
+# Test
+() log:onNegativeSurface {
+    10 a :EvenNumber .
+    8 a :EvenNumber .
+    6 a :EvenNumber .
+    4 a :EvenNumber .
+    2 a :EvenNumber .
+    () log:onNegativeSurface {
+        :test :is true .
+    } .
+} .
+
+() log:onNegativeSurface { :test :is true. () log:onNegativeAnswerSurface { :test :is true } } .

@@ -1,0 +1,6 @@
+** ERROR ** eam ** inference_fuse({
+    2 a :EvenNumber.
+    () log:onNegativeSurface {
+        2 a :EvenNumber.
+    }.
+} => false)

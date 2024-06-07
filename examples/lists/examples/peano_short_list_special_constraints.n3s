@@ -1,0 +1,74 @@
+# ----------------
+# Peano arithmetic
+# ----------------
+#
+# See https://en.wikipedia.org/wiki/Peano_axioms
+
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+
+# Uniqueness of lists
+## list as Subject
+(_:A _:B _:first _:rest _:p _:o) log:onNegativeSurface {
+    () log:onNegativeComponentSurface {
+    _:B _:p _:o.
+    }.
+    _:A _:p _:o.
+
+    _:A rdf:first _:first; rdf:rest _:rest.
+    _:B rdf:first _:first; rdf:rest _:rest.
+}.
+
+## list as object
+(_:A _:B _:first _:rest _:p _:s) log:onNegativeSurface {
+    () log:onNegativeComponentSurface {
+    _:s _:p _:B.
+    }.
+    _:s _:p _:A.
+
+    _:A rdf:first _:first; rdf:rest _:rest.
+    _:B rdf:first _:first; rdf:rest _:rest.
+}.
+
+## lists as objects and subjects (redundant, but makes theorem proving faster)
+(_:A _:B _:A1 _:B1 _:first _:rest _:p _:first1 _:rest1) log:onNegativeSurface {
+	() log:onNegativeComponentSurface {
+		_:B1 _:p _:B.
+	}.
+	_:A1 _:p _:A.
+
+	_:A rdf:first _:first; rdf:rest _:rest.
+	_:B rdf:first _:first; rdf:rest _:rest.
+
+	_:A1 rdf:first _:first1; rdf:rest _:rest1.
+	_:B1 rdf:first _:first1; rdf:rest _:rest1.
+}.
+
+
+# add
+(_:A) log:onNegativeSurface {
+    () log:onNegativeComponentSurface {(_:A 0) :add _:A}.
+}.
+
+(_:A _:B _:C) log:onNegativeSurface {
+    () log:onNegativeComponentSurface {(_:A (:s _:B)) :add (:s _:C)}.
+    (_:A _:B) :add _:C.
+}.
+
+# multiply
+(_:A) log:onNegativeSurface {
+    () log:onNegativeComponentSurface {(_:A 0) :multiply 0}.
+}.
+
+(_:A _:B _:C _:D) log:onNegativeSurface {
+    () log:onNegativeComponentSurface {(_:A (:s _:B)) :multiply _:C}.
+    (_:A _:B) :multiply _:D.
+    (_:A _:D) :add _:C.
+}.
+
+# query
+(_:A _:B) log:onQuerySurface {
+    ((:s (:s 0)) (:s (:s (:s 0)))) :add _:A.
+    (_:A (:s (:s (:s (:s 0))))) :multiply _:B.
+}.

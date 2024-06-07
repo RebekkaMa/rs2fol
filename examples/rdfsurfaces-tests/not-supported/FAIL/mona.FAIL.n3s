@@ -1,0 +1,37 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+
+# Case distinction
+# (Γ ψ ϕ, Γ ¬ψ ϕ) -> (Γ ϕ)
+
+# ψ ... :Mona :color :purple .
+# ϕ ... :Mona :has :acrophobia .
+#-----------------------------------------------------------------------------------------------------------------
+
+:Mona a :Cow.
+
+# Everything that is a cow and purple has acrophobia
+(_:X) log:onNegativeSurface {
+    _:X a :Cow .
+    _:X :color :purple .
+    () log:onNegativeSurface {
+         _:X :has :acrophobia.
+    }.
+}.
+
+# Everything that is a cow and not purple has acrophobia
+(_:X) log:onNegativeSurface {
+    _:X a :Cow .
+    () log:onNegativeSurface {
+         _:X :color :purple .
+     }.
+    () log:onNegativeSurface {
+          _:X :has :acrophobia.
+    }.
+}.
+
+# proof by contradiction
+# assuming the negation of the query :Mona :has :acrophobia .
+(_:X) log:onNegativeSurface {
+    _:X :has :acrophobia .
+}.

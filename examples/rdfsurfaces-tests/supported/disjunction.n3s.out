@@ -1,0 +1,6 @@
+@prefix : <urn:example:>.
+
+:test :is true.
+:Alice a :Person.
+:Alice a :CatLover.
+:Alice a :PetLover.

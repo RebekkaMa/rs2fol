@@ -1,0 +1,6 @@
+** ERROR ** eam ** inference_fuse({
+    :Alice a :Cyclist.
+    () log:onNegativeSurface {
+        :Alice a :Cyclist.
+    }.
+} => false)

@@ -1,0 +1,6 @@
+** ERROR ** eam ** inference_fuse({
+    :Mona :has :acrophobia.
+    () log:onNegativeSurface {
+        :Mona :has :acrophobia.
+    }.
+} => false)

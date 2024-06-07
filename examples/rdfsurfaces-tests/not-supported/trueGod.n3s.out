@@ -1,0 +1,7 @@
+@prefix : <urn:example:>.
+
+:Moradin a :God.
+:Moradin a :TrueGod.
+() a :TrueGod.
+:Moradin a :FalseGod.
+:test :is true.

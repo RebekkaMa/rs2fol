@@ -1,0 +1,3 @@
+@prefix : <urn:example.org:>.
+
+:test :is true.

@@ -1,0 +1,8 @@
+** ERROR ** eam ** inference_fuse({
+    :ABC a :InstitutePreference.
+    :ABC a :ResearcherPreference.
+    () log:onNegativeSurface {
+        :ABC a :InstitutePreference.
+        :ABC a :ResearcherPreference.
+    }.
+} => false)

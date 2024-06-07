@@ -294,7 +294,7 @@ class Check :
 
     private val consequence by option(
         "--consequence", "-c",
-        help = "Path to the consequence (given as RDF surface) (default: <input-parent>/out/<input-name>)"
+        help = "Path to the consequence (given as RDF surface) (default: <input>.out)"
     ).path()
 
     private val vampireExec by option(
@@ -363,8 +363,7 @@ class Check :
 
                 else -> {
                     computedConsequence = when {
-                        consequence == null -> Path(input.parent.pathString + "/out/" + input.name).takeIf { it.exists() }
-                            ?: Path(input.pathString + ".out").takeIf { it.exists() }
+                        consequence == null -> Path(input.pathString + ".out").takeIf { it.exists() }
                             ?: throw BadParameterValue(
                                 currentContext.localization.pathDoesNotExist(
                                     "file",

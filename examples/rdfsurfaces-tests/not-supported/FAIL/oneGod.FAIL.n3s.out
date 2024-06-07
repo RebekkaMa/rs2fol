@@ -1,0 +1,4 @@
+** ERROR ** eam ** inference_fuse({
+    :Mordakin a :God.
+    () log:notEqualTo :Mordakin.
+} => false)

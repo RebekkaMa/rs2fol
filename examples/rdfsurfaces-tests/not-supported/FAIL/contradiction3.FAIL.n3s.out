@@ -1,0 +1,10 @@
+** ERROR ** eam ** inference_fuse({
+    _:e_y_1 log:onNegativeSurface {
+        :Alice :hates :Quiche.
+    }.
+    () log:onNegativeSurface {
+        _:e_y_1 log:onNegativeSurface {
+            :Alice :hates :Quiche.
+        }.
+    }.
+} => false)

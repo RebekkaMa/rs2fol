@@ -1,0 +1,4 @@
+@prefix : <urn:example:>.
+
+:Bob :knows :Alice.
+:test :is true.

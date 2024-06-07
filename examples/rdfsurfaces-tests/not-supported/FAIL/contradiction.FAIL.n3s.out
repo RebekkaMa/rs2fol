@@ -1,0 +1,10 @@
+** ERROR ** eam ** inference_fuse({
+    () log:onNegativeSurface {
+        _:e_x_1 a :Cat.
+    }.
+    (_:e_x_1) log:onNegativeSurface {
+        () log:onNegativeSurface {
+            _:e_x_1 a :Cat.
+        }.
+    }.
+} => false)

@@ -1,0 +1,102 @@
+File,Vampire,ParentFolder
+ifthisorthatthen.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,not-supported
+oddnumber.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,not-supported
+positiveSurface3.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,not-supported
+erasure.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,not-supported
+ikl_bill_andersen.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,not-supported
+noGod.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,not-supported
+cardinality.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,not-supported
+decision_tree.n3s,false,not-supported
+syntactic_sugar.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,not-supported
+socrates2.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,not-supported
+enrico1.n3s,false,not-supported
+fibonacci.n3s,false,not-supported
+enrico2.n3s,false,not-supported
+self_destruct_disj2.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,not-supported
+gps.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,not-supported
+evennumber.FAIL.n3s,Error: --consequence: Failed to parse RDF surface. Please check the syntax.,FAIL
+syllogism1.FAIL.n3s,Error: --consequence: Failed to parse RDF surface. Please check the syntax.,FAIL
+self_destruct_no_halt.SKIP.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,FAIL
+contradiction2.FAIL.n3s,Error: --consequence: Failed to parse RDF surface. Please check the syntax.,FAIL
+negativeSurface.FAIL.n3s,Error: --consequence: Failed to parse RDF surface. Please check the syntax.,FAIL
+syllogism5.FAIL.n3s,Error: --consequence: Failed to parse RDF surface. Please check the syntax.,FAIL
+contradiction.FAIL.n3s,Error: --consequence: Failed to parse RDF surface. Please check the syntax.,FAIL
+oneGod.FAIL.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,FAIL
+mona2.FAIL.n3s,Error: --consequence: Failed to parse RDF surface. Please check the syntax.,FAIL
+mona.FAIL.n3s,Error: --consequence: Failed to parse RDF surface. Please check the syntax.,FAIL
+contradiction3.FAIL.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,FAIL
+syllogism4.FAIL.n3s,Error: --consequence: Failed to parse RDF surface. Please check the syntax.,FAIL
+publishing.FAIL.n3s,Error: --consequence: Failed to parse RDF surface. Please check the syntax.,FAIL
+mona3.FAIL.n3s,Error: --consequence: Failed to parse RDF surface. Please check the syntax.,FAIL
+counter_example.FAIL.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,FAIL
+contradiction4.FAIL.n3s,Error: --consequence: Failed to parse RDF surface. Please check the syntax.,FAIL
+syllogism3.FAIL.n3s,Error: --consequence: Failed to parse RDF surface. Please check the syntax.,FAIL
+syllogism2.FAIL.n3s,Error: --consequence: Failed to parse RDF surface. Please check the syntax.,FAIL
+contradiction5.FAIL.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,FAIL
+double_negation_removal.n3s,Error: --input: Undefined prefix: skolem,not-supported
+firstRest.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,not-supported
+trueGod.n3s,false,not-supported
+lisp.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,not-supported
+turing.n3s,false,not-supported
+self_destruct.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,not-supported
+acp.n3s,Error: --input: Failed to parse RDF surface. Please check the syntax.,not-supported
+logica_boek_81_12.n3s,true,supported
+disjoint.n3s,true,supported
+scoping.n3s,true,supported
+self_destruct_disj.n3s,true,supported
+negativeSurface1.n3s,true,supported
+universal_statement.n3s,true,supported
+positiveSurface2.n3s,true,supported
+logica_boek_81_2.n3s,true,supported
+beetle12.n3s,true,supported
+disjunction.n3s,true,supported
+modusTollens.n3s,true,supported
+negativeSurface3.n3s,true,supported
+aor_impliesa.n3s,true,supported
+peano.n3s,timeout,supported
+ikl_planes.n3s,true,supported
+erasure3.n3s,true,supported
+disjunction_elimination.n3s,true,supported
+conjunction_in_implicatum.n3s,true,supported
+negativeSurface2.n3s,true,supported
+logica_boek_81_5.n3s,true,supported
+range.n3s,true,supported
+french_roads.n3s,true,supported
+logica_boek_81_1.n3s,true,supported
+wine.n3s,true,supported
+slide32.n3s,true,supported
+contradiction.n3s,true,supported
+logica_boek_81_4.n3s,true,supported
+logica_boek_80.n3s,true,supported
+medication_prescription.n3s,true,supported
+positiveSurface1.n3s,true,supported
+slide33.n3s,true,supported
+socrates3.n3s,true,supported
+logica_boek_70.n3s,true,supported
+disjunction_elimination3.n3s,true,supported
+everygirl.n3s,true,supported
+rdfs.n3s,true,supported
+contrapositive.n3s,true,supported
+beetle.n3s,true,supported
+disjunction_in_implicans_elm.n3s,true,supported
+real_programmer.n3s,true,supported
+derived.n3s,true,supported
+prenex.n3s,true,supported
+reduction_ad_absurdum.n3s,true,supported
+publishing2.n3s,true,supported
+biconditional.n3s,true,supported
+logica_boek_81_6.n3s,true,supported
+disjunction_elimination2.n3s,true,supported
+erasure2.n3s,true,supported
+logica_boek_81_3.n3s,true,supported
+disjunction_in_implicans_int.n3s,true,supported
+syllogism.n3s,true,supported
+socrates.n3s,true,supported
+dishes.n3s,true,supported
+disjunction2.n3s,true,supported
+exclusive_disjunction.n3s,true,supported
+beetle6.n3s,true,supported
+
+Vampire Version:
+Vampire 4.6.1 (commit e57608fd8 on 2022-05-21 00:41:22 -0700)
+Linked with Z3 4.8.13.0 f03d756e086f81f2596157241e0decfb1c982299 z3-4.8.4-5390-gf03d756e0

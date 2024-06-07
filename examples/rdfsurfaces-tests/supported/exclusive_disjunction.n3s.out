@@ -1,0 +1,6 @@
+@prefix : <urn:example:>.
+
+:Alice a :Winner.
+:Alice :is :Racing.
+:Bob :is :Racing.
+:test :is true.

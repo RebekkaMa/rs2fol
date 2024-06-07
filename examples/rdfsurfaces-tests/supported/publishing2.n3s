@@ -1,0 +1,48 @@
+@prefix : <urn:example.org:> .
+@prefix log: <http://www.w3.org/2000/10/swap/log#> .
+
+##############################################################################
+# Researcher preferences                                                     #
+##############################################################################
+
+(_:X) log:onNegativeSurface {
+
+  # Disjunction of options
+  () log:onNegativeSurface {
+
+    ## Pref 1 . Publications in a subject repo
+     () log:onNegativeSurface {
+        _:X a :SubjectRepository .
+    } .
+
+    ## Pref 2 . Publications by a journal that doesn't charge APC costs
+    () log:onNegativeSurface {
+        _:X a :Journal .
+
+        () log:onNegativeSurface {
+        _:X :requires :APC .
+        } .
+    } .
+
+    ## Pref 3 . Publications by a publisher that is in WOS
+    () log:onNegativeSurface {
+        _:X a :Journal .
+        :WOS :indexed _:X .
+    } .    
+
+  } .
+
+  () log:onNegativeSurface {
+     :test :is true .
+  } .
+} .
+
+:ABC a :Journal .
+:WOS :indexed :ABC .
+
+() log:onNegativeSurface {
+    :test :is true .
+    () log:onNegativeAnswerSurface {
+        :test :is true .
+    } .
+} .

@@ -1,0 +1,32 @@
+# ------------
+# Derived rule
+# ------------
+#
+# Proving a derived rule.
+
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <urn:example:>.
+
+:Alice a :Cat.
+:Minka a :Cat.
+:Charly a :Dog.
+
+(_:cat) log:onNegativeSurface {
+    _:cat a :Cat.
+    () log:onNegativeSurface {
+        (_:dog) log:onNegativeSurface {
+            _:dog a :Dog.
+            () log:onNegativeSurface {
+                :test :is true.
+            }.
+        }.
+    }.
+}.
+
+# query
+() log:onNegativeSurface {
+    :test :is true.
+    () log:onNegativeAnswerSurface {
+        :test :is true.
+    }.
+}.

@@ -1,0 +1,8 @@
+** ERROR ** eam ** inference_fuse({
+    :Alice :loves :Wine.
+    :Alice :loves :Wine.
+    () log:onNegativeSurface {
+        :Alice :loves :Wine.
+        :Alice :loves :Wine.
+    }.
+} => false)

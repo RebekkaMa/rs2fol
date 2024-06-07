@@ -1,0 +1,5 @@
+@prefix : <urn:example:>.
+
+:Ann :isPrescribed :aspirinHighDose.
+:Joe :isPrescribed :betaBlocker.
+:test :is true.

@@ -1,0 +1,81 @@
+@prefix : <urn:example:> .
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix log: <http://www.w3.org/2000/10/swap/log#> .
+
+# Inspired from https://www.jfsowa.com/ikl/iklguide.htm
+
+# We have bill that believes something, he knows that an iranian has three planes
+# or has some information about it..but doesn't know if these planes are the same
+# (this is what an existential quantified \Exists: x,y,z does
+:BillAndersen :believes {
+    _:S a :Iranian .
+    _:S :customer "Bank Melli Iran" .
+    _:S :owns _:A1 , _:A2 , _:A3 .
+    _:A1 a :Airplane .
+    _:A2 a :Airplane .
+    _:A3 a :Airplane .
+} .
+
+_:A2 :seenIn :Austria .
+
+(_:X _:Y _:S _:A) log:onNegativeSurface {
+    _:X :believes _:Y .
+
+    # Make Bill's believe true
+    _:Y log:includes {
+        _:S :owns _:A 
+    } .
+
+    _:A :seenIn :Austria .
+
+    # It could still be the case that all planes are equal
+    _:A log:isomorphic _:A1 .
+
+    () log:onNegativeSurface {
+        :test :is true .
+    } .
+} .
+
+() log:onNegativeSurface { :test :is true. () log:onNegativeAnswerSurface { :test :is true } } .
+
+# sameAs: all properties of A are in B
+(_:A _:B _:C _:D) log:onNegativeSurface {
+    _:A owl:sameAs _:B .
+    _:A _:C _:D .
+    () log:onNegativeSurface {
+        _:B _:C _:D .
+    } .
+} .
+
+# sameAs: all subjects and objects of A as property also go for B as property
+(_:A _:B _:C _:D) log:onNegativeSurface {
+    _:A owl:sameAs _:B .
+    _:C _:A _:D .
+    () log:onNegativeSurface {
+        _:C _:B _:D .
+    } .
+} . 
+
+# sameAs: interchanging A and B as object has no effect 
+(_:A _:B _:C _:D) log:onNegativeSurface {
+    _:A owl:sameAs _:B .
+    _:D _:C _:A .
+    () log:onNegativeSurface {
+        _:D _:C _:B .
+    } .
+} .
+
+(_:A _:B) log:onNegativeSurface {
+    _:A owl:sameAs _:B .
+    () log:onNegativeSurface {
+        _:B owl:sameAs _:A .
+    } .
+} .
+
+(_:A _:B _:C) log:onNegativeSurface {
+    _:A owl:sameAs _:B .
+    _:B owl:sameAs _:C .
+    () log:onNegativeSurface {
+        _:A owl:sameAs _:C .
+    } .
+} .

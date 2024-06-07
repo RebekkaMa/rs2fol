@@ -1,0 +1,21 @@
+@prefix : <urn:example:> .
+@prefix log: <http://www.w3.org/2000/10/swap/log#> .
+
+# The test will fail if we introduce a new God
+:Mordakin a :God .
+
+# We write on the positive surface, and we introduce a god (_:x). 
+# If any God is not equal to this god, we burn the fuse.
+(_:x) log:onNegativeSurface {
+  () log:onNegativeSurface {
+    _:x a :God .
+
+    (_:y) log:onNegativeSurface {
+        _:y a :God .
+
+        _:x log:notEqualTo _:y .
+
+        () log:onNegativeSurface false .
+    } .
+  } .
+} .

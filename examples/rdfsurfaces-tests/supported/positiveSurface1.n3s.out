@@ -1,0 +1,6 @@
+@prefix : <urn:example:>.
+
+_:e_x_1 a :PastaEater.
+_:sk_46 a :RiceEater.
+_:sk_44 a :RisottoEater.
+:test :is true.
