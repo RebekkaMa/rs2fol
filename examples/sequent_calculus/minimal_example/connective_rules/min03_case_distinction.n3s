@@ -1,0 +1,90 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+
+# Case distinction
+# (Γ ψ ϕ, Γ ¬ψ ϕ) -> (Γ ϕ)
+
+# Γ    ... :Mona a :Cow. ¬( :Mona a :Cow. ¬( :Mona :has :acrophobia. ) )
+# ψ ... :Mona :color :purple .
+# ϕ ... :Mona :has :acrophobia .
+
+#-----------------------------------------------------------------------------------------------------------------
+
+#----------------- (Γ ψ -> ϕ) ------------------
+() log:onNegativeSurface {
+
+    #------ Γ -----
+    :Mona a :Cow.
+
+    () log:onNegativeSurface {
+        :Mona a :Cow.
+        () log:onNegativeSurface {
+            :Mona :has :acrophobia.
+        }.
+    }.
+
+    #------ ψ -----
+    :Mona :color :purple.
+
+    () log:onNegativeSurface {
+        #----- ϕ ----
+        :Mona :has :acrophobia.
+    }.
+}.
+
+#----------------- (Γ ¬ψ -> ϕ) ------------------
+() log:onNegativeSurface {
+
+    #------ Γ -----
+    :Mona a :Cow.
+
+    () log:onNegativeSurface {
+        :Mona a :Cow.
+        () log:onNegativeSurface {
+            :Mona :has :acrophobia.
+        }.
+    }.
+
+    #------ ¬ψ -----
+    () log:onNegativeSurface {
+        :Mona :color :purple.
+    }.
+
+    () log:onNegativeSurface {
+        #----- ϕ ----
+        :Mona :has :acrophobia.
+    }.
+}.
+
+
+#----------------- (Γ -> ϕ) -> :This :is :working ------------------
+() log:onNegativeSurface {
+    #----------------- (Γ -> ϕ) ------------------
+    () log:onNegativeSurface {
+
+        #------ Γ -----
+        :Mona a :Cow.
+
+        () log:onNegativeSurface {
+            :Mona a :Cow.
+            () log:onNegativeSurface {
+                :Mona :has :acrophobia.
+            }.
+        }.
+
+        () log:onNegativeSurface {
+            #----- ϕ ----
+            :Mona :has :acrophobia.
+        }.
+    }.
+
+    () log:onNegativeSurface {
+        :This :is :working.
+    }.
+}.
+
+#------- Query Surface ----------
+
+(_:X) log:onQuerySurface {
+    _:X :is :working.
+}.

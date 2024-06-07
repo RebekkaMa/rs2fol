@@ -1,0 +1,94 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+
+# Contradiction
+
+# Γ ¬ϕ ψ, Γ ¬ϕ ¬ψ -> Γ ϕ
+
+# Γ    ... :Mona a :Cow. ¬( :Mona a :Cow. ¬( :Mona :has :acrophobia. ) )
+# ϕ ... :Mona :color :purple .
+# ψ ... :Mona :has acrophobia.
+# -----------------------------------------------------------------------------------------------------------------
+
+#----------------- (Γ ¬ϕ -> ψ ) ------------------
+() log:onNegativeSurface {
+
+    #------ Γ -----
+    :Mona a :Cow.
+
+    () log:onNegativeSurface {
+        :Mona a :Cow.
+        () log:onNegativeSurface {
+            :Mona :has :acrophobia.
+        }.
+    }.
+
+    #------ ¬ϕ -----
+    () log:onNegativeSurface {
+        :Mona :color :purple.
+    }.
+
+    () log:onNegativeSurface {
+        #----- ψ ----
+        :Mona :has :acrophobia.
+    }.
+}.
+
+#----------------- (Γ ¬ϕ -> ¬ψ ) ------------------
+() log:onNegativeSurface {
+
+    #------ Γ -----
+    :Mona a :Cow.
+
+    () log:onNegativeSurface {
+        :Mona a :Cow.
+        () log:onNegativeSurface {
+            :Mona :has :acrophobia.
+        }.
+    }.
+
+    #------ ¬ϕ -----
+    () log:onNegativeSurface {
+        :Mona :color :purple.
+    }.
+
+    () log:onNegativeSurface {
+        #----- ¬ψ ----
+        () log:onNegativeSurface {
+            :Mona :has :acrophobia.
+        }.
+    }.
+}.
+
+
+#----------------- (Γ -> ϕ) -> :This :is :working ------------------
+() log:onNegativeSurface {
+    #----------------- (Γ -> ϕ) ------------------
+    () log:onNegativeSurface {
+
+        #------ Γ -----
+        :Mona a :Cow.
+
+        () log:onNegativeSurface {
+            :Mona a :Cow.
+            () log:onNegativeSurface {
+                :Mona :has :acrophobia.
+            }.
+        }.
+
+        () log:onNegativeSurface {
+            #----- ϕ ----
+            :Mona :color :purple.
+        }.
+    }.
+
+    () log:onNegativeSurface {
+        :This :is :working.
+    }.
+}.
+
+#------- Query Surface ----------
+
+(_:X) log:onQuerySurface {
+    _:X :is :working.
+}.

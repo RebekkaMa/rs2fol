@@ -1,0 +1,62 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+
+# Existential Introduction in the consequent
+# Γ ϕt/x -> Γ ∃xϕ
+#
+# Γ    ... :Mona a :Cow. ¬( :Mona a :Cow. ¬( :Mona :has :acrophobia. ) )
+# ϕ    ... _:X :has :acrophobia.
+# -----------------------------------------------------------------------------------------------------------------
+
+#----------------- (Γ -> ϕt/x) ------------------
+() log:onNegativeSurface {
+
+    #------ Γ -----
+    :Mona a :Cow.
+
+    () log:onNegativeSurface {
+        :Mona a :Cow.
+        () log:onNegativeSurface {
+            :Mona :has :acrophobia.
+        }.
+    }.
+
+    () log:onNegativeSurface {
+        #----- ϕt/x ----
+        :Mona :has :acrophobia.
+    }.
+}.
+
+
+#----------------- (Γ -> ∃xϕ) -> :This :is :working ------------------
+() log:onNegativeSurface {
+    #----------------- (Γ' -> ∃xϕ) ------------------
+    () log:onNegativeSurface {
+
+        #------ Γ -----
+        :Mona a :Cow.
+
+        () log:onNegativeSurface {
+            :Mona a :Cow.
+            () log:onNegativeSurface {
+                :Mona :has :acrophobia.
+            }.
+        }.
+
+        #----- ∃xϕ ----
+        (_:X) log:onNegativeSurface {
+            _:X :has :acrophobia.
+        }.
+    }.
+
+    () log:onNegativeSurface {
+        :This :is :working.
+    }.
+}.
+
+
+#------- Query Surface ----------
+
+(_:X) log:onQuerySurface {
+    _:X :is :working.
+}.

@@ -1,0 +1,68 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+
+# Conjunction Introduction in the Antecedent
+# Γ ϕ χ-> Γ (ϕ ∧ ψ) χ
+
+# Γ ... ¬( :Mona a :Cow. ¬( :Mona :has :acrophobia. ) )
+# ϕ ... :Mona a :Cow.
+# ψ ... :Mona :likes :Grass.
+# χ ... :Mona :has :acrophobia.
+#----------------------------------------------------------------------------------------------------------------
+
+
+#----------------- (Γ ϕ -> χ) ------------------
+() log:onNegativeSurface {
+
+    #------ Γ -----
+    () log:onNegativeSurface {
+        :Mona a :Cow.
+        () log:onNegativeSurface {
+            :Mona :has :acrophobia.
+        }.
+    }.
+
+    #------ ϕ -----
+    :Mona a :Cow.
+
+    () log:onNegativeSurface {
+        #----- χ ----
+        :Mona :has :acrophobia.
+    }.
+}.
+
+#----------------- (Γ (ϕ ∧ ψ) -> χ) -> :This :is :working ------------------
+() log:onNegativeSurface {
+    #----------------- (Γ (ϕ ∧ ψ) -> χ) ------------------
+    () log:onNegativeSurface {
+
+        #------ Γ -----
+        () log:onNegativeSurface {
+            :Mona a :Cow.
+            () log:onNegativeSurface {
+                :Mona :has :acrophobia.
+            }.
+        }.
+
+        #----- ϕ ----
+        :Mona a :Cow.
+
+        #----- ψ ----
+        :Mona :likes :Grass.
+
+        () log:onNegativeSurface {
+            #----- χ ----
+            :Mona :has :acrophobia.
+        }.
+    }.
+
+    () log:onNegativeSurface {
+        :This :is :working.
+    }.
+}.
+
+#------- Query Surface ----------
+
+(_:X) log:onQuerySurface {
+    _:X :is :working.
+}.

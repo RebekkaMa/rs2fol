@@ -1,0 +1,107 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+
+# Conjunction Introduction in the Consequent 01
+#
+# Γ ϕ, Γ ψ -> Γ (ϕ ∧ ψ)
+
+# Γ ... :Mona a :Cow. :Bella: a :Cow. ¬( :Mona a :Cow. ¬( :Mona :has :acrophobia. ) ). ¬( :Bella a :Cow. ¬( :Bella :has :acrophobia. ) )
+# ϕ ... :Mona :has :acrophobia .
+# ψ ... :Bella :has acrophobia .
+# -----------------------------------------------------------------------------------------------------------------
+
+#----------------- (Γ -> ϕ) ------------------
+() log:onNegativeSurface {
+
+    #------ Γ -----
+    :Mona a :Cow.
+    :Bella: a :Cow.
+
+    () log:onNegativeSurface {
+        :Mona a :Cow.
+        () log:onNegativeSurface {
+            :Mona :has :acrophobia.
+        }.
+    }.
+
+    () log:onNegativeSurface {
+        :Bella a :Cow.
+        () log:onNegativeSurface {
+            :Bella :has :acrophobia.
+        }.
+    }.
+
+    () log:onNegativeSurface {
+        #----- ϕ ----
+        :Mona :has :acrophobia.
+    }.
+}.
+
+#----------------- (Γ -> ψ) ------------------
+() log:onNegativeSurface {
+
+    #------ Γ -----
+    :Mona a :Cow.
+    :Bella: a :Cow.
+
+    () log:onNegativeSurface {
+        :Mona a :Cow.
+        () log:onNegativeSurface {
+            :Mona :has :acrophobia.
+        }.
+    }.
+
+    () log:onNegativeSurface {
+        :Bella a :Cow.
+        () log:onNegativeSurface {
+            :Bella :has :acrophobia.
+        }.
+    }.
+
+    () log:onNegativeSurface {
+        #----- ψ ----
+        :Bella :has :acrophobia.
+    }.
+}.
+
+
+#----------------- (Γ -> (ϕ ∧ ψ)) -> :This :is :working ------------------
+() log:onNegativeSurface {
+    #----------------- (Γ -> (ϕ ∧ ψ)) ------------------
+    () log:onNegativeSurface {
+
+        #------ Γ -----
+            :Mona a :Cow.
+            :Bella: a :Cow.
+
+            () log:onNegativeSurface {
+                :Mona a :Cow.
+                () log:onNegativeSurface {
+                    :Mona :has :acrophobia.
+                }.
+            }.
+
+            () log:onNegativeSurface {
+                :Bella a :Cow.
+                () log:onNegativeSurface {
+                    :Bella :has :acrophobia.
+                }.
+            }.
+
+        () log:onNegativeSurface {
+            #----- ϕ ∧ ψ ----
+            :Mona :has :acrophobia.
+            :Bella :has :acrophobia.
+        }.
+    }.
+
+    () log:onNegativeSurface {
+        :This :is :working.
+    }.
+}.
+
+#------- Query Surface ----------
+
+(_:X) log:onQuerySurface {
+    _:X :is :working.
+}.

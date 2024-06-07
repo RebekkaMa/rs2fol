@@ -1,0 +1,70 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+
+# Existential introduction in the antecedent
+#
+# Γ (ϕy/x) ψ -> Γ (∃xϕ) ψ, if y is not free within Γ ∃xϕ ψ
+#
+# Γ ... :Mona a :Cow. ¬( :Mona a :Cow. ¬( :Mona :has :acrophobia. ) ). 
+# ϕ ... :Mona :has :acrophobia
+# ψ ... :acrophobia :is :present
+# -----------------------------------------------------------------------------------------------------------------
+
+#----------------- (Γ ϕy/x -> ψ) ------------------
+() log:onNegativeSurface {
+
+    #------ Γ -----
+    :Mona a :Cow.
+
+    () log:onNegativeSurface {
+        :Mona a :Cow.
+        () log:onNegativeSurface {
+            :Mona :has :acrophobia.
+        }.
+    }.
+
+    #----- ϕ ----
+    :Mona :has :acrophobia.
+
+    () log:onNegativeSurface {
+        #----- ψ ----
+        :acrophobia :is :present.
+    }.
+}.
+
+
+#----------------- (Γ (∃xϕ) -> ψ) -> :This :is :working ------------------
+() log:onNegativeSurface {
+    #----------------- (Γ (∃xϕ) -> ψ) ------------------
+    (_:X) log:onNegativeSurface {
+
+        #------ Γ -----
+        :Mona a :Cow.
+
+        () log:onNegativeSurface {
+            :Mona a :Cow.
+            () log:onNegativeSurface {
+                :Mona :has :acrophobia.
+            }.
+        }.
+
+        #----- ∃xϕ ----
+        _:X :has :acrophobia.
+
+        () log:onNegativeSurface {
+            #----- ψ ----
+            :acrophobia :is :present.
+        }
+    }.
+
+    () log:onNegativeSurface {
+        :This :is :working.
+    }.
+}.
+
+
+#------- Query Surface ----------
+
+(_:X) log:onQuerySurface {
+    _:X :is :working.
+}.
