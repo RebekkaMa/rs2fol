@@ -9,7 +9,7 @@
 # ψ ... :Bella :likes salt .
 # -----------------------------------------------------------------------------------------------------------------
 
-:Bella likes :salt
+:Bella :likes :salt.
 :Mona a :Cow.
 
 (_:X) log:onNegativeSurface {
