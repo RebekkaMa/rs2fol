@@ -1,0 +1,112 @@
+name: Build Native Images
+
+on:
+  workflow_dispatch:
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      jar_name: ${{ steps.find_jar.outputs.jar_name }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up GraalVM
+        uses: DeLaGuardo/setup-graalvm@v3
+        with:
+          version: '21.3.0'
+          java-version: '11'
+          components: native-image
+
+      - name: Run tests
+        run: ./gradlew test
+
+      - name: Build fat JAR
+        run: ./gradlew fatJar
+
+      - name: Find JAR file
+        id: find_jar
+        run: |
+          JAR_NAME=$(ls build/libs/ | grep '-fat.jar$')
+          echo "JAR_NAME=$JAR_NAME" >> $GITHUB_ENV
+          echo "::set-output name=jar_name::$JAR_NAME"
+
+  build-linux:
+    runs-on: ubuntu-latest
+    needs: prepare
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up GraalVM
+        uses: DeLaGuardo/setup-graalvm@v3
+        with:
+          version: '21.3.0'
+          java-version: '11'
+          components: native-image
+
+      - name: Build native image
+        run: |
+          JAR_NAME=${{ needs.prepare.outputs.jar_name }}
+          native-image -jar build/libs/$JAR_NAME -H:Name=rs2fol
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: rs2fol-linux
+          path: rs2fol
+
+  build-macos:
+    runs-on: macos-latest
+    needs: prepare
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up GraalVM
+        uses: DeLaGuardo/setup-graalvm@v3
+        with:
+          version: '21.3.0'
+          java-version: '11'
+          components: native-image
+
+      - name: Build native image
+        run: |
+          JAR_NAME=${{ needs.prepare.outputs.jar_name }}
+          native-image -jar build/libs/$JAR_NAME -H:Name=rs2fol
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: rs2fol-mac
+          path: rs2fol
+
+  build-windows:
+    runs-on: windows-latest
+    needs: prepare
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up GraalVM
+        uses: DeLaGuardo/setup-graalvm@v3
+        with:
+          version: '21.3.0'
+          java-version: '11'
+          components: native-image
+
+      - name: Build native image
+        run: |
+          JAR_NAME=${{ needs.prepare.outputs.jar_name }}
+          native-image -jar build/libs/$JAR_NAME -H:Name=rs2fol.exe
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: rs2fol-windows
+          path: rs2fol.exe
