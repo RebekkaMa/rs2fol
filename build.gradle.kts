@@ -32,7 +32,7 @@ kotlin {
 
 application {
     mainClass.set("MainKt")
-    applicationDefaultJvmArgs = setOf("-Xss1g")
+    applicationDefaultJvmArgs = listOf("-Xss1g")
 }
 
 tasks.register<Jar>("fatJar") {
@@ -44,4 +44,15 @@ tasks.register<Jar>("fatJar") {
     from({
         configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
     })
+    manifest {
+        attributes["Main-Class"] = "MainKt"
+    }
+}
+
+tasks.withType<Jar> {
+    manifest {
+        attributes["Main-Class"] = "MainKt"
+    }
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
