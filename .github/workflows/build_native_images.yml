@@ -26,12 +26,25 @@ jobs:
       - name: Build fat JAR
         run: ./gradlew fatJar
 
+      - name: List JAR files for debugging
+        run: ls -l build/libs/
+
       - name: Find JAR file
         id: find_jar
         run: |
-          JAR_NAME=$(ls build/libs/ | grep '-fat.jar$')
+          JAR_NAME=$(ls build/libs/ | grep '.*-fat.jar$' || echo "JAR not found")
+          if [ "$JAR_NAME" == "JAR not found" ]; then
+            echo "Error: JAR file not found in build/libs/"
+            exit 1
+          fi
           echo "JAR_NAME=$JAR_NAME" >> $GITHUB_ENV
           echo "::set-output name=jar_name::$JAR_NAME"
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: fat-jar
+          path: build/libs/${{ steps.find_jar.outputs.jar_name }}
 
   build-linux:
     runs-on: ubuntu-latest
@@ -48,10 +61,27 @@ jobs:
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Download JAR artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: fat-jar
+          path: build/libs
+
+      - name: Verify JAR file existence
+        run: |
+          JAR_NAME=${{ needs.prepare.outputs.jar_name }}
+          if [ ! -f build/libs/$JAR_NAME ]; then
+            echo "Error: JAR file not found: build/libs/$JAR_NAME"
+            exit 1
+          fi
+
       - name: Build native image
         run: |
           JAR_NAME=${{ needs.prepare.outputs.jar_name }}
-          native-image -jar build/libs/$JAR_NAME -H:Name=rs2fol
+          native-image -H:+UnlockExperimentalVMOptions --initialize-at-build-time=com.github.ajalt.mordant.internal.nativeimage.NativeImagePosixMppImpls --no-fallback -jar build/libs/$JAR_NAME -H:Name=rs2fol
+
+      - name: List output files for debugging
+        run: ls -l
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
@@ -74,10 +104,27 @@ jobs:
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Download JAR artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: fat-jar
+          path: build/libs
+
+      - name: Verify JAR file existence
+        run: |
+          JAR_NAME=${{ needs.prepare.outputs.jar_name }}
+          if [ ! -f build/libs/$JAR_NAME ]; then
+            echo "Error: JAR file not found: build/libs/$JAR_NAME"
+            exit 1
+          fi
+
       - name: Build native image
         run: |
           JAR_NAME=${{ needs.prepare.outputs.jar_name }}
-          native-image -jar build/libs/$JAR_NAME -H:Name=rs2fol
+          native-image -H:+UnlockExperimentalVMOptions --initialize-at-build-time=com.github.ajalt.mordant.internal.nativeimage.NativeImagePosixMppImpls --no-fallback -jar build/libs/$JAR_NAME -H:Name=rs2fol
+
+      - name: List output files for debugging
+        run: ls -l
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
@@ -100,10 +147,30 @@ jobs:
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build native image
+      - name: Download JAR artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: fat-jar
+          path: build/libs
+
+      - name: Verify JAR file existence
+        shell: pwsh
         run: |
-          JAR_NAME=${{ needs.prepare.outputs.jar_name }}
-          native-image -jar build/libs/$JAR_NAME -H:Name=rs2fol.exe
+          $env:JAR_NAME="${{ needs.prepare.outputs.jar_name }}"
+          if (-Not (Test-Path "build/libs/$env:JAR_NAME")) {
+            Write-Error "Error: JAR file not found: build/libs/$env:JAR_NAME"
+            exit 1
+          }
+
+      - name: Build native image
+        shell: pwsh
+        run: |
+          $env:JAR_NAME="${{ needs.prepare.outputs.jar_name }}"
+          native-image -H:+UnlockExperimentalVMOptions --initialize-at-build-time=com.github.ajalt.mordant.internal.nativeimage.NativeImageWin32MppImpls --no-fallback -jar "build/libs/$env:JAR_NAME" -H:Name=rs2fol
+
+      - name: List output files for debugging
+        shell: pwsh
+        run: Get-ChildItem -Path .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
