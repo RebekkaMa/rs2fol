@@ -14,11 +14,11 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up GraalVM
-        uses: DeLaGuardo/setup-graalvm@v3
+        uses: graalvm/setup-graalvm@v1
         with:
-          version: '21.3.0'
-          java-version: '11'
-          components: native-image
+          java-version: '22'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run tests
         run: ./gradlew test
@@ -42,11 +42,11 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up GraalVM
-        uses: DeLaGuardo/setup-graalvm@v3
+      - uses: graalvm/setup-graalvm@v1
         with:
-          version: '21.3.0'
-          java-version: '11'
-          components: native-image
+          java-version: '22'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build native image
         run: |
@@ -68,11 +68,11 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up GraalVM
-        uses: DeLaGuardo/setup-graalvm@v3
+        uses: graalvm/setup-graalvm@v1
         with:
-          version: '21.3.0'
-          java-version: '11'
-          components: native-image
+          java-version: '22'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build native image
         run: |
@@ -94,11 +94,11 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up GraalVM
-        uses: DeLaGuardo/setup-graalvm@v3
+        uses: graalvm/setup-graalvm@v1
         with:
-          version: '21.3.0'
-          java-version: '11'
-          components: native-image
+          java-version: '22'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build native image
         run: |
