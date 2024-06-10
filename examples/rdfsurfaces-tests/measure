@@ -1,0 +1,58 @@
+#!/bin/bash
+
+
+# Create your own .env file with the missing variables within the rs2fol file
+source ../../.env
+
+# Define the number of runs
+NUM_RUNS=100
+
+# Define a list of files to measure runtime
+FILES="supported/*.n3s"
+
+# Prepare results directory
+mkdir -p results
+
+# Initialize the CSV file with header
+CSV_FILE="results/runtime-check-100.csv"
+echo "file,average_runtime_ns" > "$CSV_FILE"
+
+# Loop over each file
+for file in $FILES
+do
+    FILENAME=$(basename "$file")
+
+    if [ "$FILENAME" == "peano.n3s" ]; then
+        echo "Überspringe $FILENAME"
+        continue
+    fi
+
+    echo "Measuring for $file"
+
+    # Initialize the total runtime
+    total_runtime=0
+
+    # Loop to perform the measurements
+    for ((i=1; i<=NUM_RUNS; i++))
+    do
+        echo "Measurement $i of $NUM_RUNS"
+        new_path="$file.out"
+
+        start_time=$(date +%s%N)  # Start time in nanoseconds
+        RESULT=$($RS2FOL_PATH check -q -i "$file" -e "$PATH_TO_VAMPIRE" -c "$new_path")
+        end_time=$(date +%s%N)  # End time in nanoseconds
+
+        # Calculate the runtime in nanoseconds and add it to the total runtime
+        runtime=$((end_time - start_time))
+        echo "Runtime: $runtime ns"
+        total_runtime=$((total_runtime + runtime))
+    done
+
+    # Calculate the average runtime
+    average_runtime=$((total_runtime / NUM_RUNS))
+    echo "Average runtime for $file: $average_runtime ns"
+    echo ""
+
+    # Save the results to the CSV file
+    echo "$(basename "$file"),$average_runtime" >> "$CSV_FILE"
+done

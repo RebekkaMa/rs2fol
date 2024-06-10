@@ -1,9 +1,9 @@
 #!/bin/bash
 
-PROJECT_PATH="YOUR_PROJECT_PATH"
-RS2FOL_PATH="YOUR_RS2FOL_PATH"
+# Create your own .env file with the missing variables within the rs2fol file
+source ../../.env
+
 SEARCH_DIR="${PROJECT_PATH}rs2fol/examples/sequent-calculus"
-PATH_TO_VAMPIRE="YOUR_PATH_TO_VAMPIRE"
 OUTPUT_FILE="${PROJECT_PATH}rs2fol/examples/sequent-calculus/check_sequent-calculus.csv"
 FALLBACK_FILE="default_solution.n3s.out"
 
@@ -28,15 +28,21 @@ find "$SEARCH_DIR" -type f -name "*.n3s" | while read FILE; do
 
         EYE_RESULT=$(timeout 10 eye --nope --no-bnode-relabeling --quiet "$FILE")
 
-        if [[ -z "$(echo "$EYE_RESULT" | tr -d '[:space:]')" ]]; then
-            COMPARE_RESULT="false (no result)"
-        else
-            OUT_CONTENT=$(cat "$OUT_FILE")
-            if [ "$EYE_RESULT" == "$OUT_CONTENT" ]; then
-                COMPARE_RESULT="true"
-            else
-                COMPARE_RESULT="false"
-            fi
+        if [[ $? -eq 124 ]]; then
+                    EYE_RESULT="timeout"
+                elif [[ -z "$(echo "$EYE_RESULT" | tr -d '[:space:]')" ]]; then
+                    COMPARE_RESULT="false (no result)"
+                else
+                    OUT_CONTENT=$(cat "$OUT_FILE")
+                    if [ "$EYE_RESULT" == "$OUT_CONTENT" ]; then
+                        COMPARE_RESULT="true"
+                    else
+                        COMPARE_RESULT="false"
+                    fi
+                fi
+
+        if [[ "$EYE_RESULT" == "timeout" ]]; then
+            COMPARE_RESULT="timeout"
         fi
 
         echo "$FILENAME,$RESULT,$COMPARE_RESULT" >> "$OUTPUT_FILE"

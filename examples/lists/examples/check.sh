@@ -1,9 +1,9 @@
 #!/bin/bash
 
-PROJECT_PATH="YOUR_PROJECT_PATH"
-RS2FOL_PATH="YOUR_RS2FOL_PATH"
+# Create your own .env file with the missing variables within the rs2fol file
+source ../../../.env
+
 SEARCH_DIR="${PROJECT_PATH}rs2fol/examples/lists/examples/"
-PATH_TO_VAMPIRE="YOUR_PATH_TO_VAMPIRE"
 OUTPUT_FILE="${PROJECT_PATH}rs2fol/examples/lists/examples/check_lists.csv"
 FALLBACK_FILE="default_solution.n3s.out"
 
@@ -17,7 +17,7 @@ echo "file,Vampire,VAMPIRE RDF LISTS,EYE" > "$OUTPUT_FILE"
 process_timeout_result() {
     local FOL_FILE=$1
     local COMMAND_OUTPUT
-    COMMAND_OUTPUT=$("$PATH_TO_VAMPIRE" --mode casc -t 20m --cores 0 "$FOL_FILE" 2>&1)
+    COMMAND_OUTPUT=$("$PATH_TO_VAMPIRE" --mode casc -t 60m --cores 0 "$FOL_FILE" 2>&1)
     local LAST_LINES
     LAST_LINES=$(echo "$COMMAND_OUTPUT" | tail -n 10)
 
@@ -30,13 +30,8 @@ process_timeout_result() {
     fi
 }
 
-
 find "$SEARCH_DIR" -type f -name "*.n3s" | while read -r FILE; do
     FILENAME=$(basename "$FILE")
-
-#    if [ "$FILENAME" == "peano_short_list_uniqueness.n3s" ]; then
-#        continue
-#    fi
 
     echo -e -n "$FILENAME - "
 
@@ -53,17 +48,19 @@ find "$SEARCH_DIR" -type f -name "*.n3s" | while read -r FILE; do
         RESULT=$($RS2FOL_PATH check -i "$FILE" -c "$OUT_FILE" -e "$PATH_TO_VAMPIRE" -o "$TEMP_FOL_FILE_RESULT" -q 2>&1 | tr -d '\n')
         RDF_LISTS_RESULT=$($RS2FOL_PATH check -i "$FILE" -c "$OUT_FILE" -e "$PATH_TO_VAMPIRE" -o "$TEMP_FOL_FILE_RDF" -r -q 2>&1 | tr -d '\n')
 
-#        if [[ "$RESULT" == *"timeout"* ]]; then
-#            RESULT=$(process_timeout_result "$TEMP_FOL_FILE_RESULT")
-#        fi
-#
-#        if [[ "$RDF_LISTS_RESULT" == *"timeout"* ]]; then
-#            RDF_LISTS_RESULT=$(process_timeout_result "$TEMP_FOL_FILE_RDF")
-#        fi
+        if [[ "$RESULT" == *"timeout"* ]]; then
+            RESULT=$(process_timeout_result "$TEMP_FOL_FILE_RESULT")
+        fi
+
+        if [[ "$RDF_LISTS_RESULT" == *"timeout"* ]]; then
+            RDF_LISTS_RESULT=$(process_timeout_result "$TEMP_FOL_FILE_RDF")
+        fi
 
         EYE_RESULT=$(timeout 20 eye --nope --no-bnode-relabeling --quiet "$FILE")
 
-        if [[ -z "$(echo "$EYE_RESULT" | tr -d '[:space:]')" ]]; then
+        if [[ $? -eq 124 ]]; then
+            EYE_RESULT="timeout"
+        elif [[ -z "$(echo "$EYE_RESULT" | tr -d '[:space:]')" ]]; then
             COMPARE_RESULT="false (no result)"
         else
             OUT_CONTENT=$(cat "$OUT_FILE")
@@ -72,6 +69,10 @@ find "$SEARCH_DIR" -type f -name "*.n3s" | while read -r FILE; do
             else
                 COMPARE_RESULT="false"
             fi
+        fi
+
+        if [[ "$EYE_RESULT" == "timeout" ]]; then
+            COMPARE_RESULT="timeout"
         fi
 
         echo "$FILENAME,$RESULT,$RDF_LISTS_RESULT,$COMPARE_RESULT" >> "$OUTPUT_FILE"
@@ -98,6 +99,10 @@ find "$SEARCH_DIR" -type f -name "*.n3s" | while read -r FILE; do
 
         if [ "$COMPARE_RESULT" == "true" ]; then
             COMPARE_COLOR="${GREEN}$COMPARE_RESULT${NC}"
+        elif [ "$COMPARE_RESULT" == "false" ]; then
+            COMPARE_COLOR="${RED}$COMPARE_RESULT${NC}"
+        elif [ "$COMPARE_RESULT" == "timeout" ]; then
+            COMPARE_COLOR="${DARK_RED}$COMPARE_RESULT${NC}"
         else
             COMPARE_COLOR="${RED}$COMPARE_RESULT${NC}"
         fi

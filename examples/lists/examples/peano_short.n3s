@@ -6,6 +6,10 @@
 
 @prefix log: <http://www.w3.org/2000/10/swap/log#>.
 @prefix : <http://example.org/ns#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+((:s 0) (:s 0)) :multiply (:s 0) .
+((:s 0) (:s 0)) :add (:s (:s 0)) .
 
 # add
 (_:A) log:onNegativeSurface {
@@ -28,8 +32,7 @@
     (_:A _:D) :add _:C.
 }.
 
-# query
-(_:A _:B) log:onQuerySurface {
-    ((:s (:s 0)) (:s (:s (:s 0)))) :add _:A.
-    (_:A (:s (:s (:s (:s 0))))) :multiply _:B.
-}.
+() log:onNegativeSurface {
+    ((:s 0) (:s (:s 0))) :multiply (:s (:s 0)).
+    () log:onNegativeAnswerSurface {  ((:s 0) (:s (:s 0))) :multiply (:s (:s 0)). }  .
+} .

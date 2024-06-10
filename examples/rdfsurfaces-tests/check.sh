@@ -1,9 +1,9 @@
 #!/bin/bash
 
-PROJECT_PATH="YOUR_PROJECT_PATH"
-RS2FOL_PATH="YOUR_RS2FOL_PATH"
+# Create your own .env file with the missing variables within the rs2fol file
+source ../../.env
+
 SEARCH_DIR="${PROJECT_PATH}rs2fol/examples/rdfsurfaces-tests/"
-PATH_TO_VAMPIRE="YOUR_PATH_TO_VAMPIRE"
 OUTPUT_FILE="${PROJECT_PATH}rs2fol/examples/rdfsurfaces-tests/check_rdfsurfaces-tests_rdf-lists.csv"
 FALLBACK_FILE="solution.n3s.out"
 

@@ -1,0 +1,46 @@
+#!/bin/bash
+
+NUM_RUNS=100
+
+# Create your own .env file with the missing variables within the rs2fol file
+source ../../.env
+
+FILES="supported/*.n3s"
+
+mkdir -p results
+
+CSV_FILE="results/vampire-check-100.csv"
+echo "file,average_duration_ns" > "$CSV_FILE"
+
+for file in $FILES
+do
+    FILENAME=$(basename "$file")
+
+    if [ "$FILENAME" == "peano.n3s" ]; then
+        echo "Jump over $FILENAME"
+        continue
+    fi
+    
+    echo "Measurement for $file"
+    total_number=0
+
+    for ((i=1; i<=$NUM_RUNS; i++))
+    do
+        echo "Measurement $i from $NUM_RUNS"
+        new_path="$file.out"
+
+        output=$($RS2FOL_PATH check -q -i "$file" -e $PATH_TO_VAMPIRE -c "$new_path")
+        echo "Output: $output"
+
+        duration=$(echo "$output" | grep -oP 'vampire duration: \K\d+')
+        echo "Extracted duration: $duration ns"
+
+        total_number=$((total_number + duration))
+    done
+
+    average_number=$(($total_number / $NUM_RUNS))
+    echo "Average number for $file: $average_number"
+    echo ""
+
+    echo "$(basename "$file"),$average_number" >> "$CSV_FILE"
+done
