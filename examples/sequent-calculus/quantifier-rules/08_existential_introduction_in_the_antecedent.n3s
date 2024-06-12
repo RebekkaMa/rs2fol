@@ -34,8 +34,10 @@
         () log:onNegativeSurface {
             () log:onNegativeSurface {
                 # ∃xϕ
-                (_:X) log:onPositiveSurface {
-                     _:X a :Cow .
+                () log:onNegativeSurface {
+                    (_:X) log:onNegativeSurface{
+                        _:X a :Cow .
+                    }.
                 } .
                 # -> ψ
                 () log:onNegativeSurface {
@@ -51,7 +53,4 @@
 
 () log:onNegativeSurface {
     :This :is :working .
-    () log:onNegativeAnswerSurface {
-         :This :is :working .
-    }.
 }.

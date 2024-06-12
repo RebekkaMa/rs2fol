@@ -34,7 +34,4 @@
 
 () log:onNegativeSurface {
     :Mona :color :purple .
-    () log:onNegativeAnswerSurface {
-        :This :is :working .
-    }.
 }.

@@ -1,8 +1,8 @@
 file,Vampire,EYE
 02_assumption_rule.n3s,true,true
 01_antecedent_rule.n3s,true,true
-08_existential_introduction_in_the_antecedent.n3s,true,false (no result)
-07_existential_introduction_in_the_consequent.n3s,true,false (no result)
+08_existential_introduction_in_the_antecedent.n3s,true,true
+07_existential_introduction_in_the_consequent.n3s,true,true
 min07_existential_introduction_in_the_consequent.n3s,true,true
 min08_existiential_introduction_in_the_consequent.n3s,true,true
 min04_contradiction.n3s,true,true
@@ -11,21 +11,21 @@ min06_conjunction_introduction_in_the_consequent.n3s,true,true
 min03_case_distinction.n3s,true,true
 min02_assumption_rule.n3s,true,true
 min01_antecedent_rule.n3s,true,true
-04_contradiction.n3s,true,false (no result)
+04_contradiction.n3s,true,true
 05_adjunction_introduction_in_the_antecedent.n3s,true,true
-03_case_distinction.n3s,true,false (no result)
+03_case_distinction.n3s,true,true
 06b_conjunction_introduction_in_in_the_consequent.n3s,true,true
 06_adjunction_introduction_in_the_consequent_02.n3s,true,true
 05b_conjunction_introduction_in_the_antecedent_01.n3s,true,true
 05b_conjunction_introduction_in_the_antecedent_02.n3s,true,true
-03_case_distinction_v2.n3s,true,false (no result)
+03_case_distinction_v2.n3s,true,true
 06_adjunction_introduction_in_the_consequent_01.n3s,true,true
-
-Vampire Version:
+,,
+Vampire Version:,,
 ,,Vampire 4.7 (commit 807e37dd9 on 2022-08-23 09:55:27 +0200)
 ,,Linked with Z3 4.8.13.0 f03d756e086f81f2596157241e0decfb1c982299 z3-4.8.4-5390-gf03d756e0
-Eye Version:
+Eye Version:,,
 ,,eye --quiet --version
 ,,EYE v10.13.5 (2024-06-07)
 ,,SWI-Prolog version 9.2.5
-,,starting 35 [msec cputime] 34 [msec walltime]
+,,starting 36 [msec cputime] 35 [msec walltime]

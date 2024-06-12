@@ -19,8 +19,10 @@
 
 # If there exists something that has acrophobia, then the earth is inhabited
 () log:onNegativeSurface {
-    (_:X) log:onPositiveSurface {
-        _:X :has :acrophobia .
+    () log:onNegativeSurface {
+        (_:X) log:onNegativeSurface {
+            _:X :has :acrophobia .
+        }.
     } .
     () log:onNegativeSurface {
       :Earth :is :inhabited .
@@ -29,7 +31,4 @@
 
 () log:onNegativeSurface {
     :Earth :is :inhabited .
-    () log:onNegativeAnswerSurface {
-         :This :is :working .
-    }.
 }.

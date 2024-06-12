@@ -29,7 +29,4 @@
 
 () log:onNegativeSurface {
     :This :is :working .
-    () log:onNegativeAnswerSurface {
-         :This :is :working .
-    }.
 }.

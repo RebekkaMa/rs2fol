@@ -32,7 +32,4 @@
 
 () log:onNegativeSurface {
     :Mona :has :acrophobia .
-    () log:onNegativeAnswerSurface {
-        :This :is :working .
-    }.
 }.

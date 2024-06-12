@@ -23,17 +23,16 @@ find "$SEARCH_DIR" -type f -name "*.n3s" | while read -r FILE; do
     fi
 
     if [ -f "$OUT_FILE" ]; then
-        RESULT=$($RS2FOL_PATH check -i "$FILE" -c "$OUT_FILE" -e "$PATH_TO_VAMPIRE" -q)
+        RESULT=$($RS2FOL_PATH check -i "$FILE" -c "$OUT_FILE" -e "$PATH_TO_VAMPIRE" -q 2>&1)
 
-        EYE_RESULT=$(timeout 10 eye --nope --no-bnode-relabeling --quiet "$FILE")
+        EYE_RESULT=$(timeout 10 eye --nope --no-bnode-relabeling --quiet "$FILE" 2>&1)
 
         if [[ $? -eq 124 ]]; then
             EYE_RESULT="timeout"
         elif [[ -z "$(echo "$EYE_RESULT" | tr -d '[:space:]')" ]]; then
-            COMPARE_RESULT="false (no result)"
+            COMPARE_RESULT="false (no error)"
         else
-            OUT_CONTENT=$(cat "$OUT_FILE")
-            if [ "$EYE_RESULT" == "$OUT_CONTENT" ]; then
+            if [[ "$EYE_RESULT" == *"inference_fuse"* ]]; then
                 COMPARE_RESULT="true"
             else
                 COMPARE_RESULT="false"
@@ -76,8 +75,8 @@ VAMPIRE_VERSION_LINES=$(echo "$VAMPIRE_VERSION" | sed 's/^/,,/g')
 EYE_VERSION_LINES=$(echo "$EYE_VERSION" | sed 's/^/,,/g')
 
 {
-    echo -e "\nVampire Version:"
+    echo -e ",,\nVampire Version:,,"
     echo -e "$VAMPIRE_VERSION_LINES"
-    echo -e "Eye Version:"
+    echo -e "Eye Version:,,"
     echo -e "$EYE_VERSION_LINES"
 } >> "$OUTPUT_FILE"

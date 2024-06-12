@@ -5,7 +5,6 @@ source ../../../.env
 
 SEARCH_DIR="${PROJECT_PATH}rs2fol/examples/lists/examples/"
 OUTPUT_FILE="${PROJECT_PATH}rs2fol/examples/lists/examples/check_lists.csv"
-FALLBACK_FILE="default_solution.n3s.out"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -16,14 +15,12 @@ echo "file,Vampire,VAMPIRE RDF LISTS,EYE" > "$OUTPUT_FILE"
 
 find "$SEARCH_DIR" -type f -name "*.n3s" | while read -r FILE; do
     FILENAME=$(basename "$FILE")
+    OUT_FILE="${FILE}.out"
 
     echo -e -n "$FILENAME - "
 
-    TEMP_FOL_FILE_RESULT=$(mktemp)
-    TEMP_FOL_FILE_RDF=$(mktemp)
-
-    RESULT=$($RS2FOL_PATH check -i "$FILE" -e "$PATH_TO_VAMPIRE" -o "$TEMP_FOL_FILE_RESULT" -q 2>&1 | tr -d '\n')
-    RDF_LISTS_RESULT=$($RS2FOL_PATH check -i "$FILE" -e "$PATH_TO_VAMPIRE" -o "$TEMP_FOL_FILE_RDF" -r -q 2>&1 | tr -d '\n')
+    RESULT=$($RS2FOL_PATH check -i "$FILE" -e "$PATH_TO_VAMPIRE" -c "$OUT_FILE" -q 2>&1 | tr -d '\n')
+    RDF_LISTS_RESULT=$($RS2FOL_PATH check -i "$FILE" -e "$PATH_TO_VAMPIRE" -c "$OUT_FILE" -r -q 2>&1 | tr -d '\n')
 
     EYE_RESULT=$(timeout 20 eye --nope --no-bnode-relabeling --quiet "$FILE")
 
@@ -32,8 +29,9 @@ find "$SEARCH_DIR" -type f -name "*.n3s" | while read -r FILE; do
     elif [[ -z "$(echo "$EYE_RESULT" | tr -d '[:space:]')" ]]; then
         COMPARE_RESULT="false (no result)"
     else
-        OUT_CONTENT=$(cat "$TEMP_FOL_FILE_RESULT")
-        if [ "$EYE_RESULT" == "$OUT_CONTENT" ]; then
+        OUT_CONTENT=$(tr -d '[:space:]' < "$OUT_FILE")
+        EYE_RESULT_TRIMMED=$(echo "$EYE_RESULT" | tr -d '[:space:]')
+        if [ "$EYE_RESULT_TRIMMED" == "$OUT_CONTENT" ]; then
             COMPARE_RESULT="true"
         else
             COMPARE_RESULT="false"
@@ -77,9 +75,6 @@ find "$SEARCH_DIR" -type f -name "*.n3s" | while read -r FILE; do
     fi
 
     echo -e "Vampire: $RESULT_COLOR - VAMPIRE RDF LISTS: $RDF_LISTS_COLOR - EYE: $COMPARE_COLOR"
-
-    rm "$TEMP_FOL_FILE_RESULT"
-    rm "$TEMP_FOL_FILE_RDF"
 done
 
 VAMPIRE_VERSION=$("$PATH_TO_VAMPIRE" --version 2>&1)
@@ -88,12 +83,12 @@ EYE_VERSION=$(eye --version 2>&1)
 echo -e "\nVampire Version:\n$VAMPIRE_VERSION"
 echo -e "\nEye Version:\n$EYE_VERSION"
 
-VAMPIRE_VERSION_LINES=$(echo "$VAMPIRE_VERSION" | sed 's/^/,,/g')
-EYE_VERSION_LINES=$(echo "$EYE_VERSION" | sed 's/^/,,/g')
+VAMPIRE_VERSION_LINES=$(echo "$VAMPIRE_VERSION" | sed 's/^/,,,/g')
+EYE_VERSION_LINES=$(echo "$EYE_VERSION" | sed 's/^/,,,/g')
 
 {
-    echo -e "\nVampire Version:"
+    echo -e ",,,\nVampire Version:,,,"
     echo -e "$VAMPIRE_VERSION_LINES"
-    echo -e "Eye Version:"
+    echo -e "Eye Version:,,,"
     echo -e "$EYE_VERSION_LINES"
 } >> "$OUTPUT_FILE"

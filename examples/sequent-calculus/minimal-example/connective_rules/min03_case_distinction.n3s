@@ -83,8 +83,8 @@
     }.
 }.
 
-#------- Query Surface ----------
+#------- (negated) Conjecture ----------
 
-(_:X) log:onQuerySurface {
+(_:X) log:onNegativeSurface {
     _:X :is :working.
 }.

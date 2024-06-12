@@ -55,12 +55,12 @@ dishes.n3s,true,supported
 disjunction2.n3s,true,supported
 exclusive_disjunction.n3s,true,supported
 beetle6.n3s,true,supported
-
-Vampire Version:
+,,
+Vampire Version:,,
 ,,Vampire 4.7 (commit 807e37dd9 on 2022-08-23 09:55:27 +0200)
 ,,Linked with Z3 4.8.13.0 f03d756e086f81f2596157241e0decfb1c982299 z3-4.8.4-5390-gf03d756e0
-Eye Version:
+Eye Version:,,
 ,,eye --quiet --version
 ,,EYE v10.13.5 (2024-06-07)
 ,,SWI-Prolog version 9.2.5
-,,starting 36 [msec cputime] 35 [msec walltime]
+,,starting 38 [msec cputime] 37 [msec walltime]
