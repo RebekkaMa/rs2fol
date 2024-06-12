@@ -13,7 +13,7 @@ NC='\033[0m'
 
 echo "file,Vampire,EYE" > "$OUTPUT_FILE"
 
-find "$SEARCH_DIR" -type f -name "*.n3s" | while read FILE; do
+find "$SEARCH_DIR" -type f -name "*.n3s" | while read -r FILE; do
     FILENAME=$(basename "$FILE")
     echo -e -n "$FILENAME - "
     OUT_FILE="${FILE}.out"
@@ -22,24 +22,23 @@ find "$SEARCH_DIR" -type f -name "*.n3s" | while read FILE; do
         OUT_FILE="$SEARCH_DIR/$FALLBACK_FILE"
     fi
 
-
     if [ -f "$OUT_FILE" ]; then
         RESULT=$($RS2FOL_PATH check -i "$FILE" -c "$OUT_FILE" -e "$PATH_TO_VAMPIRE" -q)
 
         EYE_RESULT=$(timeout 10 eye --nope --no-bnode-relabeling --quiet "$FILE")
 
         if [[ $? -eq 124 ]]; then
-                    EYE_RESULT="timeout"
-                elif [[ -z "$(echo "$EYE_RESULT" | tr -d '[:space:]')" ]]; then
-                    COMPARE_RESULT="false (no result)"
-                else
-                    OUT_CONTENT=$(cat "$OUT_FILE")
-                    if [ "$EYE_RESULT" == "$OUT_CONTENT" ]; then
-                        COMPARE_RESULT="true"
-                    else
-                        COMPARE_RESULT="false"
-                    fi
-                fi
+            EYE_RESULT="timeout"
+        elif [[ -z "$(echo "$EYE_RESULT" | tr -d '[:space:]')" ]]; then
+            COMPARE_RESULT="false (no result)"
+        else
+            OUT_CONTENT=$(cat "$OUT_FILE")
+            if [ "$EYE_RESULT" == "$OUT_CONTENT" ]; then
+                COMPARE_RESULT="true"
+            else
+                COMPARE_RESULT="false"
+            fi
+        fi
 
         if [[ "$EYE_RESULT" == "timeout" ]]; then
             COMPARE_RESULT="timeout"
@@ -73,5 +72,12 @@ EYE_VERSION=$(eye --version 2>&1)
 echo -e "\nVampire Version:\n$VAMPIRE_VERSION"
 echo -e "\nEye Version:\n$EYE_VERSION"
 
-echo -e "\nVampire Version:\n$VAMPIRE_VERSION" >> "$OUTPUT_FILE"
-echo -e "\nEye Version:\n$EYE_VERSION" >> "$OUTPUT_FILE"
+VAMPIRE_VERSION_LINES=$(echo "$VAMPIRE_VERSION" | sed 's/^/,,/g')
+EYE_VERSION_LINES=$(echo "$EYE_VERSION" | sed 's/^/,,/g')
+
+{
+    echo -e "\nVampire Version:"
+    echo -e "$VAMPIRE_VERSION_LINES"
+    echo -e "Eye Version:"
+    echo -e "$EYE_VERSION_LINES"
+} >> "$OUTPUT_FILE"

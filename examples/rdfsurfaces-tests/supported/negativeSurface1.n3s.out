@@ -1,9 +1,0 @@
-@prefix : <urn:example:>.
-
-:Alice :sibling :Bob.
-:Bob :sibling :Charly.
-:Hans :sibling :Mary.
-:Mary :sibling :Agnes.
-:Alice :sibling :Charly.
-:Hans :sibling :Agnes.
-:test :is true.

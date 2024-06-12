@@ -1,0 +1,40 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+((:s 0) 0) :multiply 0 .
+((:s 0) 0) :add (:s 0) .
+
+# Uniqueness of lists
+## list as Subject
+(_:A _:B _:First _:Rest _:P _:O) log:onNegativeSurface {
+    () log:onNegativeComponentSurface {
+    _:B _:P _:O.
+    }.
+    _:A _:P _:O.
+
+    _:A rdf:first _:First; rdf:rest _:Rest.
+    _:B rdf:first _:First; rdf:rest _:Rest.
+}.
+
+## list as object
+(_:A _:B _:First _:Rest _:P _:S) log:onNegativeSurface {
+    () log:onNegativeComponentSurface {
+    _:S _:P _:B.
+    }.
+    _:S _:P _:A.
+
+    _:A rdf:first _:First; rdf:rest _:Rest.
+    _:B rdf:first _:First; rdf:rest _:Rest.
+}.
+
+(_:A _:B _:C _:D) log:onNegativeSurface {
+    () log:onNegativeComponentSurface {(_:A (:s _:B)) :multiply _:C}.
+    (_:A _:B) :multiply _:D.
+    (_:A _:D) :add _:C.
+}.
+
+() log:onNegativeSurface {
+    ((:s 0) (:s 0)) :multiply (:s 0) .
+    () log:onNegativeAnswerSurface {  ((:s 0) (:s 0)) :multiply (:s 0) . }  .
+} .

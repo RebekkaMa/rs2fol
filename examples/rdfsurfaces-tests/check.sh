@@ -3,9 +3,8 @@
 # Create your own .env file with the missing variables within the rs2fol file
 source ../../.env
 
-SEARCH_DIR="${PROJECT_PATH}rs2fol/examples/rdfsurfaces-tests/"
-OUTPUT_FILE="${PROJECT_PATH}rs2fol/examples/rdfsurfaces-tests/check_rdfsurfaces-tests_rdf-lists.csv"
-FALLBACK_FILE="solution.n3s.out"
+SEARCH_DIR="${PROJECT_PATH}rs2fol/examples/rdfsurfaces-tests/supported"
+OUTPUT_FILE="${PROJECT_PATH}rs2fol/examples/rdfsurfaces-tests/check_rdfsurfaces-tests.csv"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -19,34 +18,46 @@ find "$SEARCH_DIR" -type f -name "*.n3s" | while read -r FILE; do
 
     echo -e -n "$FILENAME - "
 
-    OUT_FILE="${FILE}.out"
     PARENT_FOLDER=$(basename "$(dirname "$FILE")")
 
-    if [ ! -f "$OUT_FILE" ]; then
-        OUT_FILE="$SEARCH_DIR/$FALLBACK_FILE"
-    fi
+    # Run eye command and store the result
+    EYE_RESULT=$(eye --nope --no-bnode-relabeling --quiet "$FILE")
 
-    if [ -f "$OUT_FILE" ]; then
-        RESULT=$($RS2FOL_PATH check -q -i "$FILE" -e "$PATH_TO_VAMPIRE" -c "$OUT_FILE" -r 2>&1 | tr -d '\n')
+    # Save the EYE_RESULT to a temporary file
+    TEMP_EYE_OUT=$(mktemp)
+    echo "$EYE_RESULT" > "$TEMP_EYE_OUT"
 
-        echo "$FILENAME,$RESULT,$PARENT_FOLDER" >> "$OUTPUT_FILE"
+    RESULT=$($RS2FOL_PATH check -q -i "$FILE" -e "$PATH_TO_VAMPIRE" -c "$TEMP_EYE_OUT" 2>&1 | tr -d '\n')
 
-        if [[ "$RESULT" == "true" ]]; then
-            echo -e "${GREEN}$RESULT${NC} - $PARENT_FOLDER"
-        elif [[ "$RESULT" == "false" ]]; then
-            echo -e "${RED}$RESULT${NC} - $PARENT_FOLDER"
-        elif [[ "$RESULT" == *"Error"* ]]; then
-            echo -e "${DARK_RED}$RESULT${NC} - $PARENT_FOLDER"
-        else
-            echo -e "$RESULT - $PARENT_FOLDER"
-        fi
+    echo "$FILENAME,$RESULT,$PARENT_FOLDER" >> "$OUTPUT_FILE"
+
+    if [[ "$RESULT" == "true" ]]; then
+        echo -e "${GREEN}$RESULT${NC} - $PARENT_FOLDER"
+    elif [[ "$RESULT" == "false" ]]; then
+        echo -e "${RED}$RESULT${NC} - $PARENT_FOLDER"
+    elif [[ "$RESULT" == *"Error"* ]]; then
+        echo -e "${DARK_RED}$RESULT${NC} - $PARENT_FOLDER"
     else
-        echo "Fallback file not found,$PARENT_FOLDER" >> "$OUTPUT_FILE"
-        echo -e "${RED}Fallback file not found${NC} - $PARENT_FOLDER"
+        echo -e "$RESULT - $PARENT_FOLDER"
     fi
+
+    # Remove the temporary file
+    rm "$TEMP_EYE_OUT"
+
 done
 
 VAMPIRE_VERSION=$("$PATH_TO_VAMPIRE" --version 2>&1)
+EYE_VERSION=$(eye --version 2>&1)
 
-echo -e "\nVampire Version:\n$VAMPIRE_VERSION"
-echo -e "\nVampire Version:\n$VAMPIRE_VERSION" >> "$OUTPUT_FILE"
+echo -e "\nVampire Version: $VAMPIRE_VERSION"
+echo -e "\nEye Version: $EYE_VERSION"
+
+VAMPIRE_VERSION_LINES=$(echo "$VAMPIRE_VERSION" | sed 's/^/,,/g')
+EYE_VERSION_LINES=$(echo "$EYE_VERSION" | sed 's/^/,,/g')
+
+{
+    echo -e "\nVampire Version:"
+    echo -e "$VAMPIRE_VERSION_LINES"
+    echo -e "Eye Version:"
+    echo -e "$EYE_VERSION_LINES"
+} >> "$OUTPUT_FILE"

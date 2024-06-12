@@ -1,6 +1,0 @@
-@prefix : <urn:example:>.
-
-:test :is true.
-:Alice :consumes :NasiGoreng.
-:Alice :consumes :ChickenTikkaMasala.
-:Alice :consumes :Water.

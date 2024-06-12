@@ -27,7 +27,9 @@
     } .
 }.
 
-# :Earth :is :inhabited
-(_:X) log:onQuerySurface {
-    _:X :is :inhabited .
-} .
+() log:onNegativeSurface {
+    :Earth :is :inhabited .
+    () log:onNegativeAnswerSurface {
+         :This :is :working .
+    }.
+}.

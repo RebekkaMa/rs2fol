@@ -1,3 +1,0 @@
-@prefix : <http://example.org/ns#>.
-
-((:s 0) (:s (:s 0))) :multiply (:s (:s 0)).

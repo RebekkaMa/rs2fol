@@ -30,7 +30,9 @@
     }.
 }.
 
-# :Mona :has :acrophobia .
-(_:X) log:onQuerySurface {
-    _:X :has :acrophobia .
+() log:onNegativeSurface {
+    :Mona :has :acrophobia .
+    () log:onNegativeAnswerSurface {
+        :This :is :working .
+    }.
 }.

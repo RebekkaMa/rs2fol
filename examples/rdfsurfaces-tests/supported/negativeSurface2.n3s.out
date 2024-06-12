@@ -1,6 +1,0 @@
-@prefix : <urn:example:>.
-
-:Alice :friend :Bob.
-:Bob :friend :Charly.
-:Alice :likes :Bob.
-:test :is true.

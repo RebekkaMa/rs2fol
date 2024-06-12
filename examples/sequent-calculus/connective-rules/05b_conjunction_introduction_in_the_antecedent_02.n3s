@@ -49,7 +49,9 @@
     } .
 } .
 
-# :This :is :working
-(_:X) log:onQuerySurface {
-    _:X :is :working.
+() log:onNegativeSurface {
+    :This :is :working .
+    () log:onNegativeAnswerSurface {
+         :This :is :working .
+    }.
 }.

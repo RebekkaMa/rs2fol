@@ -1,4 +1,0 @@
-@prefix : <urn:example:>.
-@prefix skolem: <https://eyereasoner.github.io/.well-known/genid/db81e34d-47f5-413c-bfbb-a3ecda78e463#>.
-
-:test :is true.
