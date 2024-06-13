@@ -49,19 +49,6 @@
     _:B rdf:first _:first; rdf:rest _:rest.
 }.
 
-## lists as objects and subjects (redundant, but makes theorem proving faster)
-(_:A _:B _:A1 _:B1 _:first _:rest _:p _:first1 _:rest1) log:onNegativeSurface {
-	() log:negativeTriple {
-		_:B1 _:p _:B.
-	}.
-	_:A1 _:p _:A.
-
-	_:A rdf:first _:first; rdf:rest _:rest.
-	_:B rdf:first _:first; rdf:rest _:rest.
-
-	_:A1 rdf:first _:first1; rdf:rest _:rest1.
-	_:B1 rdf:first _:first1; rdf:rest _:rest1.
-}.
 
 # rdf:first is functional - _:first as subject  
 (_:A _:B _:first _:first1 _:p) log:onNegativeSurface {  

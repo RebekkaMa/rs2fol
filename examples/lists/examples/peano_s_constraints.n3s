@@ -5,10 +5,35 @@
 ((:s 0) 0) :multiply 0 .
 ((:s 0) 0) :add (:s 0) .
 
+# every list exist
+(_:X) log:onNegativeSurface {
+    () log:onNegativeSurface {
+        (_:BN) log:onPositiveSurface {
+            _:BN rdf:first _:X.
+            _:BN rdf:rest rdf:nil.
+        }.
+    }.
+}.
+
+(_:L _:X) log:onNegativeSurface {
+    () log:onNegativeSurface {
+        (_:BN1 _:BN2) log:onPositiveSurface {
+            () log:onNegativeSurface {
+                  _:L rdf:rest _:BN1.
+                  () log:onNegativeSurface {
+                  _:BN2 rdf:first _:X.
+                  _:BN2 rdf:rest _:L.
+                  }.
+            }.
+        }.
+    }.
+}.
+
+
 # Uniqueness of lists
 ## list as Subject
 (_:A _:B _:First _:Rest _:P _:O) log:onNegativeSurface {
-    () log:onNegativeComponentSurface {
+    () log:onNegativeSurface {
     _:B _:P _:O.
     }.
     _:A _:P _:O.
@@ -19,13 +44,40 @@
 
 ## list as object
 (_:A _:B _:First _:Rest _:P _:S) log:onNegativeSurface {
-    () log:onNegativeComponentSurface {
+    () log:onNegativeSurface {
     _:S _:P _:B.
     }.
     _:S _:P _:A.
 
     _:A rdf:first _:First; rdf:rest _:Rest.
     _:B rdf:first _:First; rdf:rest _:Rest.
+}.
+
+# rdf:first is functional - _:First as subject
+(_:A _:B _:First _:First1 _:P) log:onNegativeSurface {
+	() log:onNegativeSurface {
+		_:First1 _:P _:B .
+	}.
+	_:First _:P _:B .
+	_:A rdf:first _:First; rdf:first _:First1.
+}.
+
+# rdf:first is functional - _:First as predicate
+(_:A _:S _:O _:First _:First1) log:onNegativeSurface {
+	() log:onNegativeSurface {
+		_:S _:First1 _:O .
+	}.
+	_:S _:First _:O .
+	_:A rdf:first _:First; rdf:first _:First1.
+}.
+
+# rdf:first is functional - _:First as object
+(_:A _:B _:First _:First1 _:P) log:onNegativeSurface {
+	() log:onNegativeSurface {
+		_:B _:P _:First1.
+	}.
+	_:B _:P _:First.
+	_:A rdf:first _:First; rdf:first _:First1.
 }.
 
 (_:A _:B _:C _:D) log:onNegativeSurface {

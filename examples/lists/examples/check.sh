@@ -19,8 +19,8 @@ find "$SEARCH_DIR" -type f -name "*.n3s" | while read -r FILE; do
 
     echo -e -n "$FILENAME - "
 
-    RESULT=$($RS2FOL_PATH check -i "$FILE" -e "$PATH_TO_VAMPIRE" -c "$OUT_FILE" -q 2>&1 | tr -d '\n')
-    RDF_LISTS_RESULT=$($RS2FOL_PATH check -i "$FILE" -e "$PATH_TO_VAMPIRE" -c "$OUT_FILE" -r -q 2>&1 | tr -d '\n')
+    RESULT=$($RS2FOL_PATH check -i "$FILE" -e "$PATH_TO_VAMPIRE" -c "$OUT_FILE" -v 1 -q 2>&1 | tr -d '\n')
+    RDF_LISTS_RESULT=$($RS2FOL_PATH check -i "$FILE" -e "$PATH_TO_VAMPIRE" -c "$OUT_FILE" -v 1 -r -q 2>&1 | tr -d '\n')
 
     EYE_RESULT=$(timeout 20 eye --nope --no-bnode-relabeling --quiet "$FILE")
 
