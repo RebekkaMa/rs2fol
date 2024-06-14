@@ -3,7 +3,13 @@ file,Vampire,EYE
 01_antecedent_rule.n3s,true,true
 08_existential_introduction_in_the_antecedent.n3s,true,true
 07_existential_introduction_in_the_consequent.n3s,true,true
-universal.n3s,true,false (no error)
+universal_5_s.n3s,false,false (no error)
+universal_1_d.n3s,true,false (no error)
+universal_3_s.n3s,true,true
+universal_2_s.n3s,true,true
+universal_4_d.n3s,true,false (no error)
+universal_6_d.n3s,true,false (no error)
+universal_8_s.n3s,true,true
 04_contradiction.n3s,true,true
 05_adjunction_introduction_in_the_antecedent.n3s,true,true
 03_case_distinction.n3s,true,true
@@ -27,6 +33,6 @@ Vampire Version:,,
 ,,Linked with Z3 4.8.13.0 f03d756e086f81f2596157241e0decfb1c982299 z3-4.8.4-5390-gf03d756e0
 Eye Version:,,
 ,,eye --quiet --version
-,,EYE v10.13.5 (2024-06-07)
+,,EYE v10.16.4 (2024-06-14)
 ,,SWI-Prolog version 9.2.5
-,,starting 36 [msec cputime] 35 [msec walltime]
+,,starting 152 [msec cputime] 148 [msec walltime]

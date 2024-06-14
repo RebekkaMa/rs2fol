@@ -1,0 +1,28 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+
+#Everything is working or working
+(_:x ) log:onNegativeSurface {
+    () log:onNegativeSurface {
+        _:x :is :working .
+    } .
+    () log:onNegativeSurface {
+    _:x :is :working .
+    } .
+}.
+
+() log:onNegativeSurface {
+   (_:x ) log:onNegativeSurface {
+        () log:onNegativeSurface {
+            _:x :is :working .
+         } .
+    }.
+
+  (_:y) log:onNegativeSurface {
+        _:y :is :happy .
+  } .
+} .
+
+(_:k) log:onNegativeSurface {
+    _:k :is :happy .
+}.
