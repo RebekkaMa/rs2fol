@@ -56,12 +56,12 @@ Following input types are possible:
     - accepts only one answer tuple list
     - Examples
       - `[['http://example.com/abc','"123"^^http://www.w3.org/2001/XMLSchema#string'],['http://example.com/abc','"123"^^http://www.w3.org/2001/XMLSchema#string']|_]`
-      - `[[list('http://example.com/abc','http://example.com/abc')]]`
+      - `[[list('http://example.com/abc',list('http://example.com/abc','http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'))]]`
 2.  `--input-type szs`
     - accepts multiline input, extracts the answer tuple list from all lines containing 'SZS answers Tuple' and combines the results (this is especially useful for the combined use of Vampire's cascade mode)
     - Examples
       - ```% SZS answers Tuple [['http://example.com/abc','"123"^^http://www.w3.org/2001/XMLSchema#string'],['http://example.com/abc','"123"^^http://www.w3.org/2001/XMLSchema#string']|_] for ANS001+1```
-      - ```% SZS answers Tuple [[list('http://example.com/abc','http://example.com/abc')]] for ANS001+1```
+      - ```% SZS answers Tuple [[list('http://example.com/abc',list('http://example.com/abc','http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'))]] for ANS001+1```
 
 
 
