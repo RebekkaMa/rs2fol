@@ -28,31 +28,21 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
 
         should("parse example with lists without exception") {
             val str =
-                "[[list('http://example.org/ns#s',list('http://example.org/ns#s',list('http://example.org/ns#s','\"0\"^^http://www.w3.org/2001/XMLSchema#integer'))),list]|_]"
+                "[[list('http://example.org/ns#s',list('http://example.org/ns#s',list('http://example.org/ns#s',list('\"0\"^^http://www.w3.org/2001/XMLSchema#integer','http://www.w3.org/1999/02/22-rdf-syntax-ns#nil')))),'http://www.w3.org/1999/02/22-rdf-syntax-ns#nil']|_]"
             TptpTupleAnswerFormTransformer.parseToEnd(str) shouldBeEqual Pair(
                 listOf(
                     listOf(
-                        Collection(
-                            listOf(
-                                IRI.from("http://example.org/ns#s"),
-                                Collection(
-                                    listOf(
-                                        IRI.from("http://example.org/ns#s"),
-                                        Collection(
-                                            listOf(
-                                                IRI.from("http://example.org/ns#s"),
-                                                DefaultLiteral.fromNonNumericLiteral(
-                                                    "0",
-                                                    IRI.from("http://www.w3.org/2001/XMLSchema#integer")
-                                                )
-                                            )
-                                        )
-                                    )
-                                )
+                        Collection.fromTerms(
+                            IRI.from("http://example.org/ns#s"),
+                            IRI.from("http://example.org/ns#s"),
+                            IRI.from("http://example.org/ns#s"),
+                            DefaultLiteral.fromNonNumericLiteral(
+                                "0",
+                                IRI.from("http://www.w3.org/2001/XMLSchema#integer")
                             )
                         ),
-                        Collection()
-                    )
+                        CollectionEnd
+                    ),
                 ),
                 listOf()
             )
@@ -72,7 +62,7 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
                             "0",
                             "en"
                         )
-                        ),
+                    ),
                     listOf(
                         IRI.from("http://example.org/ns#s"),
                         BlankNode("sK5")
@@ -111,7 +101,7 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
 
         should("parse another basic example without exception") {
             val str =
-                "[['http://example.org/ns#beetle','\"RDF/XML Syntax Specification (Revised)\"^^http://www.w3.org/2001/XMLSchema#string'],[list('http://example.org/ns#s'),'\"That Seventies Show\"@en'],['http://example.org/ns#beetle','\"http://www.w3.org/2001/XMLSchema#string\"^^http://www.w3.org/2001/XMLSchema#string']|_]"
+                "[['http://example.org/ns#beetle','\"RDF/XML Syntax Specification (Revised)\"^^http://www.w3.org/2001/XMLSchema#string'],[list('http://example.org/ns#s','http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'),'\"That Seventies Show\"@en'],['http://example.org/ns#beetle','\"http://www.w3.org/2001/XMLSchema#string\"^^http://www.w3.org/2001/XMLSchema#string']|_]"
             TptpTupleAnswerFormTransformer.parseToEnd(str) shouldBeEqual Pair(
                 listOf(
                     listOf(
@@ -122,11 +112,9 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
                         )
                     ),
                     listOf(
-                        Collection(
-                            listOf(
-                                IRI.from(
-                                    "http://example.org/ns#s"
-                                )
+                        Collection.fromTerms(
+                            IRI.from(
+                                "http://example.org/ns#s"
                             )
                         ),
                         LanguageTaggedString("That Seventies Show", "en")
@@ -145,7 +133,7 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
 
         should("throw an exception") {
             val str =
-                "[['http://example.org/ns#beetle','RDF/XML Syntax Specification (Revised)'],[list('http://example.org/ns#s'),'\"That Seventies Show\"@en']|_]"
+                "[['http://example.org/ns#beetle','RDF/XML Syntax Specification (Revised)'],[list('http://example.org/ns#s','http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'),'\"That Seventies Show\"@en']|_]"
 
             shouldThrow<NotSupportedException> {
                 TptpTupleAnswerFormTransformer.parseToEnd(str)

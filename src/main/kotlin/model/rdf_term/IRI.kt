@@ -6,7 +6,7 @@ data class IRI(
     val path: String,
     val query: String? = null,
     val fragment: String? = null,
-) : RdfTerm() {
+) : RdfTerm {
 
     val iri: String = componentRecomposition(
         scheme,

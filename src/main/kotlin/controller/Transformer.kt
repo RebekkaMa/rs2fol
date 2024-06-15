@@ -87,11 +87,10 @@ class Transformer {
             is BlankNode -> transform(rdfTerm)
             is Literal -> transform(rdfTerm)
             is IRI -> transform(rdfTerm)
-            is Collection -> rdfTerm.list.joinToString(
-                prefix = "(",
-                separator = " ",
-                postfix = ")"
-            ) { transform(it) }
+            is Collection -> when (rdfTerm) {
+                is CollectionPair -> "(${transform(rdfTerm.left)} ${transform(rdfTerm.right)})"
+                is CollectionEnd -> transform(IRI.from(IRIConstants.RDF_NIL_IRI))
+            }
         }
 
         fun transform(hayesGraphElement: HayesGraphElement, depth: Int): String {
@@ -181,8 +180,12 @@ class Transformer {
             is BlankNode -> transform(rdfTerm)
             is Literal -> transform(rdfTerm)
             is IRI -> transform(rdfTerm)
-            is Collection -> "list".takeIf { rdfTerm.list.isEmpty() }
-                ?: ("list(" + rdfTerm.list.joinToString(",") { transform(it) } + ")")
+            is Collection -> when (rdfTerm) {
+                is CollectionPair -> {
+                    "list(${transform(rdfTerm.left)},${transform(rdfTerm.right)})"
+                }
+                is CollectionEnd -> transform(IRI.from(IRIConstants.RDF_NIL_IRI))
+            }
         }
 
         fun transform(blankNodeList: List<BlankNode>) = blankNodeList.joinToString(separator = ",") { transform(it) }

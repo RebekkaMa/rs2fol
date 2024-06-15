@@ -196,7 +196,9 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
                     return@foldIndexed nextRestBlankNode
                 }
             }
-        } else (Collection(this))
+        } else {
+            Collection.fromTerms(*this.toTypedArray())
+        }
     }
 
     private val subject by iri or blankNode.map { varSet.add(it); it } or literal or collection
@@ -294,7 +296,13 @@ class RDFSurfacesParser(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
                 IRIConstants.LOG_QUESTION_SURFACE_IRI -> this.add(QuestionSurface(graffiti, hayeGraph))
                 IRIConstants.LOG_ANSWER_SURFACE_IRI -> this.add(AnswerSurface(graffiti, hayeGraph))
                 IRIConstants.LOG_NEGATIVE_ANSWER_SURFACE_IRI -> this.add(NegativeAnswerSurface(graffiti, hayeGraph))
-                IRIConstants.LOG_NEGATIVE_COMPONENT_SURFACE_IRI -> this.add(NegativeComponentSurface(graffiti, hayeGraph))
+                IRIConstants.LOG_NEGATIVE_COMPONENT_SURFACE_IRI -> this.add(
+                    NegativeComponentSurface(
+                        graffiti,
+                        hayeGraph
+                    )
+                )
+
                 else -> throw NotSupportedException(message = "Surface type '${surface.iri}' is not supported")
             }
         }

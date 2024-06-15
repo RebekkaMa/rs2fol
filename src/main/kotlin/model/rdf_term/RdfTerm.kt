@@ -1,4 +1,4 @@
 package model.rdf_term
 
-sealed class RdfTerm
+sealed interface RdfTerm
 

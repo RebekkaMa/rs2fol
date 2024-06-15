@@ -1,7 +1,6 @@
 package model
 
-import model.rdf_term.BlankNode
-import model.rdf_term.RdfTerm
+import model.rdf_term.*
 import model.rdf_term.Collection
 
 
@@ -36,13 +35,18 @@ sealed class QSurface(override val graffiti: List<BlankNode>, override val hayes
     fun replaceBlankNodes(map: Map<BlankNode, RdfTerm>, rdfSurface: RdfSurface): RdfSurface {
 
         fun replaceBlankNodes(collection: Collection, map: Map<BlankNode, RdfTerm>): Collection {
-            return Collection(collection.map {
-                when (it) {
-                    is BlankNode -> map[it] ?: it
-                    is Collection -> replaceBlankNodes(it, map)
-                    else -> it
+            return when (collection) {
+                is CollectionPair -> {
+                   val left = when (collection.left) {
+                       is BlankNode -> map[collection.left] ?: collection.left
+                       is Collection -> replaceBlankNodes(collection.left, map)
+                       else -> collection.left
+                   }
+                   val right = replaceBlankNodes(collection.right, map)
+                    collection.copy(left = left, right = right)
                 }
-            })
+                is CollectionEnd -> collection
+            }
         }
 
         val hayesGraph = rdfSurface.hayesGraph.map { hayesGraphElement ->

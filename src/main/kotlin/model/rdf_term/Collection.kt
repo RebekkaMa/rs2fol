@@ -1,5 +1,17 @@
 package model.rdf_term
 
-data class Collection(val list: List<RdfTerm> = listOf()) :
-    RdfTerm(),
-    List<RdfTerm> by list
+sealed interface Collection : RdfTerm {
+    companion object {
+        fun fromTerms(vararg terms: RdfTerm): Collection {
+            return terms.foldRight<RdfTerm, Collection>(initial = CollectionEnd){ left, right ->
+                CollectionPair(
+                        left,
+                        right
+                )
+            }
+        }
+    }
+}
+
+data class CollectionPair(val left: RdfTerm, val right: Collection) : Collection
+data object CollectionEnd : Collection

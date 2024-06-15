@@ -89,8 +89,7 @@ class TransformerTest
                 val literal4 = DefaultLiteral(3E1, XSDDatatype.XSDdouble)
 
 
-                val collection1 =
-                    Collection(listOf(literal2, literal3, literal4))
+                val collection1 = Collection.fromTerms(literal2,literal3,literal4)
 
                 val rdfTriple1 = RdfTriple(collection1, iri1, literal1)
 
@@ -98,7 +97,7 @@ class TransformerTest
                     PositiveSurface(
                         listOf(), listOf(rdfTriple1)
                     )
-                ).replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
+                ).replace("\\s+".toRegex(), "") shouldBeEqualComparingTo solutionFile.readText().replace("\\s+".toRegex(), "")
             }
 
             context("blogic") {

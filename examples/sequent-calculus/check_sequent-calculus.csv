@@ -35,4 +35,4 @@ Eye Version:,,
 ,,eye --quiet --version
 ,,EYE v10.16.4 (2024-06-14)
 ,,SWI-Prolog version 9.2.5
-,,starting 152 [msec cputime] 148 [msec walltime]
+,,starting 38 [msec cputime] 37 [msec walltime]

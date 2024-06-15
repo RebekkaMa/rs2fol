@@ -54,13 +54,18 @@ object TptpTupleAnswerFormTransformer :
                 )
             )
 
-            atomicWord.text.startsWith("list") -> Collection(arguments)
+            atomicWord.text.startsWith("list") -> {
+                if (arguments.size != 2) throw NotSupportedException("A list can only have two arguments")
+                val left = arguments[0]
+                val right = arguments[1] as? Collection ?: throw NotSupportedException("Malformed list input")
+                CollectionPair(left, right)
+            }
             else -> throw NotSupportedException("Function/Predicate Symbol of TPTP tuple answer not supported")
         }
     } or atomicWord.map { atomicWord ->
         return@map when {
             atomicWord.text.startsWith("sK") -> BlankNode(atomicWord.text)
-            atomicWord.text.startsWith("list") -> Collection(emptyList())
+            atomicWord.text.startsWith("'http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'") -> CollectionEnd
             else -> {
                 getLiteralFromStringOrNull(atomicWord.text)
                     ?: getLangLiteralFromStringOrNull(atomicWord.text)

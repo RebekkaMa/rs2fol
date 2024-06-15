@@ -6,7 +6,7 @@ import org.apache.jena.datatypes.xsd.XSDDatatype.*
 import model.rdf_term.IRI.Companion.from
 import util.IRIConstants
 
-sealed class Literal : RdfTerm() {
+sealed class Literal : RdfTerm {
     abstract val literalValue: Any
     abstract val datatype: BaseDatatype
 

@@ -55,8 +55,8 @@ This way of quantification of all these variables is not implemented yet. They a
   - IRIs
     - ```'http://example.com/abc'```
   - Collections
-    - ```list```
-    - ```list('http://example.com/abc','http://example.com/efg')```
+    - ```'http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'```
+    - ```list('http://example.com/abc','http://example.com/efg', list('http://example.com/abc','http://example.com/b','http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'))```
   - Blank Nodes / Variables
     - ```BN_1```
     - ```Var```
