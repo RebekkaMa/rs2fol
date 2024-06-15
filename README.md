@@ -2,9 +2,21 @@
 
 This repository is a tool for RDF surface reasoning using FOL theorem provers.
 
-For my tests and sample data, I used [EYE](https://github.com/eyereasoner/eye/tree/blogic) and [EYE's Blogic examples](https://github.com/eyereasoner/eye/tree/b81e05163e21e93e9fc0ab27c369af7f98a16658/reasoning/blogic).
+For my tests and sample data, I used [EYE](https://github.com/eyereasoner/eye) and [EYE's RDF Surfaces examples](https://github.com/eyereasoner/rdfsurfaces-tests).
+
+## Executables
+
+Every release contains executables of the project for
+
+- Windows
+- MacOS
+- Linux
+
+You can find these executables in the release section.
 
 ## Source Build
+
+If you want to build the project for yourself, you have to do the following steps (conducted on linux):
 
 1. Build [Vampire](https://github.com/vprover/vampire) 
    - This is necessary if you want to use the Vampire dependent subcommands `check` and `transform-qa`
@@ -22,7 +34,19 @@ For my tests and sample data, I used [EYE](https://github.com/eyereasoner/eye/tr
 
 ## Some notes to some subcommands
 
-### qa-answer-to-rs
+### check
+
+This subcommand performs the following steps:
+1. transforms the given RDF surface into a FOL formula without the query surface 
+2. transforms the consequence into a FOL formula
+3. negates the consequence FOL formula
+4. combines the consequence FOL formula and the RDF surface FOL formula
+5. starts a Vampire process and passes the result of step 4 for satisfiability checking
+6. receives the output of the Vampire process and returns its result (true (unsat) or false (sat))
+   - **true** -> the entered consequence is indeed a consequence of the RDF surface
+   - **false** -> the entered consequence is not a consequence of the RDF surface
+
+### qa-answer-to-rs (experimental)
 
 This subcommand transforms a FOL question answering result into an RDF surface by replacing all blank nodes that are coreferences to the blank node graffiti defined on the given query surface.
 
@@ -56,26 +80,12 @@ This way of quantification of all these variables is not implemented yet. They a
     - ```'http://example.com/abc'```
   - Collections
     - ```'http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'```
-    - ```list('http://example.com/abc','http://example.com/efg', list('http://example.com/abc','http://example.com/b','http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'))```
+    - ```list('http://example.com/abc',list('http://example.com/efg', list('http://example.com/abc',list('http://example.com/b','http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'))))```
   - Blank Nodes / Variables
     - ```BN_1```
     - ```Var```
 
-
-### check
-
-This subcommand performs the following steps:
-1. transforms the given RDF surface into a FOL formula without the query surface 
-2. transforms the consequence into a FOL formula
-3. negates the consequence FOL formula
-4. combines the consequence FOL formula and the RDF surface FOL formula
-5. starts a Vampire process and passes the result of step 4 for satisfiability checking
-6. receives the output of the Vampire process and returns its result (true (unsat) or false (sat))
-   - **true** -> the entered consequence is indeed a consequence of the RDF surface
-   - **false** -> the entered consequence is not a consequence of the RDF surface
-
-
-### transform-qa
+### transform-qa (experimental)
 
 This subcommand performs the following steps:
 1. transforms the given RDF surface into a FOL formula
