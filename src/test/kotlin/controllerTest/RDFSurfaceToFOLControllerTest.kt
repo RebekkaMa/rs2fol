@@ -4,7 +4,7 @@ import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import interface_adapters.services.parsing.RDFSurfaceParseService
 import domain.entities.rdf_term.IRI
-import domain.error.getOrNull
+import domain.error.getSuccessOrNull
 import domain.use_cases.transform.RdfSurfaceModelToFolUseCase
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldNotBe
@@ -24,8 +24,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            ).getOrNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            ).getSuccessOrNull()
             result shouldNotBe null
             result!!.replace(
                 "\\s".toRegex(),
@@ -39,8 +39,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull()
 
             result!!.replace(
                 "\\s".toRegex(),
@@ -54,8 +54,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull()
             result shouldNotBe null
             result!!.replace(
                 "\\s".toRegex(),
@@ -69,8 +69,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull()
             result shouldNotBe null
 
             result!!.replace(
@@ -85,8 +85,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull()
             result shouldNotBe null
 
             result!!.replace(
@@ -101,8 +101,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull()
             result shouldNotBe null
 
             result!!.replace(
@@ -117,8 +117,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull()
             result shouldNotBe null
 
             result!!.replace(
@@ -133,8 +133,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull()
             result!!.replace(
                 "\\s".toRegex(),
                 ""
@@ -147,8 +147,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull()
             result.shouldNotBeNull().replace(
                 "\\s".toRegex(),
                 ""
@@ -161,8 +161,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull().shouldNotBeNull()
             result.replace(
                 "\\s".toRegex(),
                 ""
@@ -175,8 +175,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull().shouldNotBeNull()
 
             result.replace(
                 "\\s".toRegex(),
@@ -190,8 +190,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull()
 
             result!!.replace(
                 "\\s".toRegex(),
@@ -205,8 +205,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull().shouldNotBeNull()
             result.replace(
                 "\\s".toRegex(),
                 ""
@@ -219,8 +219,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull().shouldNotBeNull()
             result.replace(
                 "\\s".toRegex(),
                 ""
@@ -244,8 +244,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull().shouldNotBeNull()
             result.replace(
                 "\\s".toRegex(),
                 ""
@@ -268,8 +268,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull().shouldNotBeNull()
             result.replace(
                 "\\s".toRegex(),
                 ""
@@ -282,8 +282,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull().shouldNotBeNull()
             result.replace(
                 "\\s".toRegex(),
                 ""
@@ -296,8 +296,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull().shouldNotBeNull()
             result.replace(
                 "\\s".toRegex(),
                 ""
@@ -312,8 +312,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull().shouldNotBeNull() shouldBeEqualComparingTo solutionFile.readText()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull().shouldNotBeNull() shouldBeEqualComparingTo solutionFile.readText()
         }
         should("transform example23.n3 without exception") {
             val file = Path("src/test/resources/turtle/example23.n3")
@@ -323,8 +323,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull().shouldNotBeNull()
             result.replace(
                 "\\s".toRegex(),
                 ""
@@ -337,8 +337,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull().shouldNotBeNull()
             result.replace(
                 "\\s".toRegex(),
                 ""
@@ -352,8 +352,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull()
             result shouldNotBe null
 
             result!!.replace(
@@ -369,8 +369,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull()
-            )).getOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull()
+            )).getSuccessOrNull().shouldNotBeNull()
             result.replace(
                 "\\s".toRegex(),
                 ""
@@ -387,8 +387,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                     rdfSurfaceParseService.parseToEnd(
                         file.readText(),
                         IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                    ).getOrNull().shouldNotBeNull()
-                ).getOrNull().shouldNotBeNull()
+                    ).getSuccessOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull()
                 result.replace("\\s+".toRegex(), "") shouldBeEqualComparingTo solutionFile.readText()
                     .replace("\\s+".toRegex(), "")
             }
@@ -400,8 +400,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                     rdfSurfaceParseService.parseToEnd(
                         file.readText(),
                         IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                    ).getOrNull().shouldNotBeNull()
-                ).getOrNull().shouldNotBeNull()
+                    ).getSuccessOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull()
                     .replace("\\s+".toRegex(), "") shouldBeEqualComparingTo solutionFile.readText()
                     .replace("\\s+".toRegex(), "")
             }
@@ -414,8 +414,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                     rdfSurfaceParseService.parseToEnd(
                         file.readText(),
                         IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                    ).getOrNull().shouldNotBeNull()
-                )).getOrNull()
+                    ).getSuccessOrNull().shouldNotBeNull()
+                )).getSuccessOrNull()
                 result shouldNotBe null
                 result!!.replace(
                     "\\s".toRegex(),
@@ -429,8 +429,8 @@ class RDFSurfaceToFOLControllerTest : ShouldSpec(
                     RDFSurfaceParseService(useRDFLists = true).parseToEnd(
                         file.readText(),
                         IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                    ).getOrNull().shouldNotBeNull()
-                ).getOrNull().shouldNotBeNull().replace(
+                    ).getSuccessOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull().replace(
                     "\\s".toRegex(),
                     ""
                 ) shouldBeEqualComparingTo solutionFile.readText().replace("\\s".toRegex(), "")

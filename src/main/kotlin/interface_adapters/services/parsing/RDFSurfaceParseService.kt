@@ -205,8 +205,9 @@ class RDFSurfaceParseService(val useRDFLists: Boolean) : Grammar<PositiveSurface
             IRIConstants.LOG_NEGATIVE_SURFACE_IRI,
             IRIConstants.LOG_NEUTRAL_SURFACE_IRI,
             IRIConstants.LOG_QUESTION_SURFACE_IRI,
-            IRIConstants.LOG_ANSWER_SURFACE_IRI -> throw ParseException(InvalidSyntax())
-
+            IRIConstants.LOG_ANSWER_SURFACE_IRI,
+            IRIConstants.LOG_NEGATIVE_COMPONENT_SURFACE_IRI,
+            IRIConstants.LOG_NEGATIVE_ANSWER_SURFACE_IRI -> throw ParseException(InvalidSyntax())
             else -> it
         }
     } or blankNode.map { varSet.add(it); it } or literal
@@ -288,6 +289,8 @@ class RDFSurfaceParseService(val useRDFLists: Boolean) : Grammar<PositiveSurface
                 IRIConstants.LOG_NEUTRAL_SURFACE_IRI -> this.add(NeutralSurface(graffiti, hayesGraph))
                 IRIConstants.LOG_QUESTION_SURFACE_IRI -> this.add(QuestionSurface(graffiti, hayesGraph))
                 IRIConstants.LOG_ANSWER_SURFACE_IRI -> this.add(AnswerSurface(graffiti, hayesGraph))
+                IRIConstants.LOG_NEGATIVE_ANSWER_SURFACE_IRI -> this.add(NegativeAnswerSurface(graffiti, hayesGraph))
+                IRIConstants.LOG_NEGATIVE_COMPONENT_SURFACE_IRI -> this.add(NegativeComponentSurface(graffiti, hayesGraph))
                 else -> throw SurfaceNotSupportedException(surface = surface.iri)
             }
         }

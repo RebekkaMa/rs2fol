@@ -5,7 +5,7 @@ import domain.entities.PositiveSurface
 import domain.entities.QuerySurface
 import domain.entities.RdfTriple
 import domain.entities.rdf_term.*
-import domain.error.getOrNull
+import domain.error.getSuccessOrNull
 import domain.use_cases.transform.RdfSurfaceModelToFolUseCase
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
@@ -33,7 +33,7 @@ class TransformerTest
                         listOf(),
                         listOf(rdfTriple)
                     )
-                ).getOrNull()
+                ).getSuccessOrNull()
                 result shouldNotBe null
                 result!!.replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
 
@@ -75,7 +75,7 @@ class TransformerTest
                         listOf(),
                         listOf(rdfTriple1, rdfTriple2, rdfTriple3, rdfTriple4, rdfTriple5, rdfTriple6, rdfTriple7)
                     )
-                ).getOrNull()
+                ).getSuccessOrNull()
                 result shouldNotBe null
                 result!!.replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
             }
@@ -104,7 +104,7 @@ class TransformerTest
                     PositiveSurface(
                         listOf(), listOf(rdfTriple1)
                     )
-                ).getOrNull()
+                ).getSuccessOrNull()
                 result shouldNotBe null
                 result!!.replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
             }
@@ -141,7 +141,7 @@ class TransformerTest
                             listOf(),
                             listOf(rdfTriple1, negativeSurface1, negativeSurface2, querySurface)
                         )
-                    ).getOrNull()
+                    ).getSuccessOrNull()
                     result shouldNotBe null
                     result!!.replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
 
@@ -190,7 +190,7 @@ class TransformerTest
                             listOf(),
                             listOf(rdfTriple1, negativeSurface1, negativeSurface2, negativeSurface3, querySurface)
                         )
-                    ).getOrNull()
+                    ).getSuccessOrNull()
                     result shouldNotBe null
                     result!!.replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
 

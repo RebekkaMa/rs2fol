@@ -20,6 +20,6 @@ object FileService {
         runCatching {
             path.parent?.createDirectories()
             if (path.exists().not()) path.createFile()
-            SolutionToStringTransformer().transform(content)?.let { path.writeText(it) }
+            SolutionToStringTransformer(content)?.let { path.writeText(it) }
         }.isSuccess
 }

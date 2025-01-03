@@ -1,9 +1,6 @@
 package interface_adapters.cli.subcommands
 
-import com.github.ajalt.clikt.core.BadParameterValue
-import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.CliktError
-import com.github.ajalt.clikt.core.ProgramResult
+import com.github.ajalt.clikt.core.*
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
@@ -18,10 +15,12 @@ import interface_adapters.outputtransformer.SolutionToStringTransformer
 import workingDir
 import kotlin.io.path.*
 
-class Rewrite : CliktCommand(help = "Parses and returns an RDF surface using a sublanguage of Notation 3") {
+class Rewrite : CliktCommand() {
     private val commonOptions by CommonOptions()
     private val input by option("--input", "-i", help = "Get RDF surface from <path>").path().default(Path("-"))
     private val output by option("--output", "-o", help = "Write output to <path>").path().default(Path("-"))
+
+    override fun help(context: Context) = "Parses and returns an RDF surface using a sublanguage of Notation 3"
 
     override fun run() {
 
@@ -55,10 +54,10 @@ class Rewrite : CliktCommand(help = "Parses and returns an RDF surface using a s
 
             result.fold(
                 onSuccess = {
-                    echo(SolutionToStringTransformer().transform(it))
+                    echo(SolutionToStringTransformer(it))
                 },
                 onFailure = {
-                    echo(ErrorToStringTransformer().transform(it), err = true)
+                    echo(ErrorToStringTransformer(it), err = true)
                 }
             )
 

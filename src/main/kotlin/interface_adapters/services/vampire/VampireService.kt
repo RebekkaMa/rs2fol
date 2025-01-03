@@ -5,7 +5,7 @@ import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 
-object StartVampireService {
+object VampireService {
 
     operator fun invoke(
         vampirePrompt: String,
@@ -47,7 +47,7 @@ object StartVampireService {
                 "$vampireExec -sa discount -awr 2 -s 1 -add large -afr on -afp 1000 -afq 2.0 -anc none -gsp on -lcm predicate -nm 64 -newcnf on -nwc 5 -sac on -urr ec_only -updr off --output_mode smtcomp -t ${timeLimit + 5}s"
             }
 
-        return StartVampireService(
+        return VampireService(
             vampirePrompt = vampirePrompt,
             timeLimit = timeLimit,
             input = folAtom + System.lineSeparator() + folConjecture
@@ -66,7 +66,7 @@ object StartVampireService {
                 "$vampireExec -av off -sa discount -s 1 -add large -afp 4000 -afq 1.0 -anc none -gs on -gsem off -inw on -lcm reverse -lwlo on -nm 64 -nwc 1 -sas z3 -sos all -sac on -thi all -uwa all -updr off -uhcvi on -to lpo -qa answer_literal -om smtcomp -t ${timeLimit + 5}s"
             }
 
-        return StartVampireService(
+        return VampireService(
             vampirePrompt = vampirePrompt,
             timeLimit = timeLimit,
             input = input

@@ -76,6 +76,8 @@ sealed class QSurface(override val graffiti: List<BlankNode>, override val hayes
             is NegativeTripleSurface -> NegativeTripleSurface(rdfSurface.graffiti, hayesGraph)
             is QuestionSurface -> QuestionSurface(rdfSurface.graffiti, hayesGraph)
             is AnswerSurface -> AnswerSurface(rdfSurface.graffiti, hayesGraph)
+            is NegativeComponentSurface -> NegativeComponentSurface(rdfSurface.graffiti, hayesGraph)
+            is NegativeAnswerSurface -> NegativeAnswerSurface(rdfSurface.graffiti, hayesGraph)
         }
     }
 
@@ -83,7 +85,7 @@ sealed class QSurface(override val graffiti: List<BlankNode>, override val hayes
 
 }
 
-data class PositiveSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
+data class PositiveSurface(override val graffiti: List<BlankNode> = emptyList(), override val hayesGraph: List<HayesGraphElement> = emptyList()) :
     RdfSurface() {
 
     fun getQSurfaces(): List<QSurface> = hayesGraph.filterIsInstance<QSurface>()
@@ -170,4 +172,10 @@ data class QuestionSurface(override val graffiti: List<BlankNode>, override val 
 }
 
 data class AnswerSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
+    RdfSurface()
+
+data class NegativeAnswerSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
+    RdfSurface()
+
+data class NegativeComponentSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
     RdfSurface()

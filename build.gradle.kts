@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.9.23"
+    kotlin("jvm") version "2.0.21"
     application
 }
 
@@ -11,11 +11,11 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.ajalt.clikt:clikt:4.3.0")
+    implementation("com.github.ajalt.clikt:clikt:5.0.1")
     implementation("com.github.h0tk3y.betterParse:better-parse:0.4.4")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0-RC")
-    implementation("io.github.microutils:kotlin-logging-jvm:4.0.0-beta-2")
-    implementation(group = "ch.qos.logback", name = "logback-classic", version = "1.5.6")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
+    implementation(group = "ch.qos.logback", name = "logback-classic", version = "1.5.15")
     implementation("org.glassfish.jaxb:jaxb-runtime:4.0.5")
     implementation("org.apache.jena:jena-core:5.0.0")
     testImplementation(kotlin("test"))

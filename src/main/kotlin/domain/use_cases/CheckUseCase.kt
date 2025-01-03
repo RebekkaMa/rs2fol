@@ -5,7 +5,7 @@ import domain.error.*
 import domain.use_cases.transform.RdfSurfaceModelToFolUseCase
 import interface_adapters.services.FileService
 import interface_adapters.services.parsing.RDFSurfaceParseService
-import interface_adapters.services.vampire.StartVampireService
+import interface_adapters.services.vampire.VampireService
 import java.nio.file.Path
 
 object CheckUseCase {
@@ -48,7 +48,7 @@ object CheckUseCase {
             )
         }
 
-        val vampireResult = StartVampireService.startForConsequenceChecking(
+        val vampireResult = VampireService.startForConsequenceChecking(
             folConjecture = consequentFol,
             folAtom = antecedentFol,
             timeLimit = reasoningTimeLimit,

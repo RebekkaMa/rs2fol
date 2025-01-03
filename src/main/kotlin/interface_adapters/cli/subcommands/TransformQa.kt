@@ -1,9 +1,6 @@
 package interface_adapters.cli.subcommands
 
-import com.github.ajalt.clikt.core.BadParameterValue
-import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.CliktError
-import com.github.ajalt.clikt.core.ProgramResult
+import com.github.ajalt.clikt.core.*
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.choice
@@ -21,7 +18,7 @@ import workingDir
 import kotlin.io.path.*
 
 class TransformQa :
-    CliktCommand(help = "Transforms an RDF surface to FOL and returns the results of the Vampire question answering feature as an RDF surface") {
+    CliktCommand() {
     private val commonOptions by CommonOptions()
     private val input by option(
         "--input", "-i",
@@ -45,6 +42,7 @@ class TransformQa :
     private val timeLimit by option("--time-limit", "-t", help = "Time limit in seconds").long().default(120)
         .validate { it > 0 }
 
+    override fun help(context: Context) = "Transforms an RDF surface to FOL and returns the results of the Vampire question answering feature as an RDF surface"
 
     override fun run() {
         try {
@@ -88,10 +86,10 @@ class TransformQa :
 
             useCaseResult.fold(
                 onSuccess = {
-                    echo(SolutionToStringTransformer().transform(it))
+                    echo(SolutionToStringTransformer(it))
                 },
                 onFailure = {
-                    echo(ErrorToStringTransformer().transform(it), err = true)
+                    echo(ErrorToStringTransformer(it), err = true)
                 }
             )
 

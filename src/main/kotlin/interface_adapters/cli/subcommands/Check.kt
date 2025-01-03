@@ -1,9 +1,6 @@
 package interface_adapters.cli.subcommands
 
-import com.github.ajalt.clikt.core.BadParameterValue
-import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.CliktError
-import com.github.ajalt.clikt.core.ProgramResult
+import com.github.ajalt.clikt.core.*
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.choice
@@ -21,18 +18,19 @@ import workingDir
 import java.nio.file.Path
 import kotlin.io.path.*
 
-class Check :
-    CliktCommand(help = "Checks whether an RDF surface (--consequence) is a logical consequence of another RDF surface (--input) using the FOL-based Vampire theorem prover") {
+class Check : CliktCommand() {
     private val commonOptions by CommonOptions()
 
     private val input by option(
-        "--input", "-i",
+        "--input",
+        "-i",
         help = "Get RDF surface from <path>"
     ).path().default(Path("-"))
 
     private val consequence by option(
-        "--consequence", "-c",
-        help = "Path to the consequence (given as RDF surface) (default: <input-parent>/out/<input-name>)"
+        "--consequence",
+        "-c",
+        help = "Path to the consequence (given as RDF surface) (default: <input>.out)"
     ).path()
 
     private val vampireExec by option(
@@ -40,8 +38,10 @@ class Check :
         "-e",
         help = "Path to the Vampire executable"
     ).path(mustExist = true).required()
+
     private val quiet by option("--quiet", "-q", help = "Display less output")
         .flag(default = false)
+
     private val output by option(
         "--output",
         "-o",
@@ -57,6 +57,8 @@ class Check :
         .long()
         .default(120)
         .validate { it > 0 }
+
+    override fun help(context: Context) = "Checks whether an RDF surface (--consequence) is a logical consequence of another RDF surface (--input) using the FOL-based Vampire theorem prover"
 
     override fun run() {
         try {
@@ -107,8 +109,7 @@ class Check :
 
                 else -> {
                     computedConsequence = when {
-                        consequence == null -> Path(input.parent.pathString + "/out/" + input.name).takeIf { it.exists() }
-                            ?: Path(input.pathString + ".out").takeIf { it.exists() }
+                        consequence == null -> Path(input.pathString + ".out").takeIf { it.exists() }
                             ?: throw BadParameterValue(
                                 currentContext.localization.pathDoesNotExist(
                                     "file",
@@ -138,7 +139,7 @@ class Check :
             val rdfSurface = inputStream.bufferedReader().use { it.readText() }
             val rdfSurfaceConsequence = computedConsequence.readText()
 
-            val result = CheckUseCase.invoke(
+            val result = CheckUseCase(
                 antecedent = rdfSurface,
                 consequent = rdfSurfaceConsequence,
                 rdfList = commonOptions.rdfList,
@@ -151,10 +152,10 @@ class Check :
 
             result?.fold(
                 onSuccess = {
-                    echo(SolutionToStringTransformer().transform(it))
+                    echo(SolutionToStringTransformer(it))
                 },
                 onFailure = {
-                    echo(ErrorToStringTransformer().transform(it), err = true)
+                    echo(ErrorToStringTransformer(it), err = true)
                 }
             )
 

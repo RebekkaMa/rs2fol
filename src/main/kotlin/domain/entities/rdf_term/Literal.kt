@@ -92,21 +92,21 @@ data class DefaultLiteral(override val literalValue: Any, override val datatype:
                     "E",
                     ignoreCase = true
                 ) -> fromNonNumericLiteral(
-                    numericLiteral,
-                    from(IRIConstants.XSD_DOUBLE)
+                    lexicalForm = numericLiteral,
+                    datatypeIRI = from(IRIConstants.XSD_DOUBLE)
                 )
 
                 numericLiteral.contains(
                     ".",
                     ignoreCase = true
                 ) -> fromNonNumericLiteral(
-                    numericLiteral,
-                    from(IRIConstants.XSD_DECIMAL)
+                    lexicalForm = numericLiteral,
+                    datatypeIRI = from(IRIConstants.XSD_DECIMAL)
                 )
 
                 else -> fromNonNumericLiteral(
-                    numericLiteral,
-                    from(IRIConstants.XSD_INTEGER)
+                    lexicalForm = numericLiteral,
+                    datatypeIRI = from(IRIConstants.XSD_INTEGER)
                 )
             }
 

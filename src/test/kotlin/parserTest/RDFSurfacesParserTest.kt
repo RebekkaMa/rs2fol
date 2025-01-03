@@ -6,16 +6,16 @@ import domain.entities.QuerySurface
 import domain.entities.RdfTriple
 import domain.entities.rdf_term.*
 import domain.entities.rdf_term.Collection
-import domain.error.getOrNull
-import io.kotest.assertions.throwables.shouldThrow
+import domain.error.getErrorOrNull
+import domain.error.getSuccessOrNull
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import interface_adapters.services.parsing.RDFSurfaceParseService
-import io.kotest.assertions.asClue
+import interface_adapters.services.parsing.RdfSurfaceParserError
 import io.kotest.matchers.nulls.shouldNotBeNull
-import org.apache.jena.iri.impl.Force.should
+import io.kotest.matchers.shouldBe
 import util.IRIConstants
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
@@ -37,7 +37,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple)
                 )
@@ -58,7 +58,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2)
                 )
@@ -79,7 +79,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2)
                 )
@@ -99,7 +99,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2)
                 )
@@ -119,7 +119,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2)
                 )
@@ -136,7 +136,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1)
                 )
@@ -154,7 +154,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1)
                 )
@@ -198,7 +198,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(
                         rdfTriple1,
@@ -230,7 +230,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2)
                 )
@@ -269,7 +269,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2, rdfTriple3, rdfTriple4, rdfTriple5, rdfTriple6, rdfTriple7)
                 )
@@ -296,7 +296,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2, rdfTriple3)
                 )
@@ -315,7 +315,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1)
                 )
@@ -336,7 +336,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(
                         bn1,
                         bn2
@@ -363,7 +363,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(
                         bn1,
                         bn2
@@ -400,7 +400,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(
                         bn1,
                         bn2,
@@ -437,7 +437,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(
                         bn1,
                         bn2,
@@ -463,7 +463,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(), listOf(rdfTriple1)
                 )
 
@@ -494,7 +494,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(bn1, bn2), listOf(rdfTriple1, rdfTriple2, rdfTriple3, rdfTriple4, rdfTriple5)
                 )
             }
@@ -515,7 +515,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(), listOf(rdfTriple1, rdfTriple1)
                 )
             }
@@ -541,7 +541,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(), listOf(rdfTriple1)
                 )
             }
@@ -576,7 +576,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(bn0, bn1, bn2),
                     listOf(rdfTriple1, rdfTriple2, rdfTriple3, rdfTriple4, rdfTriple5, rdfTriple6, rdfTriple7)
                 )
@@ -604,7 +604,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(bn0),
                     listOf(rdfTriple1, rdfTriple2)
                 )
@@ -644,7 +644,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(bn0, bn1, bn2, bn3, bn4),
                     listOf(
                         rdfTriple1,
@@ -692,7 +692,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, negativeSurface1, negativeSurface2, querySurface)
                 )
@@ -737,7 +737,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseService(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, negativeSurface1, negativeSurface2, negativeSurface3, querySurface)
                 )
@@ -751,7 +751,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 rdfSurfaceParser.parseToEnd(
                     input = testStr,
                     baseIRI = IRI.from("file://" + IRI.from(System.getProperty("user.dir")))
-                ).getOrNull().shouldNotBeNull().graffiti shouldNotContain BlankNode("BN_1")
+                ).getSuccessOrNull().shouldNotBeNull().graffiti shouldNotContain BlankNode("BN_1")
             }
 
 
@@ -759,12 +759,10 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val testStr =
                     "@prefix : <http://example.org#> . _:BN_12 _:BN_043 _:BN_0000000000000023. (:a _:BN_23 []) :b :c."
                 val rdfSurfaceParser = RDFSurfaceParseService(true)
-                shouldThrow<Exception> {
-                    rdfSurfaceParser.parseToEnd(
-                        testStr,
-                        IRI.from("file://" + IRI.from(System.getProperty("user.dir")))
-                    )
-                }
+                rdfSurfaceParser.parseToEnd(
+                    testStr,
+                    IRI.from("file://" + IRI.from(System.getProperty("user.dir")))
+                ).getErrorOrNull() shouldBe RdfSurfaceParserError.BlankNodeLabelCollision
             }
 
         }
@@ -781,7 +779,10 @@ class RDFSurfacesParserTest : ShouldSpec(
                 rdfSurfaceParser.parseToEnd(
                     testStr,
                     IRI.from("file://" + IRI.from(System.getProperty("user.dir")))
-                ).getOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(listOf(), listOf(RdfTriple(iri1, iri2, literal)))
+                ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
+                    listOf(),
+                    listOf(RdfTriple(iri1, iri2, literal))
+                )
             }
         }
 

@@ -1,15 +1,13 @@
 package interface_adapters.cli.subcommands
 
-import com.github.ajalt.clikt.core.BadParameterValue
-import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.CliktError
-import com.github.ajalt.clikt.core.ProgramResult
+import com.github.ajalt.clikt.core.*
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.path
+import com.github.ajalt.mordant.rendering.TextStyle
 import domain.entities.rdf_term.IRI
 import domain.error.fold
 import domain.use_cases.CascQaAnswerToRsUseCase
@@ -21,8 +19,7 @@ import interface_adapters.outputtransformer.SolutionToStringTransformer
 import workingDir
 import kotlin.io.path.*
 
-class QaAnswerToRs :
-    CliktCommand(help = "Transforms a TPTP tuple answer (--input) into an RDF surface using a specified RDF query or question surface (--q-surface)") {
+class QaAnswerToRs : CliktCommand() {
     private val commonOptions by CommonOptions()
     private val input by option("--input", "-i", help = "Get TPTP answer tuple from <path>").path().default(Path("-"))
     private val output by option("--output", "-o", help = "Write output to <path>").path(mustExist = false)
@@ -38,8 +35,9 @@ class QaAnswerToRs :
         mustBeReadable = true
     ).required()
 
-
     private val inputType by option("--input-type", "-it").choice("raw", "szs").default("szs")
+
+    override fun help(context: Context) = "Transforms a TPTP tuple answer (--input) into an RDF surface using a specified RDF query or question surface (--q-surface)"
 
     override fun run() {
 
@@ -85,10 +83,10 @@ class QaAnswerToRs :
 
             result.fold(
                 onSuccess = {
-                    echo(SolutionToStringTransformer().transform(it))
+                    echo(SolutionToStringTransformer(it))
                 },
                 onFailure = {
-                    echo(ErrorToStringTransformer().transform(it), err = true)
+                    echo(ErrorToStringTransformer(it), err = true)
                 }
             )
 

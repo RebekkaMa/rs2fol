@@ -42,7 +42,7 @@ object QuestionAnsweringOutputToRdfSurfacesCascUseCase {
 
         if (refutationFound) {
             if (qSurface.graffiti.isEmpty()) {
-                return ParsedQuestionAnweringResultToRdfSurfaceUseCase(
+                return ParsedQuestionAnsweringResultToRdfSurfaceUseCase(
                     resultList = setOf(listOf()),
                     qSurface = qSurface
                 ).map { AnswerTupleTransformationSuccess.Success(it) }
@@ -55,7 +55,7 @@ object QuestionAnsweringOutputToRdfSurfacesCascUseCase {
         return if (parsedResult.isEmpty()) {
             Result.Success(AnswerTupleTransformationSuccess.NothingFound)
         } else {
-            ParsedQuestionAnweringResultToRdfSurfaceUseCase(
+            ParsedQuestionAnsweringResultToRdfSurfaceUseCase(
                 resultList = parsedResult,
                 qSurface = qSurface
             ).map { AnswerTupleTransformationSuccess.Success(it) }

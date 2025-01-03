@@ -9,7 +9,7 @@ import domain.error.runOnSuccess
 import domain.use_cases.transform.RdfSurfaceModelToN3UseCase
 import util.InvalidInputException
 
-object ParsedQuestionAnweringResultToRdfSurfaceUseCase {
+object ParsedQuestionAnsweringResultToRdfSurfaceUseCase {
     operator fun invoke(resultList: Set<List<RdfTerm>>, qSurface: QSurface): Result<String, Error> {
         val replacedASurface: Result<PositiveSurface, Error> = try {
             Result.Success(qSurface.replaceBlankNodes(resultList))

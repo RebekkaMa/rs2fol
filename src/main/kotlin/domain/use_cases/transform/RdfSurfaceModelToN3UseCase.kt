@@ -111,6 +111,8 @@ object RdfSurfaceModelToN3UseCase {
                         is NeutralSurface -> "log:onNeutralSurface"
                         is QuestionSurface -> "log:onQuestionSurface"
                         is AnswerSurface -> "log:onAnswerSurface"
+                        is NegativeAnswerSurface -> "log:onNegativeAnswerSurface"
+                        is NegativeComponentSurface -> "log:onNegativeComponentSurface"
                     }
                     val graffitiStringList = transform(hayesGraphElement.graffiti)
                     val hayesGraphString =

@@ -9,7 +9,7 @@ import domain.use_cases.subUseCase.QuestionAnsweringOutputToRdfSurfacesCascUseCa
 import domain.use_cases.transform.RdfSurfaceModelToFolUseCase
 import interface_adapters.services.FileService
 import interface_adapters.services.parsing.RDFSurfaceParseService
-import interface_adapters.services.vampire.StartVampireService
+import interface_adapters.services.vampire.VampireService
 import java.io.InputStream
 import java.nio.file.Path
 
@@ -34,7 +34,7 @@ class TransformQaUseCase  {
             )
         }.getOrElse { return error(it) }
 
-        val qSurfaces = parseResult.getOrElse { PositiveSurface( emptyList(), emptyList()) }.getQSurfaces()
+        val qSurfaces = parseResult.getOrElse { PositiveSurface() }.getQSurfaces()
         val qSurface = let {
             if (qSurfaces.isEmpty()) return error(NoQuestionSurface)
             if (qSurfaces.size > 1) return error(MoreThanOneQuestionSurface)
@@ -48,7 +48,7 @@ class TransformQaUseCase  {
             )
         }
 
-        val vampireParsingResult = StartVampireService.startForQuestionAnswering(
+        val vampireParsingResult = VampireService.startForQuestionAnswering(
             vampireOption = vampireMode,
             vampireExec = vampireExecutable,
             timeLimit = vampireTimeLimit,

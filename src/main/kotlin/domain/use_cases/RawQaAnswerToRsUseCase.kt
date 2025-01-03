@@ -4,7 +4,7 @@ import domain.entities.rdf_term.IRI
 import domain.error.*
 import domain.use_cases.RawQaAnswerToRsError.MoreThanOneQuestionSurface
 import domain.use_cases.RawQaAnswerToRsError.NoQuestionSurface
-import domain.use_cases.subUseCase.ParsedQuestionAnweringResultToRdfSurfaceUseCase
+import domain.use_cases.subUseCase.ParsedQuestionAnsweringResultToRdfSurfaceUseCase
 import interface_adapters.services.FileService
 import interface_adapters.services.parsing.RDFSurfaceParseService
 import interface_adapters.services.parsing.TptpTupleAnswerFormParserService
@@ -33,7 +33,7 @@ object RawQaAnswerToRsUseCase {
 
         val tptpTupleAnswer = inputStream.bufferedReader().use { it.readText() }
         val result = TptpTupleAnswerFormParserService.parseToEnd(tptpTupleAnswer).runOnSuccess {
-                ParsedQuestionAnweringResultToRdfSurfaceUseCase(
+                ParsedQuestionAnsweringResultToRdfSurfaceUseCase(
                     resultList = it.first.toSet(),
                     qSurface = qSurface
                 )

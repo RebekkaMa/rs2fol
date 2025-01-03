@@ -66,7 +66,7 @@ object RdfSurfaceModelToFolUseCase {
                         }
 
 
-                        is NegativeSurface, is QuerySurface, is NegativeTripleSurface -> if (hayesGraphElement.graffiti.isEmpty()) {
+                        is NegativeSurface, is QuerySurface, is NegativeTripleSurface, is NegativeAnswerSurface, is NegativeComponentSurface -> if (hayesGraphElement.graffiti.isEmpty()) {
                             if (hayesGraphElement.hayesGraph.isEmpty()) "\$false" else
                                 hayesGraphElement.hayesGraph.joinToString(
                                     prefix = "~(${System.lineSeparator()}$nextDepthSpace",

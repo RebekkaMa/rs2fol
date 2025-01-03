@@ -4,22 +4,22 @@ import domain.error.Success
 import domain.use_cases.*
 import domain.use_cases.subUseCase.AnswerTupleTransformationSuccess
 
-class SolutionToStringTransformer {
+object SolutionToStringTransformer {
 
-    fun transform(success: Success): String? {
+    operator fun invoke(success: Success): String? {
 
         return when (success) {
             is CheckSuccess -> {
                 when (success) {
-                    CheckSuccess.Consequence -> "Consequence"
-                    CheckSuccess.NoConsequence -> "No consequence"
-                    CheckSuccess.Timeout -> "Timeout"
+                    CheckSuccess.Consequence -> TextStyler.boldGreen("Consequence")
+                    CheckSuccess.NoConsequence -> TextStyler.boldRed("No consequence")
+                    CheckSuccess.Timeout -> TextStyler.info("Timeout")
                 }
             }
 
             is TransformQaResult -> {
                 when (success) {
-                    is TransformQaResult.Timeout -> "Timeout"
+                    is TransformQaResult.Timeout -> TextStyler.info("Timeout")
                 }
             }
 

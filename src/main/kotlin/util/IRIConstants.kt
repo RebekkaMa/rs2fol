@@ -17,7 +17,6 @@ object IRIConstants {
     const val LOG_NEGATIVE_COMPONENT_SURFACE_IRI = LOG_IRI + "onNegativeComponentSurface"
 
 
-
     const val XSD_STRING_IRI = XSD_IRI + "string"
     const val XSD_BOOLEAN_IRI = XSD_IRI + "boolean"
     const val XSD_DECIMAL = XSD_IRI + "decimal"

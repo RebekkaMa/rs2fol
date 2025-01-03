@@ -12,10 +12,10 @@ import domain.use_cases.transform.SurfaceNotSupportedError
 import interface_adapters.services.parsing.RdfSurfaceParserError
 import interface_adapters.services.parsing.TptpTupleAnswerFormParserError
 
-class ErrorToStringTransformer {
+object ErrorToStringTransformer {
 
-    fun transform(error: RootError): String? {
-       return when (error) {
+    operator fun invoke(error: RootError): String {
+       return TextStyler.error("Error: ") + when (error) {
            is SurfaceNotSupportedError -> "Surface '${error.surface}' is not supported"
            is LiteralTransformationError -> "Literal '${error.literal}' can not be converted"
            is CheckError -> when (error) {
@@ -46,7 +46,7 @@ class ErrorToStringTransformer {
                RawQaAnswerToRsError.MoreThanOneQuestionSurface -> "More than one question surface found. Only one is supported."
            }
            is InvalidInputError -> "Invalid input affecting '${error.affectedFormula}', " + System.lineSeparator() + error.cause.toString()
-           is AnswerTupleTransformationError.AnswerTupleTransformation -> "Error regarding ${error.affectedFormula}: " + transform(error.error)
+           is AnswerTupleTransformationError.AnswerTupleTransformation -> "Error regarding ${error.affectedFormula}: " + invoke(error.error)
            else -> null
            }
     }
