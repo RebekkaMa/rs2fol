@@ -5,16 +5,18 @@ import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
-import com.github.h0tk3y.betterParse.parser.*
-import domain.entities.*
-import domain.entities.rdf_term.*
-import domain.entities.rdf_term.Collection
-import domain.error.Error
-import domain.error.Result
-import domain.use_cases.transform.SurfaceNotSupportedError
+import com.github.h0tk3y.betterParse.parser.ParseException
+import com.github.h0tk3y.betterParse.parser.Parser
+import com.github.h0tk3y.betterParse.parser.parseToEnd
+import entities.rdfsurfaces.*
+import entities.rdfsurfaces.rdf_term.*
+import entities.rdfsurfaces.rdf_term.Collection
 import interface_adapters.services.parsing.util.*
+import use_cases.modelTransformer.SurfaceNotSupportedError
 import util.*
 import util.IRIConstants.RDF_TYPE_IRI
+import util.error.Error
+import util.error.Result
 
 typealias HayesGraph = List<HayesGraphElement>
 typealias FreeVariables = Set<BlankNode>
@@ -130,9 +132,10 @@ class RDFSurfaceParseService(val useRDFLists: Boolean) : Grammar<PositiveSurface
 
             is String -> LanguageTaggedString(lexicalForm = this.t1, languageTag = part.drop(1))
             is IRI -> {
-                val literalValue = this.t1.takeUnless { part == IRIConstants.XSD_STRING_IRI } ?: replaceStringEscapes(
-                    replaceNumericEscapeSequences(this.t1)
-                )
+                val literalValue =
+                    this.t1.takeUnless { part.iri == IRIConstants.XSD_STRING_IRI } ?: replaceStringEscapes(
+                        replaceNumericEscapeSequences(this.t1)
+                    )
                 DefaultLiteral.fromNonNumericLiteral(literalValue, datatypeIRI = part)
             }
 
@@ -170,13 +173,19 @@ class RDFSurfaceParseService(val useRDFLists: Boolean) : Grammar<PositiveSurface
                 val collectionStart = BlankNode(createBlankNodeId())
                 blankNodeToDirectParentSet.add(collectionStart)
                 this.foldIndexed(collectionStart) { index, acc, s ->
-                    collectionTripleSet.add(RdfTriple(acc, IRI.from(IRIConstants.RDF_FIRST_IRI), s))
+                    collectionTripleSet.add(
+                        RdfTriple(
+                            acc,
+                            IRI.from(IRIConstants.RDF_FIRST_IRI),
+                            s
+                        )
+                    )
                     if (index >= this.lastIndex) {
                         collectionTripleSet.add(
                             RdfTriple(
                                 acc,
-                                domain.entities.rdf_term.IRI.from(IRIConstants.RDF_REST_IRI),
-                                domain.entities.rdf_term.IRI.from(IRIConstants.RDF_NIL_IRI)
+                                IRI.from(IRIConstants.RDF_REST_IRI),
+                                IRI.from(IRIConstants.RDF_NIL_IRI)
                             )
                         )
                         return@foldIndexed collectionStart
@@ -186,7 +195,7 @@ class RDFSurfaceParseService(val useRDFLists: Boolean) : Grammar<PositiveSurface
                     collectionTripleSet.add(
                         RdfTriple(
                             acc,
-                            domain.entities.rdf_term.IRI.from(IRIConstants.RDF_REST_IRI),
+                            IRI.from(IRIConstants.RDF_REST_IRI),
                             nextRestBlankNode
                         )
                     )
@@ -208,6 +217,7 @@ class RDFSurfaceParseService(val useRDFLists: Boolean) : Grammar<PositiveSurface
             IRIConstants.LOG_ANSWER_SURFACE_IRI,
             IRIConstants.LOG_NEGATIVE_COMPONENT_SURFACE_IRI,
             IRIConstants.LOG_NEGATIVE_ANSWER_SURFACE_IRI -> throw ParseException(InvalidSyntax())
+
             else -> it
         }
     } or blankNode.map { varSet.add(it); it } or literal
@@ -290,7 +300,13 @@ class RDFSurfaceParseService(val useRDFLists: Boolean) : Grammar<PositiveSurface
                 IRIConstants.LOG_QUESTION_SURFACE_IRI -> this.add(QuestionSurface(graffiti, hayesGraph))
                 IRIConstants.LOG_ANSWER_SURFACE_IRI -> this.add(AnswerSurface(graffiti, hayesGraph))
                 IRIConstants.LOG_NEGATIVE_ANSWER_SURFACE_IRI -> this.add(NegativeAnswerSurface(graffiti, hayesGraph))
-                IRIConstants.LOG_NEGATIVE_COMPONENT_SURFACE_IRI -> this.add(NegativeComponentSurface(graffiti, hayesGraph))
+                IRIConstants.LOG_NEGATIVE_COMPONENT_SURFACE_IRI -> this.add(
+                    NegativeComponentSurface(
+                        graffiti,
+                        hayesGraph
+                    )
+                )
+
                 else -> throw SurfaceNotSupportedException(surface = surface.iri)
             }
         }

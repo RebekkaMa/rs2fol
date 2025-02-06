@@ -7,11 +7,10 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.path
-import com.github.ajalt.mordant.rendering.TextStyle
-import domain.entities.rdf_term.IRI
-import domain.error.fold
-import domain.use_cases.CascQaAnswerToRsUseCase
-import domain.use_cases.RawQaAnswerToRsUseCase
+import entities.rdfsurfaces.rdf_term.IRI
+import util.error.fold
+import use_cases.commands.CascQaAnswerToRsUseCase
+import use_cases.commands.RawQaAnswerToRsUseCase
 import echoError
 import interface_adapters.cli.CommonOptions
 import interface_adapters.outputtransformer.ErrorToStringTransformer

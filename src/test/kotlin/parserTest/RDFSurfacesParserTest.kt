@@ -1,13 +1,13 @@
 package parserTest
 
-import domain.entities.NegativeSurface
-import domain.entities.PositiveSurface
-import domain.entities.QuerySurface
-import domain.entities.RdfTriple
-import domain.entities.rdf_term.*
-import domain.entities.rdf_term.Collection
-import domain.error.getErrorOrNull
-import domain.error.getSuccessOrNull
+import entities.rdfsurfaces.NegativeSurface
+import entities.rdfsurfaces.PositiveSurface
+import entities.rdfsurfaces.QuerySurface
+import entities.rdfsurfaces.RdfTriple
+import entities.rdfsurfaces.rdf_term.*
+import entities.rdfsurfaces.rdf_term.Collection
+import util.error.getErrorOrNull
+import util.error.getSuccessOrNull
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields

@@ -1,7 +1,7 @@
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.mordant.rendering.TextColors
 import com.github.ajalt.mordant.rendering.TextStyle
-import domain.entities.rdf_term.IRI
+import entities.rdfsurfaces.rdf_term.IRI
 
 
 val errorKeyWordTextStyle = TextStyle(color = TextColors.red)

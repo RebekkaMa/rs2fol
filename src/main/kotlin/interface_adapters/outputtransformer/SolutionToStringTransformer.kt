@@ -1,8 +1,8 @@
 package interface_adapters.outputtransformer
 
-import domain.error.Success
-import domain.use_cases.*
-import domain.use_cases.subUseCase.AnswerTupleTransformationSuccess
+import util.error.Success
+import use_cases.commands.*
+import use_cases.subUseCase.AnswerTupleTransformationSuccess
 
 object SolutionToStringTransformer {
 

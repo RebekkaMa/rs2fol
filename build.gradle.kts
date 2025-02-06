@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.0.21"
+    kotlin("plugin.serialization") version "1.8.0"
     application
 }
 
@@ -18,6 +19,7 @@ dependencies {
     implementation(group = "ch.qos.logback", name = "logback-classic", version = "1.5.15")
     implementation("org.glassfish.jaxb:jaxb-runtime:4.0.5")
     implementation("org.apache.jena:jena-core:5.0.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
     testImplementation(kotlin("test"))
     testImplementation("io.kotest:kotest-runner-junit5-jvm:5.9.0")
 }

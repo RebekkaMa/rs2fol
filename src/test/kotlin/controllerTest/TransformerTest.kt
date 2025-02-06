@@ -1,18 +1,19 @@
 package controllerTest
 
-import domain.entities.NegativeSurface
-import domain.entities.PositiveSurface
-import domain.entities.QuerySurface
-import domain.entities.RdfTriple
-import domain.entities.rdf_term.*
-import domain.error.getSuccessOrNull
-import domain.use_cases.transform.RdfSurfaceModelToFolUseCase
+import entities.rdfsurfaces.NegativeSurface
+import entities.rdfsurfaces.PositiveSurface
+import entities.rdfsurfaces.QuerySurface
+import entities.rdfsurfaces.RdfTriple
+import entities.rdfsurfaces.rdf_term.*
+import entities.rdfsurfaces.rdf_term.Collection
+import interface_adapters.services.transforming.FOLCoderService
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.shouldBe
-import org.apache.jena.datatypes.xsd.XSDDatatype
-import interface_adapters.services.transforming.TptpElementCoderService
 import io.kotest.matchers.shouldNotBe
+import org.apache.jena.datatypes.xsd.XSDDatatype
+import use_cases.modelTransformer.RdfSurfaceModelToFolUseCase
+import util.error.getSuccessOrNull
 import java.io.File
 
 class TransformerTest
@@ -203,59 +204,59 @@ class TransformerTest
                 val testStr = "The first line\n" +
                         "The second line\n" +
                         "  more"
-                val encoded = TptpElementCoderService.encodeToValidTPTPLiteral(testStr)
+                val encoded = FOLCoderService.encodeLiteral(testStr)
 //                println(encoded)
 //                println(DecodeStringToValidTPTPLiteralUseCase()(encoded))
-                testStr shouldBe TptpElementCoderService.decodeToValidTPTPLiteral(encoded)
+                testStr shouldBe FOLCoderService.decodeLiteral(encoded)
             }
 
             should("encode and decode 2") {
                 val testStr = "The first line\\nThe second line\\n  more"
-                val encoded = TptpElementCoderService.encodeToValidTPTPLiteral(testStr)
-                testStr shouldBe TptpElementCoderService.decodeToValidTPTPLiteral(encoded)
+                val encoded = FOLCoderService.encodeLiteral(testStr)
+                testStr shouldBe FOLCoderService.decodeLiteral(encoded)
             }
 
             should("encode and decode 3") {
                 val testStr = "The first line\\nThe second line\\n  more"
-                val encoded = TptpElementCoderService.encodeToValidTPTPLiteral(testStr)
-                testStr shouldBe TptpElementCoderService.decodeToValidTPTPLiteral(encoded)
+                val encoded = FOLCoderService.encodeLiteral(testStr)
+                testStr shouldBe FOLCoderService.decodeLiteral(encoded)
             }
             should("encode and decode 4") {
                 val testStr =
                     "This is a multi-line                        # literal with embedded new lines and quotes\n" +
                             "\uD800\uDC00 literal with many quotes (\"\"\"\"\")\n" +
                             "and up to two sequential apostrophes ('')."
-                val encoded = TptpElementCoderService.encodeToValidTPTPLiteral(testStr)
-                testStr shouldBe TptpElementCoderService.decodeToValidTPTPLiteral(encoded)
+                val encoded = FOLCoderService.encodeLiteral(testStr)
+                testStr shouldBe FOLCoderService.decodeLiteral(encoded)
             }
         }
         context("decode and encode to TPTP Variable compatible CHAR Set") {
             should("encode and decode 1") {
                 val testStr = "BN_1"
-                val encoded = TptpElementCoderService.encodeToValidTPTPVariable(testStr)
-                testStr shouldBe TptpElementCoderService.decodeToValidTPTPVariable(encoded)
+                val encoded = FOLCoderService.encodeVariable(testStr)
+                testStr shouldBe FOLCoderService.decodeVariable(encoded)
             }
 
             should("encode and decode 2") {
                 val testStr = "bn_1"
-                val encoded = TptpElementCoderService.encodeToValidTPTPVariable(testStr)
-                testStr shouldBe TptpElementCoderService.decodeToValidTPTPVariable(encoded)
+                val encoded = FOLCoderService.encodeVariable(testStr)
+                testStr shouldBe FOLCoderService.decodeVariable(encoded)
             }
 
             should("encode and decode 3") {
                 val testStr = "jiUd_.a\uD800\uDC00"
-                val encoded = TptpElementCoderService.encodeToValidTPTPVariable(testStr)
-                testStr shouldBe TptpElementCoderService.decodeToValidTPTPVariable(encoded)
+                val encoded = FOLCoderService.encodeVariable(testStr)
+                testStr shouldBe FOLCoderService.decodeVariable(encoded)
             }
             should("encode and decode 4") {
                 val testStr = "Ox3A23n_3"
-                val encoded = TptpElementCoderService.encodeToValidTPTPVariable(testStr)
-                testStr shouldBe TptpElementCoderService.decodeToValidTPTPVariable(encoded)
+                val encoded = FOLCoderService.encodeVariable(testStr)
+                testStr shouldBe FOLCoderService.decodeVariable(encoded)
             }
             should("encode and decode 5") {
                 val testStr = "Ox3A2P3n_3"
-                val encoded = TptpElementCoderService.encodeToValidTPTPVariable(testStr)
-                testStr shouldBe TptpElementCoderService.decodeToValidTPTPVariable(encoded)
+                val encoded = FOLCoderService.encodeVariable(testStr)
+                testStr shouldBe FOLCoderService.decodeVariable(encoded)
             }
         }
     })

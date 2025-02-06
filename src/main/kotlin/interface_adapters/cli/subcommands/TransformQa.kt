@@ -2,24 +2,30 @@ package interface_adapters.cli.subcommands
 
 import com.github.ajalt.clikt.core.*
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
-import com.github.ajalt.clikt.parameters.options.*
-import com.github.ajalt.clikt.parameters.types.choice
+import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.long
 import com.github.ajalt.clikt.parameters.types.path
-import domain.entities.rdf_term.IRI
-import domain.error.fold
-import domain.use_cases.TransformQaUseCase
 import echoError
+import entities.rdfsurfaces.rdf_term.IRI
 import interface_adapters.cli.CommonOptions
 import interface_adapters.outputtransformer.ErrorToStringTransformer
 import interface_adapters.outputtransformer.SolutionToStringTransformer
+import use_cases.commands.TransformQaUseCase
+import util.error.fold
 import workingDir
 import kotlin.io.path.*
 
 class TransformQa :
     CliktCommand() {
     private val commonOptions by CommonOptions()
+
+    private val programName by option("--program", help = "Name of the program to execute").default("vampire")
+    private val optionId by option("--option-id", help = "Option ID for the selected program").int().default(0)
+
     private val input by option(
         "--input", "-i",
         help = "Get RDF surface from <path>"
@@ -30,19 +36,13 @@ class TransformQa :
         help = "Write the generated FOL formula (interim result) to <path>"
     ).path()
 
-
-    private val vampireExecFile by option("--vampire-exec", "-e", help = "File to the Vampire executable")
-        .path(mustExist = true)
-        .required()
-
     private val quiet by option("--quiet", "-q", help = "Display less output").flag(default = false)
-
-    private val vampireOption by option("--vampire-option-mode", "-v").choice("0", "1").int().default(0)
 
     private val timeLimit by option("--time-limit", "-t", help = "Time limit in seconds").long().default(120)
         .validate { it > 0 }
 
-    override fun help(context: Context) = "Transforms an RDF surface to FOL and returns the results of the Vampire question answering feature as an RDF surface"
+    override fun help(context: Context) =
+        "Transforms an RDF surface to FOL and returns the results of the Vampire question answering feature as an RDF surface"
 
     override fun run() {
         try {
@@ -78,9 +78,9 @@ class TransformQa :
                 inputStream = inputStream,
                 useRdfLists = commonOptions.rdfList,
                 baseIri = baseIRI,
-                vampireMode = vampireOption,
-                vampireExecutable = vampireExecFile,
-                vampireTimeLimit = timeLimit,
+                programName = programName,
+                optionId = optionId,
+                reasoningTimeLimit = timeLimit,
                 outputPath = output
             )
 

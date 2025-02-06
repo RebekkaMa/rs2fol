@@ -1,13 +1,13 @@
 package controllerTest
 
+import entities.rdfsurfaces.rdf_term.IRI
+import interface_adapters.services.parsing.RDFSurfaceParseService
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
-import interface_adapters.services.parsing.RDFSurfaceParseService
-import domain.entities.rdf_term.IRI
-import domain.error.getSuccessOrNull
-import domain.use_cases.transform.RdfSurfaceModelToFolUseCase
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldNotBe
+import use_cases.modelTransformer.RdfSurfaceModelToFolUseCase
+import util.error.getSuccessOrNull
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
 import kotlin.io.path.invariantSeparatorsPathString

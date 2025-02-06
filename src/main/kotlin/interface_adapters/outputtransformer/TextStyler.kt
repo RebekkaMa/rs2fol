@@ -9,6 +9,8 @@ object TextStyler {
 
     fun error(message: String) = TextColors.red(message)
 
+    fun test(message: String) = TextStyle()
+
     fun warning(message: String) = TextColors.yellow(message)
 
     fun debug(message: String) = TextColors.cyan(message)

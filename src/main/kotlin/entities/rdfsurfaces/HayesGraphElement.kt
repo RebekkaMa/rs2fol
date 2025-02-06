@@ -1,0 +1,3 @@
+package entities.rdfsurfaces
+
+sealed class HayesGraphElement

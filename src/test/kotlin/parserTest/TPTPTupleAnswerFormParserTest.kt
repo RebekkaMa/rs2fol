@@ -1,8 +1,8 @@
 package parserTest
 
-import domain.entities.rdf_term.*
-import domain.entities.rdf_term.Collection
-import domain.error.getSuccessOrNull
+import entities.rdfsurfaces.rdf_term.*
+import entities.rdfsurfaces.rdf_term.Collection
+import util.error.getSuccessOrNull
 import io.kotest.core.spec.style.ShouldSpec
 import interface_adapters.services.parsing.TptpTupleAnswerFormParserService
 import io.kotest.matchers.equals.shouldBeEqual

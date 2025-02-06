@@ -6,9 +6,9 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.path
-import domain.entities.rdf_term.IRI
-import domain.error.fold
-import domain.use_cases.TransformUseCase
+import entities.rdfsurfaces.rdf_term.IRI
+import util.error.fold
+import use_cases.commands.TransformUseCase
 import echoError
 import interface_adapters.cli.CommonOptions
 import interface_adapters.outputtransformer.ErrorToStringTransformer

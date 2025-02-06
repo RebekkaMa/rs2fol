@@ -8,10 +8,10 @@ import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.ParseException
 import com.github.h0tk3y.betterParse.parser.Parser
 import com.github.h0tk3y.betterParse.parser.parseToEnd
-import domain.entities.rdf_term.*
-import domain.entities.rdf_term.Collection
-import domain.error.Error
-import domain.error.Result
+import entities.rdfsurfaces.rdf_term.*
+import entities.rdfsurfaces.rdf_term.Collection
+import util.error.Error
+import util.error.Result
 import interface_adapters.services.parsing.TptpTupleAnswerFormParserError.*
 import interface_adapters.services.parsing.util.pnChars
 import interface_adapters.services.parsing.util.pnCharsU

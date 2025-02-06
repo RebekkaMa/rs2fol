@@ -1,15 +1,15 @@
 package rdfSurfacesTest
 
-import domain.entities.NegativeSurface
-import domain.entities.PositiveSurface
-import domain.entities.QuerySurface
-import domain.entities.RdfTriple
+import entities.rdfsurfaces.NegativeSurface
+import entities.rdfsurfaces.PositiveSurface
+import entities.rdfsurfaces.QuerySurface
+import entities.rdfsurfaces.RdfTriple
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
-import domain.entities.rdf_term.BlankNode
-import domain.entities.rdf_term.DefaultLiteral
-import domain.entities.rdf_term.IRI
-import domain.entities.rdf_term.LanguageTaggedString
+import entities.rdfsurfaces.rdf_term.BlankNode
+import entities.rdfsurfaces.rdf_term.DefaultLiteral
+import entities.rdfsurfaces.rdf_term.IRI
+import entities.rdfsurfaces.rdf_term.LanguageTaggedString
 
 class QuerySurfaceTest : ShouldSpec({
 
