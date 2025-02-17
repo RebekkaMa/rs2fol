@@ -10,14 +10,14 @@ import interface_adapters.services.parsing.util.stringLiteralSingleQuote
 import interface_adapters.services.transforming.RDFTermCoderService
 import util.IRIConstants
 import util.LiteralTransformationException
-import util.error.Error
-import util.error.Result
+import util.commandResult.Error
+import util.commandResult.IntermediateStatus
 
 object RdfSurfaceModelToN3UseCase {
 
     operator fun invoke(
         defaultPositiveSurface: PositiveSurface
-    ): Result<String, LiteralTransformationError> {
+    ): IntermediateStatus<String, LiteralTransformationError> {
         val spaceBase = "   "
 
         var prefixCounter = 0
@@ -167,10 +167,10 @@ object RdfSurfaceModelToN3UseCase {
                 rdfSurfacesGraphString.insert(0, "@prefix $prefix: <$iri>.${System.lineSeparator()}")
             }
         } catch (exception: LiteralTransformationException) {
-            return Result.Error(LiteralTransformationError(exception.literal))
+            return IntermediateStatus.Error(LiteralTransformationError(exception.literal))
         }
 
-        return Result.Success(rdfSurfacesGraphString.toString())
+        return IntermediateStatus.Result(rdfSurfacesGraphString.toString())
     }
 }
 

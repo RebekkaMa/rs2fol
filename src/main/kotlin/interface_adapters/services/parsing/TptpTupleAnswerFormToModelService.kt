@@ -8,11 +8,14 @@ import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.ParseException
 import com.github.h0tk3y.betterParse.parser.Parser
 import com.github.h0tk3y.betterParse.parser.parseToEnd
-import entities.fol.*
+import entities.fol.FOLConstant
+import entities.fol.FOLFunction
+import entities.fol.FOLVariable
+import entities.fol.GeneralTerm
 import entities.fol.tptp.AnswerTuple
 import entities.fol.tptp.TPTPTupleAnswerFormAnswer
-import util.error.Result
 import interface_adapters.services.parsing.TptpTupleAnswerFormParserError.*
+import util.commandResult.IntermediateStatus
 
 
 object TptpTupleAnswerFormToModelService : Grammar<TPTPTupleAnswerFormAnswer>() {
@@ -62,8 +65,17 @@ object TptpTupleAnswerFormToModelService : Grammar<TPTPTupleAnswerFormAnswer>() 
 
     private val resultValue by
     (-lparBracket
-            and (variableList.map { results.add(AnswerTuple(it)) } or multipleVariableList.map { orResults.add(it.map { AnswerTuple(it) }) })
-            and zeroOrMore(-comma and (variableList.map { results.add(AnswerTuple(it)) } or multipleVariableList.map { orResults.add(it.map { AnswerTuple(it) }) }))
+            and (variableList.map { results.add(AnswerTuple(it)) } or multipleVariableList.map {
+        orResults.add(it.map {
+            AnswerTuple(
+                it
+            )
+        })
+    })
+            and zeroOrMore(-comma and (variableList.map { results.add(AnswerTuple(it)) } or multipleVariableList.map {
+        orResults.add(
+            it.map { AnswerTuple(it) })
+    }))
             and -optional(verticalBar)
             and -optional(underscore)
             and -rparBracket
@@ -73,19 +85,20 @@ object TptpTupleAnswerFormToModelService : Grammar<TPTPTupleAnswerFormAnswer>() 
         get() {
             results.clear()
             orResults.clear()
-            return resultValue.getValue(this, this::rootParser).map { TPTPTupleAnswerFormAnswer(results, orResults) }
+            return resultValue.getValue(this, this::rootParser)
+                .map { TPTPTupleAnswerFormAnswer(results.toList(), orResults.toList()) }
         }
 
-    fun parseToEnd(answerTuple: String): Result<TPTPTupleAnswerFormAnswer, TptpTupleAnswerFormParserError> {
+    fun parseToEnd(answerTuple: String): IntermediateStatus<TPTPTupleAnswerFormAnswer, TptpTupleAnswerFormParserError> {
         return try {
-            Result.Success(rootParser.parseToEnd(tokenizer.tokenize(answerTuple)))
+            IntermediateStatus.Result(rootParser.parseToEnd(tokenizer.tokenize(answerTuple)))
         } catch (exc: Throwable) {
             when (exc) {
                 is InvalidFunctionOrPredicateException -> InvalidFunctionOrPredicate(element = exc.element)
                 is InvalidElementException -> InvalidElement(element = exc.element)
                 is ParseException -> GenericInvalidInput(throwable = exc)
                 else -> throw exc
-            }.let { Result.Error(it) }
+            }.let { IntermediateStatus.Error(it) }
         }
     }
 }

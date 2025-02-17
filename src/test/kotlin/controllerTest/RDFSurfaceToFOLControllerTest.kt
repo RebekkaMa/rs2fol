@@ -7,7 +7,7 @@ import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldNotBe
 import use_cases.modelTransformer.RdfSurfaceModelToFolUseCase
-import util.error.getSuccessOrNull
+import util.commandResult.getSuccessOrNull
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
 import kotlin.io.path.invariantSeparatorsPathString

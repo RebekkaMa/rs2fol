@@ -1,9 +1,7 @@
 package use_cases
 
 import interface_adapters.services.ConfigLoader
-import util.error.Error
-import util.error.Result
-import util.error.Success
+import util.commandResult.*
 import java.nio.file.Paths
 
 
@@ -12,12 +10,12 @@ object GetTheoremProverCommandUseCase {
         programName: String,
         optionId: Int,
         reasoningTimeLimit: Long
-    ): Result<GetTheoremProverCommandSuccess, Error> {
+    ): IntermediateStatus<GetTheoremProverCommandSuccess, Error> {
         val configPath = Paths.get(".", "programConfig.json").toString()
         val configs = ConfigLoader.loadConfig(configPath)
 
         val programConfig = configs.programs.getOrElse(programName) {
-            return util.error.error(
+            return intermediateError(
                 GetTheoremProverCommandError.ProgramNotFound(programName)
             )
         }
@@ -25,7 +23,7 @@ object GetTheoremProverCommandUseCase {
         val selectedOption =
             programConfig.options.find { it.optionId == optionId }
                 ?: run {
-                    return util.error.error(
+                    return intermediateError(
                         GetTheoremProverCommandError.ProgramOptionNotFound(
                             programName,
                             optionId
@@ -37,7 +35,7 @@ object GetTheoremProverCommandUseCase {
             flag.replace("\${timeLimit}", "$reasoningTimeLimit")
 
         }
-        return util.error.success(GetTheoremProverCommandSuccess(listOf(programExe) + flags))
+        return intermediateSuccess(GetTheoremProverCommandSuccess(listOf(programExe) + flags))
     }
 }
 

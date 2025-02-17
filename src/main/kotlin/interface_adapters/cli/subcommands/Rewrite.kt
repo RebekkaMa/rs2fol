@@ -1,28 +1,37 @@
 package interface_adapters.cli.subcommands
 
-import com.github.ajalt.clikt.core.*
+import com.github.ajalt.clikt.command.SuspendingCliktCommand
+import com.github.ajalt.clikt.core.BadParameterValue
+import com.github.ajalt.clikt.core.CliktError
+import com.github.ajalt.clikt.core.Context
+import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.path
 import entities.rdfsurfaces.rdf_term.IRI
-import util.error.fold
-import use_cases.commands.RewriteUseCase
-import echoError
 import interface_adapters.cli.CommonOptions
+import interface_adapters.cli.util.workingDir
 import interface_adapters.outputtransformer.ErrorToStringTransformer
+import interface_adapters.outputtransformer.InfoToStringTransformer
 import interface_adapters.outputtransformer.SolutionToStringTransformer
-import workingDir
+import use_cases.commands.RewriteUseCase
+import util.commandResult.fold
 import kotlin.io.path.*
 
-class Rewrite : CliktCommand() {
+class Rewrite : SuspendingCliktCommand() {
     private val commonOptions by CommonOptions()
     private val input by option("--input", "-i", help = "Get RDF surface from <path>").path().default(Path("-"))
     private val output by option("--output", "-o", help = "Write output to <path>").path().default(Path("-"))
 
+    private val quiet by option("--quiet", "-q", help = "Display less output")
+        .flag(default = false)
+
+
     override fun help(context: Context) = "Parses and returns an RDF surface using a sublanguage of Notation 3"
 
-    override fun run() {
+    override suspend fun run() {
 
         try {
             val (inputStream, baseIRI) = when {
@@ -52,18 +61,23 @@ class Rewrite : CliktCommand() {
                 output = output
             )
 
-            result.fold(
-                onSuccess = {
-                    echo(SolutionToStringTransformer(it))
-                },
-                onFailure = {
-                    echo(ErrorToStringTransformer(it), err = true)
-                }
-            )
+            result.collect { res ->
+                res.fold(
+                    onInfo = {
+                        if (!quiet) echo(InfoToStringTransformer(it))
+                    },
+                    onSuccess = {
+                        echo(SolutionToStringTransformer(it))
+                    },
+                    onFailure = {
+                        echo(ErrorToStringTransformer(it), err = true)
+                    }
+                )
+            }
 
         } catch (exception: Exception) {
             if (exception is CliktError) throw exception
-            if (commonOptions.debug) echoError(exception.stackTraceToString()) else echoError(exception.toString())
+            if (commonOptions.debug) echo(exception.stackTraceToString(), true) else echo(exception.toString(), true)
             throw ProgramResult(1)
         }
     }

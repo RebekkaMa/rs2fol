@@ -10,7 +10,7 @@ import use_cases.modelToString.LiteralTransformationError
 import use_cases.modelTransformer.SurfaceNotSupportedError
 import use_cases.subUseCase.AnswerTupleTransformationError
 import use_cases.subUseCase.InvalidInputError
-import util.error.RootError
+import util.commandResult.RootError
 
 object ErrorToStringTransformer {
 

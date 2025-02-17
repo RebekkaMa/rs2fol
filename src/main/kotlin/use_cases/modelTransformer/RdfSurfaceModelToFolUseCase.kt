@@ -5,8 +5,8 @@ import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
 import interface_adapters.services.transforming.FOLCoderService
 import util.SurfaceNotSupportedException
-import util.error.Error
-import util.error.Result
+import util.commandResult.Error
+import util.commandResult.IntermediateStatus
 
 object RdfSurfaceModelToFolUseCase {
 
@@ -15,7 +15,7 @@ object RdfSurfaceModelToFolUseCase {
         ignoreQuerySurfaces: Boolean = false,
         tptpName: String = "axiom",
         formulaRole: String = "axiom",
-    ): Result<String, SurfaceNotSupportedError> {
+    ): IntermediateStatus<String, SurfaceNotSupportedError> {
 
         val spaceBase = "   "
         val doubleSpaceBase = spaceBase.repeat(2)
@@ -190,9 +190,9 @@ object RdfSurfaceModelToFolUseCase {
                     prefix = System.lineSeparator(),
                     separator = System.lineSeparator()
                 ).takeUnless { fofQuantifiedFormulaQuestion.isEmpty() }?.let { append(it) }
-            }.let { Result.Success(it) }
+            }.let { IntermediateStatus.Result(it) }
         } catch (exception: SurfaceNotSupportedException) {
-            return Result.Error(SurfaceNotSupportedError(surface = exception.surface))
+            return IntermediateStatus.Error(SurfaceNotSupportedError(surface = exception.surface))
         }
     }
 }

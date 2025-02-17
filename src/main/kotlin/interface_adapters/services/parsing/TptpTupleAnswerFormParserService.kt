@@ -10,8 +10,8 @@ import com.github.h0tk3y.betterParse.parser.Parser
 import com.github.h0tk3y.betterParse.parser.parseToEnd
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
-import util.error.Error
-import util.error.Result
+import util.commandResult.Error
+import util.commandResult.CommandStatus
 import interface_adapters.services.parsing.TptpTupleAnswerFormParserError.*
 import interface_adapters.services.parsing.util.pnChars
 import interface_adapters.services.parsing.util.pnCharsU
@@ -134,16 +134,16 @@ object TptpTupleAnswerFormParserService :
             LanguageTaggedString(literalValue, languageTag)
         }
 
-    fun parseToEnd(answerTuple: String): Result<Pair<List<List<RdfTerm>>, List<List<List<RdfTerm>>>>, TptpTupleAnswerFormParserError> {
+    fun parseToEnd(answerTuple: String): CommandStatus<Pair<List<List<RdfTerm>>, List<List<List<RdfTerm>>>>, TptpTupleAnswerFormParserError> {
         return try {
-            Result.Success(rootParser.parseToEnd(tokenizer.tokenize(answerTuple)))
+            CommandStatus.Result(rootParser.parseToEnd(tokenizer.tokenize(answerTuple)))
         } catch (exc: Throwable) {
             when (exc) {
                 is InvalidFunctionOrPredicateException -> InvalidFunctionOrPredicate(element = exc.element)
                 is InvalidElementException -> InvalidElement(element = exc.element)
                 is ParseException -> GenericInvalidInput(throwable = exc)
                 else -> throw exc
-            }.let { Result.Error(it) }
+            }.let { CommandStatus.Error(it) }
         }
     }
 }

@@ -3,8 +3,10 @@ package use_cases.commands
 import entities.rdfsurfaces.rdf_term.IRI
 import interface_adapters.services.FileService
 import interface_adapters.services.parsing.RDFSurfaceParseService
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import use_cases.modelToString.RdfSurfaceModelToN3UseCase
-import util.error.*
+import util.commandResult.*
 import java.nio.file.Path
 import kotlin.io.path.pathString
 
@@ -15,15 +17,18 @@ object RewriteUseCase {
         rdfList: Boolean,
         baseIRI: IRI,
         output: Path
-    ): Result<RewriteResult, RootError> {
+    ): Flow<CommandStatus<RewriteResult, RootError>> = flow {
 
         val parserResult = RDFSurfaceParseService(rdfList).parseToEnd(rdfSurface, baseIRI)
         val result = parserResult.runOnSuccess { positiveSurface ->
             RdfSurfaceModelToN3UseCase(defaultPositiveSurface = positiveSurface)
-        }.getOrElse { return error(it) }
+        }.getOrElse {
+            emit(error(it))
+            return@flow
+        }
 
-        if (output.pathString == "-") return success(RewriteResult.WriteToLine(result))
-        FileService.createNewFile(output, result).also { return success(RewriteResult.WriteToFile(it)) }
+        if (output.pathString == "-") emit(success(RewriteResult.WriteToLine(result))).also { return@flow }
+        FileService.createNewFile(output, result).also { emit(success(RewriteResult.WriteToFile(it))) }
     }
 }
 

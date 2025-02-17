@@ -14,24 +14,27 @@ object TheoremProverService {
 
         val typedCommand = command.toTypedArray()
 
+        typedCommand.joinToString(" ").also { println(it) }
+
+
         val workingDir = File(System.getProperty("user.dir"))
-        val vampireProcess = ProcessBuilder(*typedCommand)
+        val theoremProverProcess = ProcessBuilder(*typedCommand)
             .directory(workingDir)
             .redirectErrorStream(true)
             .start()
 
-        vampireProcess
+        theoremProverProcess
             .outputWriter()
             ?.use { it.write(input) }
 
-        val timeout = !vampireProcess.waitFor(timeLimit, TimeUnit.SECONDS)
+        val timeout = !theoremProverProcess.waitFor(timeLimit, TimeUnit.SECONDS)
 
         if (timeout) {
-            vampireProcess.destroy()
-            if (vampireProcess.isAlive) vampireProcess.destroyForcibly()
+            theoremProverProcess.destroy()
+            if (theoremProverProcess.isAlive) theoremProverProcess.destroyForcibly()
             return null
         }
 
-        return vampireProcess.inputReader()
+        return theoremProverProcess.inputReader()
     }
 }

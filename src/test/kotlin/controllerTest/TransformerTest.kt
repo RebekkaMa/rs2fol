@@ -13,7 +13,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import use_cases.modelTransformer.RdfSurfaceModelToFolUseCase
-import util.error.getSuccessOrNull
+import util.commandResult.getSuccessOrNull
 import java.io.File
 
 class TransformerTest

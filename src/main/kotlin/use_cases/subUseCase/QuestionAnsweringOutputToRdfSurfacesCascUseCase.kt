@@ -1,39 +1,46 @@
 package use_cases.subUseCase
 
+import entities.SZSAnswerTupleFormModel
+import entities.SZSOutputModel
+import entities.SZSStatus
+import entities.SZSStatusType
 import entities.fol.tptp.TPTPTupleAnswerFormAnswer
 import entities.rdfsurfaces.QSurface
-import interface_adapters.services.parsing.TptpTupleAnswerFormToModelService
-import util.error.*
+import interface_adapters.services.SZSParser
+import util.commandResult.*
+import java.io.BufferedReader
 
 object QuestionAnsweringOutputToRdfSurfacesCascUseCase {
 
     operator fun invoke(
         qSurface: QSurface,
-        questionAnsweringOutputLines: Sequence<String>,
-    ): Result<Success, RootError> {
+        questionAnsweringBufferedReader: BufferedReader,
+    ): IntermediateStatus<Success, RootError> {
         val parsedResult = mutableSetOf<TPTPTupleAnswerFormAnswer>()
         var refutationFound = false
 
-        for (line in questionAnsweringOutputLines) {
-            if (line.contains("SZS answers Tuple")) {
-                val tptpAnswerTupleList = line.substringAfter('[').substringBefore(']')
-
-                TptpTupleAnswerFormToModelService.parseToEnd(tptpAnswerTupleList).fold(
-                    onSuccess = {
-                        parsedResult.add(it)
-                    },
-                    onFailure = {
-                        return Result.Error(
-                            AnswerTupleTransformationError.AnswerTupleTransformation(
-                                affectedFormula = tptpAnswerTupleList,
-                                error = it
-                            )
+        val questionAnsweringTPTPAnswers = SZSParser().parse(questionAnsweringBufferedReader)
+        /*
+                    return IntermediateStatus.Error(
+                        AnswerTupleTransformationError.AnswerTupleTransformation(
+                            affectedFormula = tptpAnswerTupleList,
+                            error = it
                         )
-                    }
-                )
+                    )
+                */
+
+
+        questionAnsweringTPTPAnswers.forEach {
+            when (it) {
+                is SZSAnswerTupleFormModel -> {
+                    parsedResult.add(it.tptpTupleAnswerFormAnswer)
+                }
+
+                is SZSStatus, is SZSOutputModel -> {
+                    if (it.statusType == SZSStatusType.SuccessOntology.CONTRADICTORY_AXIOMS) refutationFound = true
+                }
+
             }
-            if (line.contains("(SZS status ContradictoryAxioms for)|(^\\s*unsat\\s*$)".toRegex(RegexOption.IGNORE_CASE))) refutationFound =
-                true
         }
 
         val allAnswers = parsedResult.fold(TPTPTupleAnswerFormAnswer()) { acc, tptpTupleAnswerFormAnswer ->
@@ -50,18 +57,20 @@ object QuestionAnsweringOutputToRdfSurfacesCascUseCase {
                     qSurface = qSurface
                 ).map { AnswerTupleTransformationSuccess.Success(it) }
             }
-            return Result.Success(
+            return IntermediateStatus.Result(
                 AnswerTupleTransformationSuccess.Refutation
             )
         }
 
         return if (parsedResult.isEmpty()) {
-            Result.Success(AnswerTupleTransformationSuccess.NothingFound)
+            IntermediateStatus.Result(AnswerTupleTransformationSuccess.NothingFound)
         } else {
             TPTPTupleAnswerModelToRdfSurfaceUseCase(
                 tptpTupleAnswerFormAnswer = allAnswers,
                 qSurface = qSurface
-            ).map { AnswerTupleTransformationSuccess.Success(it) }
+            ).map {
+                AnswerTupleTransformationSuccess.Success(it)
+            }
         }
     }
 }

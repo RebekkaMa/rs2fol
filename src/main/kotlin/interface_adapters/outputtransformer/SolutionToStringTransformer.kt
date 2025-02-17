@@ -1,8 +1,8 @@
 package interface_adapters.outputtransformer
 
-import util.error.Success
 import use_cases.commands.*
 import use_cases.subUseCase.AnswerTupleTransformationSuccess
+import util.commandResult.Success
 
 object SolutionToStringTransformer {
 
@@ -14,6 +14,7 @@ object SolutionToStringTransformer {
                     CheckSuccess.Consequence -> TextStyler.boldGreen("Consequence")
                     CheckSuccess.NoConsequence -> TextStyler.boldRed("No consequence")
                     CheckSuccess.Timeout -> TextStyler.info("Timeout")
+                    is CheckSuccess.NotKnown -> TextStyler.info("Not known: ${success.szsStatusType}")
                 }
             }
 
@@ -53,6 +54,7 @@ object SolutionToStringTransformer {
                 is AnswerTupleTransformationSuccess.NothingFound -> "No answer found"
                 is AnswerTupleTransformationSuccess.Success -> success.answer
             }
+
             else -> null
         }
     }

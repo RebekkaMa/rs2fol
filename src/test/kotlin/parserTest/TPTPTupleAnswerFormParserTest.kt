@@ -2,7 +2,7 @@ package parserTest
 
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
-import util.error.getSuccessOrNull
+import util.commandResult.getSuccessOrNull
 import io.kotest.core.spec.style.ShouldSpec
 import interface_adapters.services.parsing.TptpTupleAnswerFormParserService
 import io.kotest.matchers.equals.shouldBeEqual
@@ -71,7 +71,7 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
                             "0",
                             "en"
                         )
-                        ),
+                    ),
                     listOf(
                         IRI.from("http://example.org/ns#s"),
                         BlankNode("sK5")
@@ -105,7 +105,10 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
 
         should("parse empty result") {
             val str = "[|_]"
-            TptpTupleAnswerFormParserService.parseToEnd(str).getSuccessOrNull().shouldNotBeNull() shouldBeEqual Pair(listOf(), listOf())
+            TptpTupleAnswerFormParserService.parseToEnd(str).getSuccessOrNull().shouldNotBeNull() shouldBeEqual Pair(
+                listOf(),
+                listOf()
+            )
         }
 
         should("parse another basic example without exception") {
@@ -146,7 +149,7 @@ class TPTPTupleAnswerFormParserTest : ShouldSpec(
             val str =
                 "[['http://example.org/ns#beetle','RDF/XML Syntax Specification (Revised)'],[list('http://example.org/ns#s'),'\"That Seventies Show\"@en']|_]"
 
-                TptpTupleAnswerFormParserService.parseToEnd(str).isFailure.shouldBe(true)
+            TptpTupleAnswerFormParserService.parseToEnd(str).isFailure.shouldBe(true)
         }
     }
 )

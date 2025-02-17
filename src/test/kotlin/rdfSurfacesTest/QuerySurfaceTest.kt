@@ -4,18 +4,18 @@ import entities.rdfsurfaces.NegativeSurface
 import entities.rdfsurfaces.PositiveSurface
 import entities.rdfsurfaces.QuerySurface
 import entities.rdfsurfaces.RdfTriple
-import io.kotest.core.spec.style.ShouldSpec
-import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import entities.rdfsurfaces.rdf_term.BlankNode
 import entities.rdfsurfaces.rdf_term.DefaultLiteral
 import entities.rdfsurfaces.rdf_term.IRI
 import entities.rdfsurfaces.rdf_term.LanguageTaggedString
+import io.kotest.core.spec.style.ShouldSpec
+import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 
 class QuerySurfaceTest : ShouldSpec({
 
-    context("QuerySurface::replaceBlankNodes"){
+    context("QuerySurface::replaceBlankNodes") {
 
-        should("replace all Blank Nodes with the associated values"){
+        should("replace all Blank Nodes with the associated values") {
 
             val bn1 = BlankNode("Bn1")
             val bn2 = BlankNode("Bn2")
@@ -33,7 +33,10 @@ class QuerySurfaceTest : ShouldSpec({
 
             val literal1 = DefaultLiteral.fromNumericLiteral("4545")
             val literal2 = LanguageTaggedString("cat", "en")
-            val literal3 = DefaultLiteral.fromNonNumericLiteral("Tomatensalat", IRI.from("http://www.w3.org/2001/XMLSchema#string"))
+            val literal3 = DefaultLiteral.fromNonNumericLiteral(
+                "Tomatensalat",
+                IRI.from("http://www.w3.org/2001/XMLSchema#string")
+            )
 
             val triple11 = RdfTriple(bn1, iri1, literal1)
             val triple12 = RdfTriple(literal3, bn2, bn4)
@@ -54,28 +57,146 @@ class QuerySurfaceTest : ShouldSpec({
             val positiveSurface21 = PositiveSurface(listOf(), listOf(triple21, triple22, triple23))
             val negativeSurface21 = NegativeSurface(listOf(), listOf(triple21, triple22, triple23))
 
-            val positiveSurface22 = PositiveSurface(listOf(bn1,bn2,bn3), listOf(triple21, triple22, triple23))
-            val negativeSurface22 = NegativeSurface(listOf(bn1,bn2,bn3), listOf(triple21, triple22, triple23))
+            val positiveSurface22 = PositiveSurface(listOf(bn1, bn2, bn3), listOf(triple21, triple22, triple23))
+            val negativeSurface22 = NegativeSurface(listOf(bn1, bn2, bn3), listOf(triple21, triple22, triple23))
 
             val positiveSurface21_r = PositiveSurface(listOf(), listOf(triple21_r, triple22_r, triple23_r))
             val negativeSurface21_r = NegativeSurface(listOf(), listOf(triple21_r, triple22_r, triple23_r))
 
-            val positiveSurface11 = PositiveSurface(listOf(), listOf(triple21, triple22, triple23, positiveSurface21, negativeSurface21, positiveSurface22, negativeSurface22))
-            val negativeSurface11 = NegativeSurface(listOf(), listOf(triple21, triple22, triple23, positiveSurface21, negativeSurface21, positiveSurface22, negativeSurface22))
+            val positiveSurface11 = PositiveSurface(
+                listOf(),
+                listOf(
+                    triple21,
+                    triple22,
+                    triple23,
+                    positiveSurface21,
+                    negativeSurface21,
+                    positiveSurface22,
+                    negativeSurface22
+                )
+            )
+            val negativeSurface11 = NegativeSurface(
+                listOf(),
+                listOf(
+                    triple21,
+                    triple22,
+                    triple23,
+                    positiveSurface21,
+                    negativeSurface21,
+                    positiveSurface22,
+                    negativeSurface22
+                )
+            )
 
-            val positiveSurface12 = PositiveSurface(listOf(bn1,bn2,bn3), listOf(triple21, triple22, triple23, positiveSurface21, negativeSurface21, positiveSurface22, negativeSurface22))
-            val negativeSurface12 = NegativeSurface(listOf(bn1,bn2,bn3), listOf(triple21, triple22, triple23, positiveSurface21, negativeSurface21, positiveSurface22, negativeSurface22))
+            val positiveSurface12 = PositiveSurface(
+                listOf(bn1, bn2, bn3),
+                listOf(
+                    triple21,
+                    triple22,
+                    triple23,
+                    positiveSurface21,
+                    negativeSurface21,
+                    positiveSurface22,
+                    negativeSurface22
+                )
+            )
+            val negativeSurface12 = NegativeSurface(
+                listOf(bn1, bn2, bn3),
+                listOf(
+                    triple21,
+                    triple22,
+                    triple23,
+                    positiveSurface21,
+                    negativeSurface21,
+                    positiveSurface22,
+                    negativeSurface22
+                )
+            )
 
-            val positiveSurface11_r = PositiveSurface(listOf(), listOf(triple21_r, triple22_r, triple23_r, positiveSurface21_r, negativeSurface21_r, positiveSurface22, negativeSurface22))
-            val negativeSurface11_r = NegativeSurface(listOf(), listOf(triple21_r, triple22_r, triple23_r, positiveSurface21_r, negativeSurface21_r, positiveSurface22, negativeSurface22 ))
+            val positiveSurface11_r = PositiveSurface(
+                listOf(),
+                listOf(
+                    triple21_r,
+                    triple22_r,
+                    triple23_r,
+                    positiveSurface21_r,
+                    negativeSurface21_r,
+                    positiveSurface22,
+                    negativeSurface22
+                )
+            )
+            val negativeSurface11_r = NegativeSurface(
+                listOf(),
+                listOf(
+                    triple21_r,
+                    triple22_r,
+                    triple23_r,
+                    positiveSurface21_r,
+                    negativeSurface21_r,
+                    positiveSurface22,
+                    negativeSurface22
+                )
+            )
 
-            val positiveSurface12_r = PositiveSurface(listOf(bn1,bn2,bn3), listOf(triple21, triple22, triple23, positiveSurface21, negativeSurface21, positiveSurface22, negativeSurface22))
-            val negativeSurface12_r = NegativeSurface(listOf(bn1,bn2,bn3), listOf(triple21, triple22, triple23, positiveSurface21, negativeSurface21, positiveSurface22, negativeSurface22))
+            val positiveSurface12_r = PositiveSurface(
+                listOf(bn1, bn2, bn3),
+                listOf(
+                    triple21,
+                    triple22,
+                    triple23,
+                    positiveSurface21,
+                    negativeSurface21,
+                    positiveSurface22,
+                    negativeSurface22
+                )
+            )
+            val negativeSurface12_r = NegativeSurface(
+                listOf(bn1, bn2, bn3),
+                listOf(
+                    triple21,
+                    triple22,
+                    triple23,
+                    positiveSurface21,
+                    negativeSurface21,
+                    positiveSurface22,
+                    negativeSurface22
+                )
+            )
 
-            val querySurface = QuerySurface(listOf(bn1,bn2,bn3), listOf(triple11, positiveSurface11, triple12, negativeSurface11, triple13, positiveSurface12, negativeSurface12))
-            val querySurface_r = PositiveSurface(listOf(), listOf(triple11_r, positiveSurface11_r, triple12_r, negativeSurface11_r, triple13_r, positiveSurface12_r, negativeSurface12_r))
+            val querySurface = QuerySurface(
+                listOf(bn1, bn2, bn3),
+                listOf(
+                    triple11,
+                    positiveSurface11,
+                    triple12,
+                    negativeSurface11,
+                    triple13,
+                    positiveSurface12,
+                    negativeSurface12
+                )
+            )
+            val querySurface_r = PositiveSurface(
+                listOf(),
+                listOf(
+                    triple11_r,
+                    positiveSurface11_r,
+                    triple12_r,
+                    negativeSurface11_r,
+                    triple13_r,
+                    positiveSurface12_r,
+                    negativeSurface12_r
+                )
+            )
 
-            querySurface.replaceBlankNodes(setOf(listOf(bn1_r, bn2_r, bn3_r))) shouldBeEqualToComparingFields querySurface_r
+            querySurface.replaceBlankNodes(
+                listOf(
+                    listOf(
+                        bn1_r,
+                        bn2_r,
+                        bn3_r
+                    )
+                )
+            ) shouldBeEqualToComparingFields querySurface_r
         }
     }
 })

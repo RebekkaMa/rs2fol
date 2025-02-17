@@ -1,20 +1,20 @@
 package interface_adapters.cli
 
-import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.command.SuspendingCliktCommand
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.MordantHelpFormatter
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 
-class Rs2fol : CliktCommand() {
+class Rs2fol : SuspendingCliktCommand() {
     init {
         context {
             helpFormatter = { MordantHelpFormatter(it, showDefaultValues = true) }
         }
     }
 
-    override fun run() = Unit
+    override suspend fun run() = Unit
 }
 
 class CommonOptions : OptionGroup("Standard Options") {

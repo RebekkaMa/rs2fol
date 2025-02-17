@@ -1,6 +1,6 @@
 package interface_adapters.services
 
-import util.error.Success
+import util.commandResult.Success
 import interface_adapters.outputtransformer.SolutionToStringTransformer
 import java.nio.file.Path
 import kotlin.io.path.createDirectories

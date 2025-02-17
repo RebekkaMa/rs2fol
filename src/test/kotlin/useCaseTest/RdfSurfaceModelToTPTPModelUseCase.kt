@@ -8,8 +8,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
-import util.error.Result
-import util.error.getSuccessOrNull
+import util.commandResult.getSuccessOrNull
 import kotlin.test.assertContains
 
 class RdfSurfaceModelToTPTPModelUseCaseTest {
@@ -45,7 +44,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest {
     fun transformsEmptyPositiveSurfaceToFOLTrue() {
         val positiveSurface = PositiveSurface(emptyList(), emptyList())
         val result = RdfSurfaceModelToTPTPModelUseCase(positiveSurface)
-        assertTrue(result is Result.Success)
+        assertTrue(result.isResult)
         assertEquals(FOLTrue, result.getSuccessOrNull()?.single()?.expression)
     }
 
@@ -54,7 +53,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest {
         val negativeSurface = NegativeSurface(emptyList(), emptyList())
         val positiveSurface = PositiveSurface(emptyList(), listOf(negativeSurface))
         val result = RdfSurfaceModelToTPTPModelUseCase(positiveSurface)
-        assertTrue(result is Result.Success)
+        assertTrue(result.isResult)
         assertEquals(FOLNot(FOLTrue), result.getSuccessOrNull()?.single()?.expression)
     }
 
@@ -74,7 +73,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest {
             )
         )
         val result = RdfSurfaceModelToTPTPModelUseCase(positiveSurface)
-        assertTrue(result is Result.Success)
+        assertTrue(result.isResult)
         val expectedExpression = FOLAnd(
             listOf(
                 FOLPredicate(
@@ -117,7 +116,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest {
         val positiveSurface = PositiveSurface(emptyList(), listOf(unsupportedSurface))
 
         val result = RdfSurfaceModelToTPTPModelUseCase(positiveSurface)
-        assertTrue(result is Result.Error)
+        assertTrue(result.isFailure)
     }
 
     @Test
@@ -126,8 +125,8 @@ class RdfSurfaceModelToTPTPModelUseCaseTest {
             QuerySurface(emptyList(), listOf(RdfTriple(IRI(path = "p"), IRI(path = "o"), IRI(path = "c"))))
         val positiveSurface = PositiveSurface(emptyList(), listOf(querySurface))
         val result = RdfSurfaceModelToTPTPModelUseCase(positiveSurface)
-        assertTrue(result is Result.Success)
+        assertTrue(result.isResult)
         val expectedExpression = FOLPredicate("triple", listOf(FOLConstant("p"), FOLConstant("o"), FOLConstant("c")))
-        assertContains((result as Result.Success).data.map { it.expression }, expectedExpression)
+        assertContains(result.getSuccessOrNull()?.map { it.expression } ?: listOf(), expectedExpression)
     }
 }

@@ -3,6 +3,7 @@ package useCaseTest
 import entities.fol.FOLConstant
 import entities.fol.tptp.AnnotatedFormula
 import entities.fol.tptp.FormulaType
+import interface_adapters.services.transforming.FOLCoderService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import use_cases.modelToString.FOLModelToStringUseCase
@@ -13,7 +14,7 @@ class TPTPAnnotatedFormulaModelToStringUseCaseTest {
     @Test
     fun `invoke with conjecture`() {
         val annotatedFormula = AnnotatedFormula("testName", FormulaType.Conjecture, FOLConstant("testConstant"))
-        val encodedFOLModel = TptpElementCoderService(annotatedFormula.expression)
+        val encodedFOLModel = FOLCoderService.encode(annotatedFormula.expression)
         val transformedFormula = FOLModelToStringUseCase(encodedFOLModel)
 
         val result = TPTPAnnotatedFormulaModelToStringUseCase(annotatedFormula)
@@ -23,7 +24,7 @@ class TPTPAnnotatedFormulaModelToStringUseCaseTest {
     @Test
     fun `invoke with hypothesis`() {
         val annotatedFormula = AnnotatedFormula("testName", FormulaType.Hypothesis, FOLConstant("testConstant"))
-        val encodedFOLModel = TptpElementCoderService(annotatedFormula.expression)
+        val encodedFOLModel = FOLCoderService.encode(annotatedFormula.expression)
         val transformedFormula = FOLModelToStringUseCase(encodedFOLModel)
 
         val result = TPTPAnnotatedFormulaModelToStringUseCase(annotatedFormula)
@@ -33,7 +34,7 @@ class TPTPAnnotatedFormulaModelToStringUseCaseTest {
     @Test
     fun `invoke with lemma`() {
         val annotatedFormula = AnnotatedFormula("testName", FormulaType.Lemma, FOLConstant("testConstant"))
-        val encodedFOLModel = TptpElementCoderService(annotatedFormula.expression)
+        val encodedFOLModel = FOLCoderService.encode(annotatedFormula.expression)
         val transformedFormula = FOLModelToStringUseCase(encodedFOLModel)
 
         val result = TPTPAnnotatedFormulaModelToStringUseCase(annotatedFormula)
@@ -43,7 +44,7 @@ class TPTPAnnotatedFormulaModelToStringUseCaseTest {
     @Test
     fun `invoke with question`() {
         val annotatedFormula = AnnotatedFormula("testName", FormulaType.Question, FOLConstant("testConstant"))
-        val encodedFOLModel = TptpElementCoderService(annotatedFormula.expression)
+        val encodedFOLModel = FOLCoderService.encode(annotatedFormula.expression)
         val transformedFormula = FOLModelToStringUseCase(encodedFOLModel)
 
         val result = TPTPAnnotatedFormulaModelToStringUseCase(annotatedFormula)

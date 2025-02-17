@@ -4,11 +4,11 @@ import entities.fol.FOLConstant
 import entities.fol.FOLFunction
 import entities.fol.tptp.AnswerTuple
 import entities.fol.tptp.TPTPTupleAnswerFormAnswer
-import util.error.getSuccessOrNull
-import io.kotest.core.spec.style.ShouldSpec
 import interface_adapters.services.parsing.TptpTupleAnswerFormToModelService
+import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.nulls.shouldNotBeNull
+import util.commandResult.getSuccessOrNull
 
 class TPTPTupleAnswerFormParserToFOLTest : ShouldSpec(
     {
@@ -16,21 +16,60 @@ class TPTPTupleAnswerFormParserToFOLTest : ShouldSpec(
             val str =
                 "[(['http://example.org/ns#beetle','http://example.org/ns#nice']|['http://example.org/ns#beetle','http://example.org/ns#green']),['http://example.org/ns#beetle','http://example.org/ns#beautiful']|_]"
             TptpTupleAnswerFormToModelService.parseToEnd(str).getSuccessOrNull()
-                .shouldNotBeNull() shouldBeEqual Pair(
-                listOf(
-                    listOf(
-                        FOLConstant("http://example.org/ns#beetle"),
-                        FOLConstant("http://example.org/ns#beautiful")
+                .shouldNotBeNull() shouldBeEqual TPTPTupleAnswerFormAnswer(
+                answerTuples = listOf(
+                    AnswerTuple(
+                        listOf(
+                            FOLConstant("http://example.org/ns#beetle"),
+                            FOLConstant("http://example.org/ns#beautiful")
+                        )
                     )
                 ),
-                listOf(
+                disjunctiveAnswerTuples = listOf(
                     listOf(
-                        listOf(FOLConstant("http://example.org/ns#beetle"), FOLConstant("http://example.org/ns#nice")),
-                        listOf(FOLConstant("http://example.org/ns#beetle"), FOLConstant("http://example.org/ns#green"))
+                        AnswerTuple(
+                            listOf(
+                                FOLConstant("http://example.org/ns#beetle"),
+                                FOLConstant("http://example.org/ns#nice")
+                            )
+                        ),
+                        AnswerTuple(
+                            listOf(
+                                FOLConstant("http://example.org/ns#beetle"),
+                                FOLConstant("http://example.org/ns#green")
+                            )
+                        ),
+
+                        )
+                )
+            )
+        }
+
+        should("parse sec basic example without exception") {
+            val str =
+                "[(['http://example.org/ns#i', 'http://example.org/ns#D']|['http://example.org/ns#i', 'http://example.org/ns#B'])|_]"
+            TptpTupleAnswerFormToModelService.parseToEnd(str).getSuccessOrNull()
+                .shouldNotBeNull() shouldBeEqual TPTPTupleAnswerFormAnswer(
+                answerTuples = listOf(),
+                disjunctiveAnswerTuples = listOf(
+                    listOf(
+                        AnswerTuple(
+                            listOf(
+                                FOLConstant("http://example.org/ns#i"),
+                                FOLConstant("http://example.org/ns#D")
+                            )
+                        ),
+                        AnswerTuple(
+                            listOf(
+                                FOLConstant("http://example.org/ns#i"),
+                                FOLConstant("http://example.org/ns#B")
+                            )
+                        )
                     )
                 )
             )
         }
+
 
         should("parse example with lists without exception") {
             val str =

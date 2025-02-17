@@ -7,7 +7,7 @@ import entities.rdfsurfaces.*
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
 import util.SurfaceNotSupportedException
-import util.error.Result
+import util.commandResult.IntermediateStatus
 
 object RdfSurfaceModelToTPTPModelUseCase {
     operator fun invoke(
@@ -15,7 +15,7 @@ object RdfSurfaceModelToTPTPModelUseCase {
         ignoreQuerySurfaces: Boolean = false,
         tptpName: String = "axiom",
         formulaRole: FormulaRole = FormulaRole.Axiom,
-    ): Result<List<AnnotatedFormula>, SurfaceNotSupportedError> {
+    ): IntermediateStatus<List<AnnotatedFormula>, SurfaceNotSupportedError> {
 
         fun transform(blankNode: BlankNode) = FOLVariable(blankNode.blankNodeId)
 
@@ -176,7 +176,7 @@ object RdfSurfaceModelToTPTPModelUseCase {
                 )
             }
 
-            Result.Success(
+            IntermediateStatus.Result(
                 buildList {
                     add(fofQuantifiedFormula)
                     if (ignoreQuerySurfaces) return@buildList
@@ -185,7 +185,7 @@ object RdfSurfaceModelToTPTPModelUseCase {
                 }
             )
         } catch (exception: SurfaceNotSupportedException) {
-            return Result.Error(SurfaceNotSupportedError(surface = exception.surface))
+            return IntermediateStatus.Error(SurfaceNotSupportedError(surface = exception.surface))
         }
     }
 

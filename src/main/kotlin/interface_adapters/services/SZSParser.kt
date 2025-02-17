@@ -1,69 +1,135 @@
 package interface_adapters.services
 
-import com.github.h0tk3y.betterParse.combinators.*
-import com.github.h0tk3y.betterParse.grammar.Grammar
-import com.github.h0tk3y.betterParse.lexer.literalToken
-import com.github.h0tk3y.betterParse.lexer.regexToken
-import entities.OutputOntology
-import entities.SZSData
-import entities.SZSStatus
+import entities.*
+import interface_adapters.services.parsing.TptpTupleAnswerFormToModelService
+import util.commandResult.getOrElse
+import java.io.BufferedReader
 
-// Define the SZS Grammar
-class SZSParser : Grammar<SZSData>() {
-    // Tokens
-    val ws by regexToken("\\s+", ignore = true) // Whitespace
-    private val szsPrefix by literalToken("% SZS")
-    private val szsStatus by regexToken("status [a-zA-Z0-9_]+ for [a-zA-Z0-9_]+")
-    private val szsOutputStart by regexToken("output start [a-zA-Z]+")
-    private val szsOutputEnd by regexToken("output end [a-zA-Z]+")
-    private val nonSzsLine by regexToken("^[^%\\n][^\\n]+\\n")
+class SZSParser {
 
-    // Parsers for SZS elements
-    val statusParser by (szsStatus use {
-        val parts = text.split(" ")
-        val statusString = parts[1].uppercase()
-        val problem = parts.last()
+    /*
+        private val statusRegex = Regex("[#%]{1,2}\\s*SZS status ([\\w-]+) for ([^\\s:]+)?(?:\\s*:\\s*(.+))?")
+        private val outputStartRegex = Regex("[#%]{1,2}\\s*SZS output start ([\\w-]+) for ([^\\s:]+)?(?:\\s*:\\s*(.+))?")
+        private val outputEndRegex = Regex("[#%]{1,2}\\s*SZS output end ([\\w-]+) for ([^\\s:]+)?(?:\\s*:\\s*(.+))?")
 
-        val status = when (statusString) {
-            "THEOREM", "CONTRADICTION", "UNSATISFIABLE", "SATISFIABLE", "UNKNOWN", "COUNTERSATISFIABLE", "NOCONSEQUENCE", "TAUTOLOGY", "OPEN" -> SZSStatus.DeductiveStatus.valueOf(
-                statusString
-            )
+        private val answerTupleRegex = Regex("[#%]{1,2}\\s*SZS answers Tuple (\\[.*\\]) for ([^\\s:]+)?(?:\\s*:\\s*(.+))?")
+    */
 
-            "EQUIVALENT", "EQUISATISFIABLE", "SATISFIABILITYPRESERVED", "STRONGLYSATISFIABILITYPRESERVED" -> SZSStatus.PreservingStatus.valueOf(
-                statusString
-            )
+    private val statusRegex = Regex("[#%]{1,2} SZS status ([\\w-]+)(?: for ([^\\s:]+)?)?(?:\\s*:\\s*(.+))?")
+    private val outputStartRegex =
+        Regex("[#%]{1,2} SZS output start ([\\w-]+)(?: for ([^\\s:]+)?)?(?:\\s*:\\s*(.+))?")
+    private val outputEndRegex = Regex("[#%]{1,2} SZS output end ([\\w-]+)(?: for ([^\\s:]+)?)?(?:\\s*:\\s*(.+))?")
+    private val answerTupleRegex =
+        Regex("[#%]{1,2} SZS answers Tuple (\\[.*\\])(?: for ([^\\s:]+)?)?(?:\\s*:\\s*(.+))?")
 
-            "UNSOLVED", "INCOMPLETE", "RESOURCEOUT", "TIMEOUT", "ERROR", "GAVEUP" -> SZSStatus.UnsolvedStatus.valueOf(
-                statusString
-            )
 
-            else -> throw IllegalArgumentException("Unknown status: $statusString")
-        }
+    fun parse(bufferedReader: BufferedReader): List<SZSModel> {
+        val models = mutableListOf<SZSModel>()
+        var currentOutputType: String? = null
+        var currentOutputStartDetails: String? = null
+        val currentOutputData = StringBuilder()
 
-        SZSData(
-            status = status,
-            problem = problem
-        )
-    })
+        bufferedReader.forEachLine { line ->
+            when {
+                statusRegex.matches(line) -> {
+                    statusRegex.find(line)?.let { matchResult ->
+                        val outputType = matchResult.groupValues[1] // Immer vorhanden
+                        val identifier = matchResult.groupValues.getOrNull(2)?.takeIf { it.isNotEmpty() }
+                        val details = matchResult.groupValues.getOrNull(3)?.takeIf { it.isNotEmpty() }
 
-    val outputParser by (
-            szsOutputStart * oneOrMore(nonSzsLine) * szsOutputEnd map { (start, content, end) ->
-                val outputTypeString = start.text.split(" ").last().uppercase()
-                val outputType = OutputOntology.valueOf(outputTypeString)
-                outputType to content.text.trim()
+                        models.add(
+                            SZSStatus(
+                                statusType = outputType.toSZSStatusType(),
+                                identifier = identifier,
+                                statusDetails = details
+                            )
+                        )
+
+                    }
+                }
+
+                outputStartRegex.matches(line) -> {
+                    if (currentOutputType != null) {
+                        throw IllegalStateException("Output block not closed")
+                    }
+                    outputStartRegex.find(line)?.let { matchResult ->
+                        val outputType = matchResult.groupValues[1] // Immer vorhanden
+                        val details = matchResult.groupValues.getOrNull(3)?.takeIf { it.isNotEmpty() }
+
+                        currentOutputType = outputType
+                        currentOutputStartDetails = details
+                    }
+                }
+
+                outputEndRegex.matches(line) -> {
+                    when {
+                        currentOutputType == null -> throw IllegalStateException("Output block not opened")
+                        models.lastOrNull() !is SZSStatus -> throw IllegalStateException("No previous status")
+                    }
+
+                    outputEndRegex.find(line)?.let { matchResult ->
+                        val outputType = matchResult.groupValues[1] // Immer vorhanden
+                        val details = matchResult.groupValues.getOrNull(3)?.takeIf { it.isNotEmpty() }
+
+                        val status = models.removeLastOrNull() as? SZSStatus
+
+                        status?.let { stat ->
+                            models.add(
+                                SZSOutputModel(
+                                    status = stat,
+                                    outputType = outputType.toSZSOutputType(),
+                                    output = currentOutputData.lines().filter { it.isNotBlank() },
+                                    outputStartDetails = currentOutputStartDetails,
+                                    outputEndDetails = details
+                                )
+                            )
+                        }
+                        currentOutputType = null
+                        currentOutputStartDetails = null
+                        currentOutputData.clear()
+                    }
+                }
+
+                answerTupleRegex.matches(line) -> {
+                    answerTupleRegex.find(line)?.let { matchResult ->
+                        val answers = matchResult.groupValues[1] // Immer vorhanden
+                        val details = matchResult.groupValues.getOrNull(3) // Optional
+
+                        val status = (models.lastOrNull() as? SZSStatus)?.let {
+                            models.removeLastOrNull()
+                            it
+                        } ?: SZSStatus(
+                            SZSStatusType.SuccessOntology.SUCCESS,
+                            null,
+                            null
+                        )
+
+                        val tptpTupleAnswerFormAnswer = TptpTupleAnswerFormToModelService.parseToEnd(answers)
+                            .getOrElse { throw IllegalStateException("Could not parse answer tuple") }
+
+                        models.add(
+                            SZSAnswerTupleFormModel(
+                                status = status,
+                                tptpTupleAnswerFormAnswer = tptpTupleAnswerFormAnswer,
+                                outputStartDetails = currentOutputStartDetails,
+                                outputEndDetails = details?.takeIf { it.isNotBlank() }
+                            )
+                        )
+                    }
+
+                    currentOutputType = null
+                    currentOutputStartDetails = null
+                    currentOutputData.clear()
+                }
+
+                currentOutputType != null && line.isNotBlank() -> {
+                    currentOutputData.appendLine(line)
+                }
+
+                else -> Unit
             }
-            )
-
-    val szsLine by -szsPrefix and (statusParser and zeroOrMore(outputParser)) map { (status, outputs) ->
-        status.apply {
-            outputs.forEach { (type, content) ->
-                this.outputs[type] = content
-            }
         }
+        return models
     }
-
-    val szsFile by oneOrMore(szsLine or nonSzsLine)
-
-    // Root parser
-    override val rootParser = szsFile
 }
+

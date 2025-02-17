@@ -6,8 +6,8 @@ import entities.rdfsurfaces.QuerySurface
 import entities.rdfsurfaces.RdfTriple
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
-import util.error.getErrorOrNull
-import util.error.getSuccessOrNull
+import util.commandResult.getErrorOrNull
+import util.commandResult.getSuccessOrNull
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields

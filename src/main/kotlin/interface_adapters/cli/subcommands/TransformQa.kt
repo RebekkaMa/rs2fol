@@ -1,6 +1,10 @@
 package interface_adapters.cli.subcommands
 
-import com.github.ajalt.clikt.core.*
+import com.github.ajalt.clikt.command.SuspendingCliktCommand
+import com.github.ajalt.clikt.core.BadParameterValue
+import com.github.ajalt.clikt.core.CliktError
+import com.github.ajalt.clikt.core.Context
+import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
@@ -9,18 +13,18 @@ import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.long
 import com.github.ajalt.clikt.parameters.types.path
-import echoError
 import entities.rdfsurfaces.rdf_term.IRI
 import interface_adapters.cli.CommonOptions
+import interface_adapters.cli.util.workingDir
 import interface_adapters.outputtransformer.ErrorToStringTransformer
+import interface_adapters.outputtransformer.InfoToStringTransformer
 import interface_adapters.outputtransformer.SolutionToStringTransformer
 import use_cases.commands.TransformQaUseCase
-import util.error.fold
-import workingDir
+import util.commandResult.fold
 import kotlin.io.path.*
 
 class TransformQa :
-    CliktCommand() {
+    SuspendingCliktCommand() {
     private val commonOptions by CommonOptions()
 
     private val programName by option("--program", help = "Name of the program to execute").default("vampire")
@@ -44,7 +48,7 @@ class TransformQa :
     override fun help(context: Context) =
         "Transforms an RDF surface to FOL and returns the results of the Vampire question answering feature as an RDF surface"
 
-    override fun run() {
+    override suspend fun run() {
         try {
             val baseIRI: IRI
 
@@ -84,18 +88,28 @@ class TransformQa :
                 outputPath = output
             )
 
-            useCaseResult.fold(
-                onSuccess = {
-                    echo(SolutionToStringTransformer(it))
-                },
-                onFailure = {
-                    echo(ErrorToStringTransformer(it), err = true)
-                }
-            )
+            useCaseResult.collect { result ->
+
+                result.fold(
+                    onInfo = {
+                        if (!quiet) echo(InfoToStringTransformer(it))
+                    },
+                    onSuccess = {
+                        echo(SolutionToStringTransformer(it))
+                    },
+                    onFailure = {
+                        println(it)
+                        echo(ErrorToStringTransformer(it), err = true)
+                    }
+                )
+            }
 
         } catch (exception: Exception) {
             if (exception is CliktError) throw exception
-            if (commonOptions.debug) echoError(exception.stackTraceToString()) else echoError(exception.toString())
+            if (commonOptions.debug) echo(exception.stackTraceToString(), err = true) else echo(
+                exception.toString(),
+                err = true
+            )
             throw ProgramResult(1)
         }
     }

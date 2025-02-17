@@ -4,10 +4,12 @@ import entities.rdfsurfaces.rdf_term.IRI
 import interface_adapters.services.FileService
 import interface_adapters.services.parsing.RDFSurfaceParseService
 import interface_adapters.services.parsing.TptpTupleAnswerFormToModelService
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import use_cases.commands.RawQaAnswerToRsError.MoreThanOneQuestionSurface
 import use_cases.commands.RawQaAnswerToRsError.NoQuestionSurface
 import use_cases.subUseCase.TPTPTupleAnswerModelToRdfSurfaceUseCase
-import util.error.*
+import util.commandResult.*
 import java.io.InputStream
 import java.nio.file.Path
 import kotlin.io.path.pathString
@@ -19,15 +21,18 @@ object RawQaAnswerToRsUseCase {
         baseIri: IRI,
         outputPath: Path,
         rdfList: Boolean,
-    ): Result<Success, RootError> {
+    ): Flow<CommandStatus<Success, RootError>> = flow {
 
         val qSurfaces = RDFSurfaceParseService(rdfList)
             .parseToEnd(rdfSurface, baseIri)
-            .getOrElse { return error(it) }
+            .getOrElse {
+                emit(error(it))
+                return@flow
+            }
             .getQSurfaces()
 
-        if (qSurfaces.isEmpty()) return error(NoQuestionSurface)
-        if (qSurfaces.size > 1) return error(MoreThanOneQuestionSurface)
+        if (qSurfaces.isEmpty()) emit(error(NoQuestionSurface))
+        if (qSurfaces.size > 1) emit(error(MoreThanOneQuestionSurface))
 
         val qSurface = qSurfaces.single()
 
@@ -38,17 +43,21 @@ object RawQaAnswerToRsUseCase {
                 tptpTupleAnswerFormAnswer = it,
                 qSurface = qSurface
             )
-        }.getOrElse { return error(it) }
+        }.getOrElse {
+            emit(error(it))
+            return@flow
+        }
 
         if (outputPath.pathString == "-") {
-            return success(RawQaAnswerToRsResult.WriteToLine(result))
+            emit(success(RawQaAnswerToRsResult.WriteToLine(result)))
+            return@flow
         }
 
         FileService.createNewFile(
             path = outputPath,
             content = result
         ).also {
-            return success(RawQaAnswerToRsResult.WriteToFile(success = it))
+            emit(success(RawQaAnswerToRsResult.WriteToFile(success = it)))
         }
     }
 }

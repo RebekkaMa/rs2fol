@@ -15,8 +15,8 @@ import interface_adapters.services.parsing.util.*
 import use_cases.modelTransformer.SurfaceNotSupportedError
 import util.*
 import util.IRIConstants.RDF_TYPE_IRI
-import util.error.Error
-import util.error.Result
+import util.commandResult.Error
+import util.commandResult.IntermediateStatus
 
 typealias HayesGraph = List<HayesGraphElement>
 typealias FreeVariables = Set<BlankNode>
@@ -386,17 +386,17 @@ class RDFSurfaceParseService(val useRDFLists: Boolean) : Grammar<PositiveSurface
         .replace("\\'", "\u0027")
         .replace("\\\\'", "\u005C")
 
-    fun parseToEnd(input: String, baseIRI: IRI): Result<PositiveSurface, Error> {
+    fun parseToEnd(input: String, baseIRI: IRI): IntermediateStatus<PositiveSurface, Error> {
         var bnLabel = "BN_"
         var i = 0
         while (input.contains("_:$bnLabel\\d+".toRegex()) && i++ in 0..10) {
             bnLabel += '0'
         }
-        if (i > 10) return Result.Error(RdfSurfaceParserError.BlankNodeLabelCollision) //("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
+        if (i > 10) return IntermediateStatus.Error(RdfSurfaceParserError.BlankNodeLabelCollision) //("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
         this.bnLabel = bnLabel
         this.baseIri = baseIRI
         return try {
-            Result.Success(rootParser.parseToEnd(tokenizer.tokenize(input)))
+            IntermediateStatus.Result(rootParser.parseToEnd(tokenizer.tokenize(input)))
         } catch (exc: Throwable) {
             when (exc) {
                 is SurfaceNotSupportedException -> SurfaceNotSupportedError(surface = exc.surface)
@@ -404,7 +404,7 @@ class RDFSurfaceParseService(val useRDFLists: Boolean) : Grammar<PositiveSurface
                 is LiteralNotValidException -> RdfSurfaceParserError.LiteralNotValid(value = exc.value, iri = exc.iri)
                 is ParseException -> RdfSurfaceParserError.GenericInvalidInput(throwable = exc)
                 else -> throw exc
-            }.let { Result.Error(it) }
+            }.let { IntermediateStatus.Error(it) }
         }
     }
 }

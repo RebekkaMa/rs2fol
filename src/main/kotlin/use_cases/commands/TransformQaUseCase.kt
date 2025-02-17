@@ -5,13 +5,15 @@ import entities.rdfsurfaces.rdf_term.IRI
 import interface_adapters.services.FileService
 import interface_adapters.services.parsing.RDFSurfaceParseService
 import interface_adapters.services.vampire.TheoremProverService
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import use_cases.GetTheoremProverCommandUseCase
 import use_cases.commands.TransformQaError.MoreThanOneQuestionSurface
 import use_cases.commands.TransformQaError.NoQuestionSurface
 import use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
 import use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
 import use_cases.subUseCase.QuestionAnsweringOutputToRdfSurfacesCascUseCase
-import util.error.*
+import util.commandResult.*
 import java.io.InputStream
 import java.nio.file.Path
 
@@ -25,7 +27,7 @@ class TransformQaUseCase {
         outputPath: Path?,
         useRdfLists: Boolean,
         baseIri: IRI
-    ): Result<Success, RootError> {
+    ): Flow<CommandStatus<Success, RootError>> = flow {
 
         val rdfSurface = inputStream.reader().use { it.readText() }
         val parseResult = RDFSurfaceParseService(useRdfLists).parseToEnd(rdfSurface, baseIri)
@@ -36,13 +38,16 @@ class TransformQaUseCase {
                     ignoreQuerySurfaces = false,
                 )
             }
-            .getOrElse { return error(it) }
+            .getOrElse {
+                emit(error(it))
+                return@flow
+            }
             .joinToString(separator = System.lineSeparator()) { TPTPAnnotatedFormulaModelToStringUseCase(it) }
 
         val qSurfaces = parseResult.getOrElse { PositiveSurface() }.getQSurfaces()
         val qSurface = let {
-            if (qSurfaces.isEmpty()) return error(NoQuestionSurface)
-            if (qSurfaces.size > 1) return error(MoreThanOneQuestionSurface)
+            if (qSurfaces.isEmpty()) emit(error(NoQuestionSurface)).also { return@flow }
+            if (qSurfaces.size > 1) emit(error(MoreThanOneQuestionSurface)).also { return@flow }
             qSurfaces.single()
         }
 
@@ -57,20 +62,27 @@ class TransformQaUseCase {
             programName,
             optionId,
             reasoningTimeLimit
-        ).getOrElse { return error(it) }.command
+        ).getOrElse {
+            emit(error(it))
+            return@flow
+        }.command
 
-        val vampireParsingResult = TheoremProverService(
+        val vampireOutputBufferedReader = TheoremProverService(
             command = command,
             timeLimit = reasoningTimeLimit,
             input = folFormula
-        )?.useLines { vampireOutput ->
-            QuestionAnsweringOutputToRdfSurfacesCascUseCase(
-                qSurface = qSurface,
-                questionAnsweringOutputLines = vampireOutput,
-            )
-        } ?: run { return success(TransformQaResult.Timeout) }
+        ) ?: run {
+            emit(success<Success, RootError>(TransformQaResult.Timeout))
+            return@flow
+        }
 
-        return vampireParsingResult
+        QuestionAnsweringOutputToRdfSurfacesCascUseCase(
+            qSurface = qSurface,
+            questionAnsweringBufferedReader = vampireOutputBufferedReader,
+        ).fold(
+            onSuccess = { emit(CommandStatus.Result<Success, RootError>(it)) },
+            onFailure = { emit(CommandStatus.Error<Success, RootError>(it)) }
+        )
 
     }
 }

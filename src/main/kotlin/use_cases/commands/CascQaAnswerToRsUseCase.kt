@@ -3,10 +3,12 @@ package use_cases.commands
 import entities.rdfsurfaces.rdf_term.IRI
 import interface_adapters.services.FileService
 import interface_adapters.services.parsing.RDFSurfaceParseService
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import use_cases.commands.QaAnswerToRsError.MoreThanOneQuestionSurface
 import use_cases.commands.QaAnswerToRsError.NoQuestionSurface
 import use_cases.subUseCase.QuestionAnsweringOutputToRdfSurfacesCascUseCase
-import util.error.*
+import util.commandResult.*
 import java.io.InputStream
 import java.nio.file.Path
 import kotlin.io.path.pathString
@@ -19,34 +21,44 @@ object CascQaAnswerToRsUseCase {
         baseIri: IRI,
         outputPath: Path,
         rdfList: Boolean,
-    ): Result<Success, RootError> {
+    ): Flow<CommandStatus<Success, RootError>> = flow {
 
         val qSurfaces =
             RDFSurfaceParseService(rdfList)
                 .parseToEnd(rdfSurface, baseIri)
-                .getOrElse { return Result.Error(it) }
+                .getOrElse {
+                    emit(CommandStatus.Error(it))
+                    return@flow
+                }
                 .getQSurfaces()
 
 
-        if (qSurfaces.isEmpty()) return error(NoQuestionSurface)
-        if (qSurfaces.size > 1) return error(MoreThanOneQuestionSurface)
+        if (qSurfaces.isEmpty()) emit(error(NoQuestionSurface)).also { return@flow }
+        if (qSurfaces.size > 1) emit(error(MoreThanOneQuestionSurface)).also { return@flow }
 
         val qSurface = qSurfaces.single()
 
-        val result = inputStream.bufferedReader().useLines { questionAnsweringOutputLines ->
-            QuestionAnsweringOutputToRdfSurfacesCascUseCase.invoke(
-                qSurface = qSurface,
-                questionAnsweringOutputLines = questionAnsweringOutputLines
-            )
-        }
+        val result = QuestionAnsweringOutputToRdfSurfacesCascUseCase.invoke(
+            qSurface = qSurface,
+            questionAnsweringBufferedReader = inputStream.bufferedReader()
+        )
 
-        if (outputPath.pathString == "-") return result
+        if (outputPath.pathString == "-") {
+            result.fold(
+                onSuccess = { emit(success(it)) },
+                onFailure = { emit(error(it)) }
+            )
+            return@flow
+        }
 
         FileService.createNewFile(
             path = outputPath,
-            content = result.getOrElse { return Result.Error(it) }
+            content = result.getOrElse {
+                emit(CommandStatus.Error(it))
+                return@flow
+            }
         ).also {
-            return success(QaAnswerToRsResult.WriteToFile(success = it))
+            emit(success(QaAnswerToRsResult.WriteToFile(success = it)))
         }
     }
 }
