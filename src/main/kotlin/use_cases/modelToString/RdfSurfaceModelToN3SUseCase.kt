@@ -3,11 +3,11 @@ package use_cases.modelToString
 import entities.rdfsurfaces.*
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
-import interface_adapters.services.parsing.util.stringLiteralLongQuote
-import interface_adapters.services.parsing.util.stringLiteralLongSingleQuote
-import interface_adapters.services.parsing.util.stringLiteralQuote
-import interface_adapters.services.parsing.util.stringLiteralSingleQuote
-import interface_adapters.services.transforming.RDFTermCoderService
+import interface_adapters.services.parser.util.stringLiteralLongQuote
+import interface_adapters.services.parser.util.stringLiteralLongSingleQuote
+import interface_adapters.services.parser.util.stringLiteralQuote
+import interface_adapters.services.parser.util.stringLiteralSingleQuote
+import interface_adapters.services.coder.RDFTermCoderService
 import util.IRIConstants
 import util.LiteralTransformationException
 import util.commandResult.Error
@@ -70,20 +70,20 @@ object RdfSurfaceModelToN3UseCase {
         }
 
         fun transform(literal: Literal): String {
-            if (literal is LanguageTaggedString) return "\"${literal.lexicalForm}\"@${literal.languageTag}"
-            return when (literal.datatype.uri) {
+            if (literal is LanguageTaggedString) return "\"${literal.lexicalValue}\"@${literal.langTag}"
+            return when (literal.datatypeIRI.iri) {
                 IRIConstants.XSD_STRING_IRI -> {
-                    val rawLiteral = literal.literalValue.toString()
+                    val rawLiteral = literal.lexicalValue
                     when {
                         "\"$rawLiteral\"".matches(stringLiteralQuote) -> "\"$rawLiteral\""
                         "'$rawLiteral'".matches(stringLiteralSingleQuote) -> "'$rawLiteral'"
                         "\"\"\"$rawLiteral\"\"\"".matches(stringLiteralLongQuote) -> "\"\"\"$rawLiteral\"\"\""
                         "'''$rawLiteral'''".matches(stringLiteralLongSingleQuote) -> "'''$rawLiteral'''"
-                        else -> throw LiteralTransformationException(literal = "Value: $rawLiteral, URI: ${literal.datatype.uri}")
+                        else -> throw LiteralTransformationException(literal = "Value: $rawLiteral, URI: ${literal.datatypeIRI.iri}")
                     }
                 }
 
-                else -> "\"${literal.literalValue}\"^^${transform(IRI.from(literal.datatype.uri))}"
+                else -> "\"${literal.lexicalValue}\"^^${transform(literal.datatypeIRI)}"
             }
         }
 

@@ -6,12 +6,12 @@ import entities.SZSStatus
 import entities.SZSStatusType
 import entities.rdfsurfaces.rdf_term.IRI
 import interface_adapters.services.FileService
-import interface_adapters.services.SZSParser
-import interface_adapters.services.parsing.RDFSurfaceParseService
-import interface_adapters.services.vampire.TheoremProverService
+import interface_adapters.services.parser.RDFSurfaceParseService
+import interface_adapters.services.parser.SZSParserService
+import interface_adapters.services.theoremProver.TheoremProverRunnerService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import use_cases.GetTheoremProverCommandUseCase
+import use_cases.commands.subUseCase.GetTheoremProverCommandUseCase
 import use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
 import use_cases.modelTransformer.FormulaRole
 import use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
@@ -28,7 +28,9 @@ object CheckUseCase {
         optionId: Int,
         programName: String,
         rdfList: Boolean,
-        baseIri: IRI
+        baseIri: IRI,
+        configFile: Path,
+        dEntailment: Boolean
     ): Flow<CommandStatus<CheckSuccess, Error>?> = flow {
 
         val antecedentParseResult = RDFSurfaceParseService(rdfList).parseToEnd(antecedent, baseIri)
@@ -55,7 +57,8 @@ object CheckUseCase {
                     defaultPositiveSurface = positiveSurface,
                     ignoreQuerySurfaces = false,
                     tptpName = "conjecture",
-                    formulaRole = FormulaRole.Conjecture
+                    formulaRole = FormulaRole.Conjecture,
+                    dEntailment = dEntailment
                 )
             }
             .getOrElse {
@@ -74,13 +77,14 @@ object CheckUseCase {
         val command = GetTheoremProverCommandUseCase(
             programName,
             optionId,
-            reasoningTimeLimit
+            reasoningTimeLimit,
+            configFile
         ).getOrElse {
             emit(error(it))
             return@flow
         }.command
 
-        val vampireResult = TheoremProverService(
+        val vampireResult = TheoremProverRunnerService(
             input = antecedentFol + System.lineSeparator() + consequentFol,
             timeLimit = reasoningTimeLimit,
             command = command
@@ -89,7 +93,7 @@ object CheckUseCase {
             return@flow
         }
 
-        SZSParser().parse(vampireResult)
+        SZSParserService().parse(vampireResult)
             .singleOrNull()?.let {
                 when (it) {
                     is SZSStatus, is SZSOutputModel -> {

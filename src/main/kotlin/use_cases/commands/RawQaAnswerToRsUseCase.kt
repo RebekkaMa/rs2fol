@@ -2,13 +2,13 @@ package use_cases.commands
 
 import entities.rdfsurfaces.rdf_term.IRI
 import interface_adapters.services.FileService
-import interface_adapters.services.parsing.RDFSurfaceParseService
-import interface_adapters.services.parsing.TptpTupleAnswerFormToModelService
+import interface_adapters.services.parser.RDFSurfaceParseService
+import interface_adapters.services.parser.TptpTupleAnswerFormToModelService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import use_cases.commands.RawQaAnswerToRsError.MoreThanOneQuestionSurface
 import use_cases.commands.RawQaAnswerToRsError.NoQuestionSurface
-import use_cases.subUseCase.TPTPTupleAnswerModelToRdfSurfaceUseCase
+import use_cases.commands.subUseCase.TPTPTupleAnswerModelToRdfSurfaceUseCase
 import util.commandResult.*
 import java.io.InputStream
 import java.nio.file.Path

@@ -1,7 +1,7 @@
 package serviceTest
 
 import entities.fol.*
-import interface_adapters.services.transforming.FOLCoderService
+import interface_adapters.services.coder.FOLCoderService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

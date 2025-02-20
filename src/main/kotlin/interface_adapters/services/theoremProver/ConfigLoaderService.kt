@@ -1,4 +1,4 @@
-package interface_adapters.services
+package interface_adapters.services.theoremProver
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json

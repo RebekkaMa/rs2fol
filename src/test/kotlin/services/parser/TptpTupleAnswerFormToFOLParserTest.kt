@@ -1,10 +1,10 @@
-package parserTest
+package services.parser
 
 import entities.fol.FOLConstant
 import entities.fol.FOLFunction
 import entities.fol.tptp.AnswerTuple
 import entities.fol.tptp.TPTPTupleAnswerFormAnswer
-import interface_adapters.services.parsing.TptpTupleAnswerFormToModelService
+import interface_adapters.services.parser.TptpTupleAnswerFormToModelService
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.nulls.shouldNotBeNull

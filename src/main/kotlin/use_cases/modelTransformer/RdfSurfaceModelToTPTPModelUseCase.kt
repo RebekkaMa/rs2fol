@@ -7,6 +7,7 @@ import entities.rdfsurfaces.*
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
 import util.SurfaceNotSupportedException
+import util.commandResult.Error
 import util.commandResult.IntermediateStatus
 
 object RdfSurfaceModelToTPTPModelUseCase {
@@ -15,6 +16,7 @@ object RdfSurfaceModelToTPTPModelUseCase {
         ignoreQuerySurfaces: Boolean = false,
         tptpName: String = "axiom",
         formulaRole: FormulaRole = FormulaRole.Axiom,
+        dEntailment: Boolean = false,
     ): IntermediateStatus<List<AnnotatedFormula>, SurfaceNotSupportedError> {
 
         fun transform(blankNode: BlankNode) = FOLVariable(blankNode.blankNodeId)
@@ -23,10 +25,18 @@ object RdfSurfaceModelToTPTPModelUseCase {
 
         fun transform(literal: Literal) = FOLConstant(
             when (literal) {
-                is LanguageTaggedString -> "\"${literal.lexicalForm}\"@${literal.languageTag}"
-                else -> "\"${literal.literalValue}\"^^${literal.datatype.uri}"
+                is LanguageTaggedString -> {
+                    if (dEntailment) "\"${literal.lexicalValue}\"@${literal.normalizedLangTag}"
+                    else "\"${literal.lexicalValue}\"@${literal.langTag}"
+                }
+
+                else -> {
+                    if (dEntailment) "\"${literal.literalValue}\"^^${literal.datatypeIRI.iri}"
+                    else "\"${literal.lexicalValue}\"^^${literal.datatypeIRI.iri}"
+                }
             }
         )
+
 
         fun transform(rdfTerm: RdfTerm): FOLExpression = when (rdfTerm) {
             is BlankNode -> transform(rdfTerm)
@@ -206,3 +216,5 @@ private fun FormulaRole.toFormulaType() = when (this) {
     FormulaRole.Lemma -> FormulaType.Lemma
     FormulaRole.Question -> FormulaType.Question
 }
+
+data class SurfaceNotSupportedError(val surface: String) : Error

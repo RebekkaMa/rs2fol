@@ -1,4 +1,4 @@
-package interface_adapters.services.parsing
+package interface_adapters.services.parser
 
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
@@ -11,7 +11,7 @@ import com.github.h0tk3y.betterParse.parser.parseToEnd
 import entities.rdfsurfaces.*
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
-import interface_adapters.services.parsing.util.*
+import interface_adapters.services.parser.util.*
 import use_cases.modelTransformer.SurfaceNotSupportedError
 import util.*
 import util.IRIConstants.RDF_TYPE_IRI
@@ -125,18 +125,18 @@ class RDFSurfaceParseService(val useRDFLists: Boolean) : Grammar<PositiveSurface
     private val circumflex by circumflexToken use { text }
     private val rdfLiteral by string and optional(langTag or ((circumflex and iri) use { t2 })) use {
         when (val part = this.t2) {
-            null -> DefaultLiteral.fromNonNumericLiteral(
-                replaceStringEscapes(replaceNumericEscapeSequences(this.t1)),
+            null -> DefaultLiteral(
+                lexicalValue = replaceStringEscapes(replaceNumericEscapeSequences(this.t1)),
                 datatypeIRI = IRI.from(IRIConstants.XSD_STRING_IRI)
             )
 
-            is String -> LanguageTaggedString(lexicalForm = this.t1, languageTag = part.drop(1))
+            is String -> LanguageTaggedString(lexicalValue = this.t1, langTag = part.drop(1))
             is IRI -> {
                 val literalValue =
                     this.t1.takeUnless { part.iri == IRIConstants.XSD_STRING_IRI } ?: replaceStringEscapes(
                         replaceNumericEscapeSequences(this.t1)
                     )
-                DefaultLiteral.fromNonNumericLiteral(literalValue, datatypeIRI = part)
+                DefaultLiteral(literalValue, datatypeIRI = part)
             }
 
             else -> throw LiteralNotValidException(value = t1, iri = (t2.toString()))
@@ -144,9 +144,11 @@ class RDFSurfaceParseService(val useRDFLists: Boolean) : Grammar<PositiveSurface
     }
     private val booleanLiteralToken by regexToken("(true)|(false)")
     private val booleanLiteral by booleanLiteralToken use {
-        DefaultLiteral.fromNonNumericLiteral(
-            text,
-            datatypeIRI = IRI.from(IRIConstants.XSD_BOOLEAN_IRI)
+        DefaultLiteral(
+            lexicalValue = text,
+            datatypeIRI = IRI.from(
+                IRIConstants.XSD_BOOLEAN_IRI
+            )
         )
     }
 

@@ -31,6 +31,10 @@ class Transform : SuspendingCliktCommand() {
     private val quiet by option("--quiet", "-q", help = "Display less output")
         .flag(default = false)
 
+    private val dEntailment by option(
+        "--d-entailment",
+        help = "Use D-entailment"
+    ).flag(default = false)
 
     override fun help(context: Context) = "Transforms an RDF surface (--input) to a FOL formula in TPTP format"
 
@@ -63,7 +67,8 @@ class Transform : SuspendingCliktCommand() {
                 baseIri = baseIri,
                 useRdfLists = commonOptions.rdfList,
                 ignoreQuerySurface = ignoreQuerySurface,
-                outputPath = output
+                outputPath = output,
+                dEntailment = dEntailment
             )
 
             useCaseResult.collect { result ->

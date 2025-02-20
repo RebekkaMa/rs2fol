@@ -45,6 +45,18 @@ class TransformQa :
     private val timeLimit by option("--time-limit", "-t", help = "Time limit in seconds").long().default(120)
         .validate { it > 0 }
 
+    private val configFile by option(
+        "--config-file",
+        "-cf",
+        help = "Path to the configuration file"
+    ).path(mustExist = true, mustBeReadable = true).default(Path(workingDir.path + "/config.json"))
+
+
+    private val dEntailment by option(
+        "--d-entailment",
+        help = "Use D-entailment"
+    ).flag(default = false)
+
     override fun help(context: Context) =
         "Transforms an RDF surface to FOL and returns the results of the Vampire question answering feature as an RDF surface"
 
@@ -85,7 +97,9 @@ class TransformQa :
                 programName = programName,
                 optionId = optionId,
                 reasoningTimeLimit = timeLimit,
-                outputPath = output
+                outputPath = output,
+                configFile = configFile,
+                dEntailment = dEntailment
             )
 
             useCaseResult.collect { result ->
@@ -98,7 +112,6 @@ class TransformQa :
                         echo(SolutionToStringTransformer(it))
                     },
                     onFailure = {
-                        println(it)
                         echo(ErrorToStringTransformer(it), err = true)
                     }
                 )

@@ -1,9 +1,8 @@
-package rdfSurfacesTest
+package entities.rdfsurfaces.rdf_term
 
+import entities.rdfsurfaces.rdf_term.IRI.Companion.transformReference
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.shouldBe
-import entities.rdfsurfaces.rdf_term.IRI
-import entities.rdfsurfaces.rdf_term.IRI.Companion.transformReference
 
 class IRITest : ShouldSpec(
     {
@@ -34,14 +33,14 @@ class IRITest : ShouldSpec(
                 transformReference(IRI.from("../"), baseIRI).iri shouldBe "http://a/b/"
                 transformReference(IRI.from("../g"), baseIRI).iri shouldBe "http://a/b/g"
 
-                transformReference(IRI.from("../.."), baseIRI).iri shouldBe "http://a/"
+                transformReference(IRI.from("src"), baseIRI).iri shouldBe "http://a/"
                 transformReference(IRI.from("../../"), baseIRI).iri shouldBe "http://a/"
                 transformReference(IRI.from("../../g"), baseIRI).iri shouldBe "http://a/g"
             }
         }
 
         context("Abnormal examples") {
-            should("transform to absolute URI"){
+            should("transform to absolute URI") {
                 transformReference(IRI.from("../../../g"), baseIRI).iri shouldBe "http://a/g"
                 transformReference(IRI.from("../../../../g"), baseIRI).iri shouldBe "http://a/g"
 
@@ -52,17 +51,17 @@ class IRITest : ShouldSpec(
                 transformReference(IRI.from("g.."), baseIRI).iri shouldBe "http://a/b/c/g.."
                 transformReference(IRI.from("..g"), baseIRI).iri shouldBe "http://a/b/c/..g"
 
-                transformReference(IRI.from( "./../g"   ), baseIRI).iri shouldBe "http://a/b/g"
-                transformReference(IRI.from( "./g/."   ), baseIRI).iri shouldBe "http://a/b/c/g/"
-                transformReference(IRI.from( "g/./h"  ), baseIRI).iri shouldBe  "http://a/b/c/g/h"
-                transformReference(IRI.from( "g/../h" ), baseIRI).iri shouldBe "http://a/b/c/h"
-                transformReference(IRI.from("g;x=1/./y" ), baseIRI).iri shouldBe "http://a/b/c/g;x=1/y"
-                transformReference(IRI.from( "g;x=1/../y"), baseIRI).iri shouldBe "http://a/b/c/y"
+                transformReference(IRI.from("./../g"), baseIRI).iri shouldBe "http://a/b/g"
+                transformReference(IRI.from("./g/."), baseIRI).iri shouldBe "http://a/b/c/g/"
+                transformReference(IRI.from("g/./h"), baseIRI).iri shouldBe "http://a/b/c/g/h"
+                transformReference(IRI.from("g/../h"), baseIRI).iri shouldBe "http://a/b/c/h"
+                transformReference(IRI.from("g;x=1/./y"), baseIRI).iri shouldBe "http://a/b/c/g;x=1/y"
+                transformReference(IRI.from("g;x=1/../y"), baseIRI).iri shouldBe "http://a/b/c/y"
 
-                transformReference(IRI.from(  "g?y/./x"  ), baseIRI).iri shouldBe   "http://a/b/c/g?y/./x"
-                transformReference(IRI.from(  "g?y/../x"  ), baseIRI).iri shouldBe "http://a/b/c/g?y/../x"
-                transformReference(IRI.from("g#s/./x"    ), baseIRI).iri shouldBe "http://a/b/c/g#s/./x"
-                transformReference(IRI.from(  "g#s/../x"), baseIRI).iri shouldBe "http://a/b/c/g#s/../x"
+                transformReference(IRI.from("g?y/./x"), baseIRI).iri shouldBe "http://a/b/c/g?y/./x"
+                transformReference(IRI.from("g?y/../x"), baseIRI).iri shouldBe "http://a/b/c/g?y/../x"
+                transformReference(IRI.from("g#s/./x"), baseIRI).iri shouldBe "http://a/b/c/g#s/./x"
+                transformReference(IRI.from("g#s/../x"), baseIRI).iri shouldBe "http://a/b/c/g#s/../x"
             }
         }
     }

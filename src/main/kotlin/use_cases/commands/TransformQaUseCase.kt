@@ -3,16 +3,16 @@ package use_cases.commands
 import entities.rdfsurfaces.PositiveSurface
 import entities.rdfsurfaces.rdf_term.IRI
 import interface_adapters.services.FileService
-import interface_adapters.services.parsing.RDFSurfaceParseService
-import interface_adapters.services.vampire.TheoremProverService
+import interface_adapters.services.parser.RDFSurfaceParseService
+import interface_adapters.services.theoremProver.TheoremProverRunnerService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import use_cases.GetTheoremProverCommandUseCase
 import use_cases.commands.TransformQaError.MoreThanOneQuestionSurface
 import use_cases.commands.TransformQaError.NoQuestionSurface
+import use_cases.commands.subUseCase.GetTheoremProverCommandUseCase
+import use_cases.commands.subUseCase.QuestionAnsweringOutputToRdfSurfacesCascUseCase
 import use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
 import use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
-import use_cases.subUseCase.QuestionAnsweringOutputToRdfSurfacesCascUseCase
 import util.commandResult.*
 import java.io.InputStream
 import java.nio.file.Path
@@ -26,7 +26,9 @@ class TransformQaUseCase {
         reasoningTimeLimit: Long,
         outputPath: Path?,
         useRdfLists: Boolean,
-        baseIri: IRI
+        baseIri: IRI,
+        configFile: Path,
+        dEntailment: Boolean
     ): Flow<CommandStatus<Success, RootError>> = flow {
 
         val rdfSurface = inputStream.reader().use { it.readText() }
@@ -36,6 +38,7 @@ class TransformQaUseCase {
                 RdfSurfaceModelToTPTPModelUseCase(
                     defaultPositiveSurface = positiveSurface,
                     ignoreQuerySurfaces = false,
+                    dEntailment = dEntailment
                 )
             }
             .getOrElse {
@@ -61,13 +64,14 @@ class TransformQaUseCase {
         val command = GetTheoremProverCommandUseCase(
             programName,
             optionId,
-            reasoningTimeLimit
+            reasoningTimeLimit,
+            configFile
         ).getOrElse {
             emit(error(it))
             return@flow
         }.command
 
-        val vampireOutputBufferedReader = TheoremProverService(
+        val vampireOutputBufferedReader = TheoremProverRunnerService(
             command = command,
             timeLimit = reasoningTimeLimit,
             input = folFormula

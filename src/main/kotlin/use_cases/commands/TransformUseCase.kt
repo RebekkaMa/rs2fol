@@ -2,7 +2,7 @@ package use_cases.commands
 
 import entities.rdfsurfaces.rdf_term.IRI
 import interface_adapters.services.FileService
-import interface_adapters.services.parsing.RDFSurfaceParseService
+import interface_adapters.services.parser.RDFSurfaceParseService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import use_cases.commands.TransformUseCaseSuccess.WriteToFile
@@ -20,7 +20,8 @@ object TransformUseCase {
         outputPath: Path,
         ignoreQuerySurface: Boolean,
         useRdfLists: Boolean,
-        baseIri: IRI
+        baseIri: IRI,
+        dEntailment: Boolean
     ): Flow<CommandStatus<TransformUseCaseSuccess, RootError>> = flow {
 
         val parseResult = RDFSurfaceParseService(useRdfLists).parseToEnd(rdfSurface, baseIri)
@@ -29,6 +30,7 @@ object TransformUseCase {
                 RdfSurfaceModelToTPTPModelUseCase(
                     defaultPositiveSurface = positiveSurface,
                     ignoreQuerySurfaces = ignoreQuerySurface,
+                    dEntailment = dEntailment
                 )
             }
             .getOrElse {

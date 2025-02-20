@@ -2,12 +2,12 @@ package use_cases.commands
 
 import entities.rdfsurfaces.rdf_term.IRI
 import interface_adapters.services.FileService
-import interface_adapters.services.parsing.RDFSurfaceParseService
+import interface_adapters.services.parser.RDFSurfaceParseService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import use_cases.commands.QaAnswerToRsError.MoreThanOneQuestionSurface
 import use_cases.commands.QaAnswerToRsError.NoQuestionSurface
-import use_cases.subUseCase.QuestionAnsweringOutputToRdfSurfacesCascUseCase
+import use_cases.commands.subUseCase.QuestionAnsweringOutputToRdfSurfacesCascUseCase
 import util.commandResult.*
 import java.io.InputStream
 import java.nio.file.Path

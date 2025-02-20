@@ -1,12 +1,12 @@
-package interface_adapters.services.transforming
+package interface_adapters.services.coder
 
 import entities.fol.*
 
 object FOLCoderService {
 
-    fun encode(folModel: FOLExpression) : FOLExpression {
+    fun encode(folModel: FOLExpression): FOLExpression {
 
-        fun transformToValidTerm(folTerm: GeneralTerm) : GeneralTerm {
+        fun transformToValidTerm(folTerm: GeneralTerm): GeneralTerm {
             return when (folTerm) {
                 is FOLConstant -> FOLConstant(encodeLiteral(folTerm.name))
                 is FOLFunction -> folTerm.copy(arguments = folTerm.arguments.map { transformToValidTerm(it) })
@@ -26,14 +26,21 @@ object FOLCoderService {
             is FOLEquality -> FOLEquality(encode(folModel.left), encode(folModel.right))
             is FOLNotEqual -> FOLNotEqual(encode(folModel.left), encode(folModel.right))
             is FOLPredicate -> FOLPredicate(folModel.name, folModel.arguments.map { encode(it) })
-            is FOLExists -> FOLExists(folModel.variables.map { FOLVariable(encodeVariable(it.name)) }, encode(folModel.expression))
-            is FOLForAll -> FOLForAll(folModel.variables.map { FOLVariable(encodeVariable(it.name)) }, encode(folModel.expression))
+            is FOLExists -> FOLExists(
+                folModel.variables.map { FOLVariable(encodeVariable(it.name)) },
+                encode(folModel.expression)
+            )
+
+            is FOLForAll -> FOLForAll(
+                folModel.variables.map { FOLVariable(encodeVariable(it.name)) },
+                encode(folModel.expression)
+            )
         }
     }
 
-    fun decode(folModel: FOLExpression) : FOLExpression {
+    fun decode(folModel: FOLExpression): FOLExpression {
 
-        fun decode(folTerm: GeneralTerm) : GeneralTerm {
+        fun decode(folTerm: GeneralTerm): GeneralTerm {
             return when (folTerm) {
                 is FOLConstant -> FOLConstant(decodeLiteral(folTerm.name))
                 is FOLFunction -> folTerm.copy(arguments = folTerm.arguments.map { decode(it) })
@@ -53,14 +60,21 @@ object FOLCoderService {
             is FOLEquality -> FOLEquality(decode(folModel.left), decode(folModel.right))
             is FOLNotEqual -> FOLNotEqual(decode(folModel.left), decode(folModel.right))
             is FOLPredicate -> FOLPredicate(folModel.name, folModel.arguments.map { decode(it) })
-            is FOLExists -> FOLExists(folModel.variables.map { FOLVariable(decodeVariable(it.name)) }, decode(folModel.expression))
-            is FOLForAll -> FOLForAll(folModel.variables.map { FOLVariable(decodeVariable(it.name)) }, decode(folModel.expression))
+            is FOLExists -> FOLExists(
+                folModel.variables.map { FOLVariable(decodeVariable(it.name)) },
+                decode(folModel.expression)
+            )
+
+            is FOLForAll -> FOLForAll(
+                folModel.variables.map { FOLVariable(decodeVariable(it.name)) },
+                decode(folModel.expression)
+            )
         }
     }
 
-    fun decodeLiteral(string: String)  = string.replace("\\\\\\\\u[0-9A-Fa-f]{4}".toRegex()) {
-            Integer.parseInt(it.value.drop(3), 16).toChar().toString()
-        }
+    fun decodeLiteral(string: String) = string.replace("\\\\\\\\u[0-9A-Fa-f]{4}".toRegex()) {
+        Integer.parseInt(it.value.drop(3), 16).toChar().toString()
+    }
 
     fun decodeVariable(string: String) = string.replace("Ox[0-9A-Fa-f]{4}".toRegex()) {
         Integer.parseInt(it.value.drop(2), 16).toChar().toString()

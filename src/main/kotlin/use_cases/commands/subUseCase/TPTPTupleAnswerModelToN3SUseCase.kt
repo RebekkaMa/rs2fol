@@ -1,4 +1,4 @@
-package use_cases.subUseCase
+package use_cases.commands.subUseCase
 
 import entities.fol.tptp.TPTPTupleAnswerFormAnswer
 import entities.rdfsurfaces.PositiveSurface

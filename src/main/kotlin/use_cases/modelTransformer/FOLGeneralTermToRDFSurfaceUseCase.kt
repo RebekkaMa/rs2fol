@@ -6,7 +6,7 @@ import entities.fol.FOLVariable
 import entities.fol.GeneralTerm
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
-import interface_adapters.services.parsing.InvalidElementException
+import interface_adapters.services.parser.InvalidElementException
 import util.SurfaceNotSupportedException
 
 object FOLGeneralTermToRDFTermUseCase {
@@ -53,7 +53,7 @@ object FOLGeneralTermToRDFTermUseCase {
     private fun getLiteralFromStringOrNull(literal: String) =
         ("\"(.*)\"\\^\\^(.+)".toRegex()).matchEntire(literal)?.let {
             val (literalValue, datatypeIri) = it.destructured
-            DefaultLiteral.fromNonNumericLiteral(literalValue, IRI.from(datatypeIri))
+            DefaultLiteral(literalValue, IRI.from(datatypeIri))
         }
 
 

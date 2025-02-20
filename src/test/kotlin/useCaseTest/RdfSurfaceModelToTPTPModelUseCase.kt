@@ -11,7 +11,7 @@ import use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
 import util.commandResult.getSuccessOrNull
 import kotlin.test.assertContains
 
-class RdfSurfaceModelToTPTPModelUseCaseTest {
+class RdfSurfaceModelToTPTPModelUseCaseTestTest {
 
     @Test
     fun transformsBlankNodeToFOLVariable() {

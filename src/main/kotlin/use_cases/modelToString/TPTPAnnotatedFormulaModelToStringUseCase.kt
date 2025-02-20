@@ -2,7 +2,7 @@ package use_cases.modelToString
 
 import entities.fol.tptp.AnnotatedFormula
 import entities.fol.tptp.FormulaType
-import interface_adapters.services.transforming.FOLCoderService
+import interface_adapters.services.coder.FOLCoderService
 
 object TPTPAnnotatedFormulaModelToStringUseCase {
 

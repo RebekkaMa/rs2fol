@@ -1,7 +1,7 @@
 package interface_adapters.outputtransformer
 
 import use_cases.commands.*
-import use_cases.subUseCase.AnswerTupleTransformationSuccess
+import use_cases.commands.subUseCase.AnswerTupleTransformationSuccess
 import util.commandResult.Success
 
 object SolutionToStringTransformer {

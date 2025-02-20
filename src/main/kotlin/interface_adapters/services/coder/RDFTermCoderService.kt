@@ -1,8 +1,8 @@
-package interface_adapters.services.transforming
+package interface_adapters.services.coder
 
 import entities.rdfsurfaces.rdf_term.*
-import interface_adapters.services.parsing.util.pnChars
-import interface_adapters.services.parsing.util.pnCharsU
+import interface_adapters.services.parser.util.pnChars
+import interface_adapters.services.parser.util.pnCharsU
 
 object RDFTermCoderService {
 

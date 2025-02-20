@@ -1,9 +1,5 @@
-package rdfSurfacesTest
+package entities.rdfsurfaces
 
-import entities.rdfsurfaces.NegativeSurface
-import entities.rdfsurfaces.PositiveSurface
-import entities.rdfsurfaces.QuerySurface
-import entities.rdfsurfaces.RdfTriple
 import entities.rdfsurfaces.rdf_term.BlankNode
 import entities.rdfsurfaces.rdf_term.DefaultLiteral
 import entities.rdfsurfaces.rdf_term.IRI
@@ -33,7 +29,7 @@ class QuerySurfaceTest : ShouldSpec({
 
             val literal1 = DefaultLiteral.fromNumericLiteral("4545")
             val literal2 = LanguageTaggedString("cat", "en")
-            val literal3 = DefaultLiteral.fromNonNumericLiteral(
+            val literal3 = DefaultLiteral(
                 "Tomatensalat",
                 IRI.from("http://www.w3.org/2001/XMLSchema#string")
             )

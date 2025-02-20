@@ -56,8 +56,19 @@ class Check : SuspendingCliktCommand() {
         .default(120)
         .validate { it > 0 }
 
+    private val configFile by option(
+        "--config-file",
+        "-cf",
+        help = "Path to the configuration file"
+    ).path(mustExist = true, mustBeReadable = true).default(Path(workingDir.path + "/config.json"))
+
+    private val dEntailment by option(
+        "--d-entailment",
+        help = "Use D-entailment"
+    ).flag(default = false)
+
     override fun help(context: Context) =
-        "Checks whether an RDF surface (--consequence) is a logical consequence of another RDF surface (--input) using the FOL-based Vampire theorem prover"
+        "Checks whether an RDF surface (--consequence) is a logical consequence of another RDF surface (--input) using the specified theorem prover"
 
     override suspend fun run() {
         try {
@@ -147,7 +158,9 @@ class Check : SuspendingCliktCommand() {
                 outputPath = output,
                 reasoningTimeLimit = timeLimit,
                 optionId = optionId,
-                programName = programName
+                programName = programName,
+                configFile = configFile,
+                dEntailment = dEntailment
             )
 
             result.collect { res ->

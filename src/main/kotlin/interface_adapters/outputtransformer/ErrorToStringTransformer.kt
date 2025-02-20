@@ -1,15 +1,15 @@
 package interface_adapters.outputtransformer
 
-import interface_adapters.services.parsing.RdfSurfaceParserError
-import interface_adapters.services.parsing.TptpTupleAnswerFormParserError
+import interface_adapters.services.parser.RdfSurfaceParserError
+import interface_adapters.services.parser.TptpTupleAnswerFormParserError
 import use_cases.commands.CheckError
 import use_cases.commands.QaAnswerToRsError
 import use_cases.commands.RawQaAnswerToRsError
 import use_cases.commands.TransformQaError
+import use_cases.commands.subUseCase.AnswerTupleTransformationError
+import use_cases.commands.subUseCase.InvalidInputError
 import use_cases.modelToString.LiteralTransformationError
 import use_cases.modelTransformer.SurfaceNotSupportedError
-import use_cases.subUseCase.AnswerTupleTransformationError
-import use_cases.subUseCase.InvalidInputError
 import util.commandResult.RootError
 
 object ErrorToStringTransformer {

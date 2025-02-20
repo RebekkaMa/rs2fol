@@ -1,16 +1,16 @@
-package parserTest
+package services.parser
 
 import entities.SZSOutputModel
 import entities.SZSOutputType
 import entities.SZSStatus
 import entities.SZSStatusType
-import interface_adapters.services.SZSParser
+import interface_adapters.services.parser.SZSParserService
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-class SZSParserTest {
+class SZSParserServiceTest {
 
-    private val parser = SZSParser()
+    private val parser = SZSParserService()
 
     @Test
     fun `test valid SZS status parsing`() {

@@ -1,10 +1,10 @@
-package interface_adapters.services.vampire
+package interface_adapters.services.theoremProver
 
 import java.io.BufferedReader
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-object TheoremProverService {
+object TheoremProverRunnerService {
 
     operator fun invoke(
         command: List<String>,
@@ -14,7 +14,7 @@ object TheoremProverService {
 
         val typedCommand = command.toTypedArray()
 
-        typedCommand.joinToString(" ").also { println(it) }
+        typedCommand.joinToString(" ")
 
 
         val workingDir = File(System.getProperty("user.dir"))

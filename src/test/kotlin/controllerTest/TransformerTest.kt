@@ -6,13 +6,13 @@ import entities.rdfsurfaces.QuerySurface
 import entities.rdfsurfaces.RdfTriple
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
-import interface_adapters.services.transforming.FOLCoderService
+import interface_adapters.services.coder.FOLCoderService
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.apache.jena.datatypes.xsd.XSDDatatype
-import use_cases.modelTransformer.RdfSurfaceModelToFolUseCase
+import use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
 import util.commandResult.getSuccessOrNull
 import java.io.File
 
@@ -29,14 +29,15 @@ class TransformerTest
 
                 val rdfTriple = RdfTriple(iri1, iri2, iri3)
 
-                val result = RdfSurfaceModelToFolUseCase(
+                val result = RdfSurfaceModelToTPTPModelUseCase(
                     PositiveSurface(
                         listOf(),
                         listOf(rdfTriple)
                     )
                 ).getSuccessOrNull()
                 result shouldNotBe null
-                result!!.replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
+                result!!.joinToString(System.lineSeparator())
+                    .replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
 
 
             }
@@ -50,7 +51,7 @@ class TransformerTest
                 val iri4 = IRI.from("http://example.org/vocab/show/blurb")
 
                 val literal1 =
-                    DefaultLiteral("That Seventies Show", XSDDatatype.XSDstring)
+                    DefaultLiteral("That Seventies Show", IRI.from(XSDDatatype.XSDstring.uri))
                 val literal2 =
                     LanguageTaggedString("That Seventies Show", "en")
                 val literal3 =
@@ -60,7 +61,7 @@ class TransformerTest
                 val literal5 = DefaultLiteral(
                     "This is a multi-line                        # literal with embedded new lines and quotes\n" +
                             "literal with many quotes (\"\"\"\"\")\n" +
-                            "and up to two sequential apostrophes ('').", XSDDatatype.XSDstring
+                            "and up to two sequential apostrophes ('').", IRI.from(XSDDatatype.XSDstring.uri)
                 )
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
@@ -71,14 +72,15 @@ class TransformerTest
                 val rdfTriple6 = RdfTriple(iri1, iri3, literal4)
                 val rdfTriple7 = RdfTriple(iri1, iri4, literal5)
 
-                val result = RdfSurfaceModelToFolUseCase(
+                val result = RdfSurfaceModelToTPTPModelUseCase(
                     PositiveSurface(
                         listOf(),
                         listOf(rdfTriple1, rdfTriple2, rdfTriple3, rdfTriple4, rdfTriple5, rdfTriple6, rdfTriple7)
                     )
                 ).getSuccessOrNull()
                 result shouldNotBe null
-                result!!.replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
+                result!!.joinToString(System.lineSeparator())
+                    .replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
             }
 
 
@@ -87,13 +89,13 @@ class TransformerTest
 
                 val iri1 = IRI.from("http://example.org/stuff/1.0/p")
 
-                val literal1 = DefaultLiteral("w", XSDDatatype.XSDstring)
-                val literal2 = DefaultLiteral(1, XSDDatatype.XSDinteger)
+                val literal1 = DefaultLiteral("w", IRI.from(XSDDatatype.XSDstring.uri))
+                val literal2 = DefaultLiteral("1", IRI.from(XSDDatatype.XSDinteger.uri))
                 val literal3 = DefaultLiteral(
-                    XSDDatatype.XSDdecimal.parse("2.0"),
-                    XSDDatatype.XSDdecimal
+                    XSDDatatype.XSDdecimal.parse("2.0").toString(),
+                    IRI.from(XSDDatatype.XSDdecimal.uri)
                 )
-                val literal4 = DefaultLiteral(3E1, XSDDatatype.XSDdouble)
+                val literal4 = DefaultLiteral("3E1", IRI.from(XSDDatatype.XSDdouble.uri))
 
 
                 val collection1 =
@@ -101,13 +103,14 @@ class TransformerTest
 
                 val rdfTriple1 = RdfTriple(collection1, iri1, literal1)
 
-                val result = RdfSurfaceModelToFolUseCase(
+                val result = RdfSurfaceModelToTPTPModelUseCase(
                     PositiveSurface(
                         listOf(), listOf(rdfTriple1)
                     )
                 ).getSuccessOrNull()
                 result shouldNotBe null
-                result!!.replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
+                result!!.joinToString(System.lineSeparator())
+                    .replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
             }
 
             context("blogic") {
@@ -137,14 +140,15 @@ class TransformerTest
                         NegativeSurface(listOf(bnS), listOf(rdfTriple3, negativeSurface21, negativeSurface22))
                     val querySurface = QuerySurface(listOf(bnS, bnC), listOf(rdfTriple6))
 
-                    val result = RdfSurfaceModelToFolUseCase(
+                    val result = RdfSurfaceModelToTPTPModelUseCase(
                         PositiveSurface(
                             listOf(),
                             listOf(rdfTriple1, negativeSurface1, negativeSurface2, querySurface)
                         )
                     ).getSuccessOrNull()
                     result shouldNotBe null
-                    result!!.replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
+                    result!!.joinToString(System.lineSeparator())
+                        .replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
 
                 }
                 should("transform blogic abcd.n3s") {
@@ -186,14 +190,15 @@ class TransformerTest
                     val querySurface = QuerySurface(listOf(bnS, bnC), listOf(rdfTriple8))
 
 
-                    val result = RdfSurfaceModelToFolUseCase(
+                    val result = RdfSurfaceModelToTPTPModelUseCase(
                         PositiveSurface(
                             listOf(),
                             listOf(rdfTriple1, negativeSurface1, negativeSurface2, negativeSurface3, querySurface)
                         )
                     ).getSuccessOrNull()
                     result shouldNotBe null
-                    result!!.replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
+                    result!!.joinToString(System.lineSeparator())
+                        .replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
 
                 }
             }

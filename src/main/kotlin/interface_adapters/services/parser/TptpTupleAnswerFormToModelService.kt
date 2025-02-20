@@ -1,4 +1,4 @@
-package interface_adapters.services.parsing
+package interface_adapters.services.parser
 
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
@@ -14,7 +14,7 @@ import entities.fol.FOLVariable
 import entities.fol.GeneralTerm
 import entities.fol.tptp.AnswerTuple
 import entities.fol.tptp.TPTPTupleAnswerFormAnswer
-import interface_adapters.services.parsing.TptpTupleAnswerFormParserError.*
+import util.commandResult.Error
 import util.commandResult.IntermediateStatus
 
 
@@ -94,11 +94,27 @@ object TptpTupleAnswerFormToModelService : Grammar<TPTPTupleAnswerFormAnswer>() 
             IntermediateStatus.Result(rootParser.parseToEnd(tokenizer.tokenize(answerTuple)))
         } catch (exc: Throwable) {
             when (exc) {
-                is InvalidFunctionOrPredicateException -> InvalidFunctionOrPredicate(element = exc.element)
-                is InvalidElementException -> InvalidElement(element = exc.element)
-                is ParseException -> GenericInvalidInput(throwable = exc)
+                is InvalidFunctionOrPredicateException -> TptpTupleAnswerFormParserError.InvalidFunctionOrPredicate(
+                    element = exc.element
+                )
+
+                is InvalidElementException -> TptpTupleAnswerFormParserError.InvalidElement(element = exc.element)
+                is ParseException -> TptpTupleAnswerFormParserError.GenericInvalidInput(throwable = exc)
                 else -> throw exc
             }.let { IntermediateStatus.Error(it) }
         }
     }
 }
+
+sealed interface TptpTupleAnswerFormParserError : Error {
+    data class InvalidFunctionOrPredicate(val element: String) : TptpTupleAnswerFormParserError
+    data class InvalidElement(val element: String) : TptpTupleAnswerFormParserError
+    data class GenericInvalidInput(val throwable: Throwable) : TptpTupleAnswerFormParserError
+}
+
+class InvalidFunctionOrPredicateException(val element: String) :
+    Exception("Function/predicate \"$element\" is invalid or not supported.")
+
+class InvalidElementException(val element: String) :
+    Exception("Element \"$element\" could not be parsed.")
+

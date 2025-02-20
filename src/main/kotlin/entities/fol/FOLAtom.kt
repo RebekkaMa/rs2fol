@@ -14,6 +14,10 @@ open class FOLConstant(val name: String) : GeneralTerm() {
     override fun hashCode(): Int {
         return name.hashCode()
     }
+
+    override fun toString(): String {
+        return name
+    }
 }
 
 object FOLTrue : FOLConstant("true")

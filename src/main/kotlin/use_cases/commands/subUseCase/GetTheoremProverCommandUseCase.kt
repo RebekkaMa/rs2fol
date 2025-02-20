@@ -1,18 +1,19 @@
-package use_cases
+package use_cases.commands.subUseCase
 
-import interface_adapters.services.ConfigLoader
+import interface_adapters.services.theoremProver.ConfigLoader
 import util.commandResult.*
-import java.nio.file.Paths
+import java.nio.file.Path
+import kotlin.io.path.pathString
 
 
 object GetTheoremProverCommandUseCase {
     operator fun invoke(
         programName: String,
         optionId: Int,
-        reasoningTimeLimit: Long
+        reasoningTimeLimit: Long,
+        configFile: Path
     ): IntermediateStatus<GetTheoremProverCommandSuccess, Error> {
-        val configPath = Paths.get(".", "programConfig.json").toString()
-        val configs = ConfigLoader.loadConfig(configPath)
+        val configs = ConfigLoader.loadConfig(configFile.pathString)
 
         val programConfig = configs.programs.getOrElse(programName) {
             return intermediateError(

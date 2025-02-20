@@ -1,119 +1,77 @@
 package entities.rdfsurfaces.rdf_term
 
-import org.apache.jena.datatypes.BaseDatatype
-import org.apache.jena.datatypes.xsd.XSDDatatype
-import org.apache.jena.datatypes.xsd.XSDDatatype.*
 import entities.rdfsurfaces.rdf_term.IRI.Companion.from
+import org.apache.jena.datatypes.BaseDatatype.TypedValue
+import org.apache.jena.graph.langtag.LangTags
+import org.apache.jena.rdf.model.ModelFactory
 import util.IRIConstants
 
 sealed class Literal : RdfTerm {
+    abstract val lexicalValue: String
     abstract val literalValue: Any
-    abstract val datatype: BaseDatatype
+    abstract val datatypeIRI: IRI
 
     override fun equals(other: Any?): Boolean {
         return when {
             other === this -> true
-            other is Literal -> other.literalValue == literalValue && other.datatype.uri == datatype.uri
+            other is Literal -> other.lexicalValue == lexicalValue && other.literalValue == literalValue && other.datatypeIRI == datatypeIRI
             else -> false
         }
     }
 
     override fun hashCode(): Int {
         var result = literalValue.hashCode()
-        result = 31 * result + datatype.uri.hashCode()
+        result = 31 * result + datatypeIRI.hashCode()
+        result = 31 * result + lexicalValue.hashCode()
         return result
     }
 }
 
-data class DefaultLiteral(override val literalValue: Any, override val datatype: BaseDatatype) : Literal() {
+data class DefaultLiteral(
+    override val lexicalValue: String,
+    override val datatypeIRI: IRI,
+) : Literal(), org.apache.jena.rdf.model.Literal by ModelFactory.createDefaultModel()
+    .createTypedLiteral(lexicalValue, datatypeIRI.iri) {
+
+    override val literalValue: Any = (value as? TypedValue)?.lexicalValue ?: value
 
     companion object {
-
-        fun fromNonNumericLiteral(
-            lexicalForm: String,
-            datatypeIRI: IRI
-        ): Literal {
-            val datatype = when {
-                datatypeIRI.iri.startsWith(IRIConstants.XSD_IRI) -> when (datatypeIRI.fragment) {
-                    "string" -> XSDstring
-                    "boolean" -> XSDboolean
-                    "decimal" -> XSDdecimal
-                    "integer" -> XSDinteger
-                    "double" -> XSDdouble
-                    "float" -> XSDfloat
-                    "date" -> XSDdate
-                    "time" -> XSDtime
-                    "dateTime" -> XSDdateTime
-                    "dateTimeStamp" -> XSDdateTimeStamp
-                    "gYear" -> XSDgYear
-                    "gMonth" -> XSDgMonth
-                    "gDay" -> XSDgYear
-                    "gYearMonth" -> XSDgYearMonth
-                    "duration" -> XSDduration
-                    "yearMonthDuration" -> XSDyearMonthDuration
-                    "dayTimeDuration" -> XSDdayTimeDuration
-                    "byte" -> XSDbyte
-                    "short" -> XSDshort
-                    "int" -> XSDint
-                    "long" -> XSDlong
-                    "unsignedByte" -> XSDunsignedByte
-                    "unsignedShort" -> XSDshort
-                    "unsignedInt" -> XSDunsignedInt
-                    "unsignedLong" -> XSDunsignedLong
-                    "positiveInteger" -> XSDpositiveInteger
-                    "nonNegativeInteger" -> XSDnonNegativeInteger
-                    "negativeInteger" -> XSDnegativeInteger
-                    "nonPositiveInteger" -> XSDnonPositiveInteger
-                    "hexBinary" -> XSDhexBinary
-                    "base64Binary" -> XSDbase64Binary
-                    "anyURI" -> XSDanyURI
-                    "language" -> XSDlanguage
-                    "normalizedString" -> XSDnormalizedString
-                    "token" -> XSDtoken
-                    "NMTOKEN" -> XSDNMTOKEN
-                    "Name" -> XSDName
-                    "NCName" -> XSDNCName
-                    else -> BaseDatatype(datatypeIRI.iri)
-                }
-
-                else -> BaseDatatype(datatypeIRI.iri)
-            }
-            return DefaultLiteral(
-                runCatching {
-                    lexicalForm.takeUnless { datatype is XSDDatatype } ?: datatype.parse(lexicalForm)
-                }.getOrDefault(lexicalForm),
-                datatype
-            )
-        }
 
         fun fromNumericLiteral(numericLiteral: String): Literal =
             when {
                 numericLiteral.contains(
                     "E",
                     ignoreCase = true
-                ) -> fromNonNumericLiteral(
-                    lexicalForm = numericLiteral,
+                ) -> DefaultLiteral(
+                    lexicalValue = numericLiteral,
                     datatypeIRI = from(IRIConstants.XSD_DOUBLE)
                 )
 
                 numericLiteral.contains(
                     ".",
                     ignoreCase = true
-                ) -> fromNonNumericLiteral(
-                    lexicalForm = numericLiteral,
+                ) -> DefaultLiteral(
+                    lexicalValue = numericLiteral,
                     datatypeIRI = from(IRIConstants.XSD_DECIMAL)
                 )
 
-                else -> fromNonNumericLiteral(
-                    lexicalForm = numericLiteral,
+                else -> DefaultLiteral(
+                    lexicalValue = numericLiteral,
                     datatypeIRI = from(IRIConstants.XSD_INTEGER)
                 )
             }
-
     }
 }
 
-data class LanguageTaggedString(val lexicalForm: String, val languageTag: String) : Literal() {
-    override val literalValue = lexicalForm to languageTag
-    override val datatype = BaseDatatype(IRIConstants.RDF_LANG_STRING_IRI)
+data class LanguageTaggedString(
+    override val lexicalValue: String,
+    val langTag: String
+) : Literal() {
+
+    val normalizedLangTag: String = LangTags.formatLangtag(langTag)
+
+    override val datatypeIRI: IRI = from(IRIConstants.RDF_LANG_STRING_IRI)
+    override val literalValue
+        get() = lexicalValue to normalizedLangTag
+
 }

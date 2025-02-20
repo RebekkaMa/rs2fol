@@ -1,19 +1,10 @@
-package interface_adapters.services
+package interface_adapters.services.parser
 
 import entities.*
-import interface_adapters.services.parsing.TptpTupleAnswerFormToModelService
 import util.commandResult.getOrElse
 import java.io.BufferedReader
 
-class SZSParser {
-
-    /*
-        private val statusRegex = Regex("[#%]{1,2}\\s*SZS status ([\\w-]+) for ([^\\s:]+)?(?:\\s*:\\s*(.+))?")
-        private val outputStartRegex = Regex("[#%]{1,2}\\s*SZS output start ([\\w-]+) for ([^\\s:]+)?(?:\\s*:\\s*(.+))?")
-        private val outputEndRegex = Regex("[#%]{1,2}\\s*SZS output end ([\\w-]+) for ([^\\s:]+)?(?:\\s*:\\s*(.+))?")
-
-        private val answerTupleRegex = Regex("[#%]{1,2}\\s*SZS answers Tuple (\\[.*\\]) for ([^\\s:]+)?(?:\\s*:\\s*(.+))?")
-    */
+class SZSParserService {
 
     private val statusRegex = Regex("[#%]{1,2} SZS status ([\\w-]+)(?: for ([^\\s:]+)?)?(?:\\s*:\\s*(.+))?")
     private val outputStartRegex =

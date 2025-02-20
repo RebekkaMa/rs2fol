@@ -1,4 +1,4 @@
-package use_cases.subUseCase
+package use_cases.commands.subUseCase
 
 import entities.SZSAnswerTupleFormModel
 import entities.SZSOutputModel
@@ -6,7 +6,7 @@ import entities.SZSStatus
 import entities.SZSStatusType
 import entities.fol.tptp.TPTPTupleAnswerFormAnswer
 import entities.rdfsurfaces.QSurface
-import interface_adapters.services.SZSParser
+import interface_adapters.services.parser.SZSParserService
 import util.commandResult.*
 import java.io.BufferedReader
 
@@ -19,7 +19,7 @@ object QuestionAnsweringOutputToRdfSurfacesCascUseCase {
         val parsedResult = mutableSetOf<TPTPTupleAnswerFormAnswer>()
         var refutationFound = false
 
-        val questionAnsweringTPTPAnswers = SZSParser().parse(questionAnsweringBufferedReader)
+        val questionAnsweringTPTPAnswers = SZSParserService().parse(questionAnsweringBufferedReader)
         /*
                     return IntermediateStatus.Error(
                         AnswerTupleTransformationError.AnswerTupleTransformation(
