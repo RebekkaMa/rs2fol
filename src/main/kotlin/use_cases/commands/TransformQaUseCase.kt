@@ -5,8 +5,10 @@ import entities.rdfsurfaces.rdf_term.IRI
 import interface_adapters.services.FileService
 import interface_adapters.services.parser.RDFSurfaceParseService
 import interface_adapters.services.theoremProver.TheoremProverRunnerService
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.launch
 import use_cases.commands.TransformQaError.MoreThanOneQuestionSurface
 import use_cases.commands.TransformQaError.NoQuestionSurface
 import use_cases.commands.subUseCase.GetTheoremProverCommandUseCase
@@ -29,7 +31,7 @@ class TransformQaUseCase {
         baseIri: IRI,
         configFile: Path,
         dEntailment: Boolean
-    ): Flow<CommandStatus<Success, RootError>> = flow {
+    ): Flow<CommandStatus<Success, RootError>> = channelFlow<CommandStatus<Success, RootError>> {
 
         val rdfSurface = inputStream.reader().use { it.readText() }
         val parseResult = RDFSurfaceParseService(useRdfLists).parseToEnd(rdfSurface, baseIri)
@@ -42,15 +44,15 @@ class TransformQaUseCase {
                 )
             }
             .getOrElse {
-                emit(error(it))
-                return@flow
+                send(error(it))
+                return@channelFlow
             }
             .joinToString(separator = System.lineSeparator()) { TPTPAnnotatedFormulaModelToStringUseCase(it) }
 
         val qSurfaces = parseResult.getOrElse { PositiveSurface() }.getQSurfaces()
         val qSurface = let {
-            if (qSurfaces.isEmpty()) emit(error(NoQuestionSurface)).also { return@flow }
-            if (qSurfaces.size > 1) emit(error(MoreThanOneQuestionSurface)).also { return@flow }
+            if (qSurfaces.isEmpty()) send(error(NoQuestionSurface)).also { return@channelFlow }
+            if (qSurfaces.size > 1) send(error(MoreThanOneQuestionSurface)).also { return@channelFlow }
             qSurfaces.single()
         }
 
@@ -67,27 +69,34 @@ class TransformQaUseCase {
             reasoningTimeLimit,
             configFile
         ).getOrElse {
-            emit(error(it))
-            return@flow
+            send(error(it))
+            return@channelFlow
         }.command
 
-        val vampireOutputBufferedReader = TheoremProverRunnerService(
+        val (vampireOutputBufferedReader, timeoutDeferred) = TheoremProverRunnerService(
             command = command,
             timeLimit = reasoningTimeLimit,
             input = folFormula
-        ) ?: run {
-            emit(success<Success, RootError>(TransformQaResult.Timeout))
-            return@flow
-        }
-
-        QuestionAnsweringOutputToRdfSurfacesCascUseCase(
-            qSurface = qSurface,
-            questionAnsweringBufferedReader = vampireOutputBufferedReader,
-        ).fold(
-            onSuccess = { emit(CommandStatus.Result<Success, RootError>(it)) },
-            onFailure = { emit(CommandStatus.Error<Success, RootError>(it)) }
         )
 
+
+        launch {
+            if (timeoutDeferred.await()) {
+                send(success(TransformQaResult.Timeout))
+                cancel()
+            }
+        }
+
+        launch {
+            QuestionAnsweringOutputToRdfSurfacesCascUseCase(
+                qSurface = qSurface,
+                questionAnsweringBufferedReader = vampireOutputBufferedReader,
+            ).fold(
+                onSuccess = { send(success(it)) },
+                onFailure = { send(error(it)) }
+            )
+            cancel()
+        }
     }
 }
 
