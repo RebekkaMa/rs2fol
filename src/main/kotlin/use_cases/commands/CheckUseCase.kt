@@ -5,17 +5,11 @@ import entities.SZSOutputModel
 import entities.SZSStatus
 import entities.SZSStatusType
 import entities.rdfsurfaces.rdf_term.IRI
-import interface_adapters.services.FileService
-import interface_adapters.services.parser.RDFSurfaceParseService
 import interface_adapters.services.parser.SZSParserService
 import interface_adapters.services.theoremProver.TheoremProverRunnerService
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import use_cases.commands.subUseCase.GetTheoremProverCommandUseCase
-import use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
-import use_cases.modelTransformer.FormulaRole
-import use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
 import util.commandResult.*
 import java.nio.file.Path
 
@@ -34,46 +28,23 @@ object CheckUseCase {
         dEntailment: Boolean
     ): Flow<CommandStatus<CheckSuccess, Error>?> = channelFlow {
 
-        val antecedentParseResult = RDFSurfaceParseService(rdfList).parseToEnd(antecedent, baseIri)
-        val antecedentTPTPModels = antecedentParseResult.runOnSuccess { positiveSurface ->
-            RdfSurfaceModelToTPTPModelUseCase(
-                defaultPositiveSurface = positiveSurface,
-                ignoreQuerySurfaces = true,
+        val tptpFormula = TransformUseCase.invoke(
+            rdfSurface = antecedent,
+            consequenceSurface = consequent,
+            ignoreQuerySurface = true,
+            useRdfLists = rdfList,
+            baseIri = baseIri,
+            dEntailment = dEntailment,
+            outputPath = outputPath
+        ).onEach { result ->
+            result.fold(
+                onInfo = { send(info(it)) },
+                onSuccess = { },
+                onFailure = { send(error(it)); close() }
             )
-        }.getOrElse {
-            send(error(it))
-            return@channelFlow
-        }
-        val antecedentFol =
-            antecedentTPTPModels.joinToString(separator = System.lineSeparator()) {
-                TPTPAnnotatedFormulaModelToStringUseCase(
-                    it
-                )
-            }
-
-        val consequentParseResult = RDFSurfaceParseService(rdfList).parseToEnd(consequent, baseIri)
-        val consequentFol = consequentParseResult
-            .runOnSuccess { positiveSurface ->
-                RdfSurfaceModelToTPTPModelUseCase(
-                    defaultPositiveSurface = positiveSurface,
-                    ignoreQuerySurfaces = false,
-                    tptpName = "conjecture",
-                    formulaRole = FormulaRole.Conjecture,
-                    dEntailment = dEntailment
-                )
-            }
-            .getOrElse {
-                send(error(it))
-                return@channelFlow
-            }
-            .joinToString(separator = System.lineSeparator()) { TPTPAnnotatedFormulaModelToStringUseCase(it) }
-
-        outputPath?.let {
-            FileService.createNewFile(
-                path = outputPath,
-                content = antecedentFol + System.lineSeparator() + consequentFol
-            )
-        }
+        }.mapNotNull { it.getSuccessOrNull() as TransformUseCaseSuccess }
+            .first()
+            .res
 
         val command = GetTheoremProverCommandUseCase(
             programName,
@@ -82,14 +53,15 @@ object CheckUseCase {
             configFile
         ).getOrElse {
             send(error(it))
+            close()
             return@channelFlow
         }.command
 
         val (vampireResult, timeoutDeferred) = TheoremProverRunnerService(
-            input = antecedentFol + System.lineSeparator() + consequentFol,
+            input = tptpFormula,
             timeLimit = reasoningTimeLimit,
             command = command
-        )
+        ).getOrElse { send(error(it)); close(); return@channelFlow }
 
         launch {
             if (timeoutDeferred.await()) {
@@ -99,57 +71,54 @@ object CheckUseCase {
         }
 
         launch {
-            SZSParserService().parse(vampireResult)
-                .singleOrNull()?.let {
-                    when (it) {
-                        is SZSStatus, is SZSOutputModel -> {
-                            when (it.statusType) {
-                                SZSStatusType.SuccessOntology.THEOREM,
-                                SZSStatusType.SuccessOntology.SATISFIABLE_THEOREM,
-                                SZSStatusType.SuccessOntology.EQUIVALENT,
-                                SZSStatusType.SuccessOntology.TAUTOLOGOUS_CONCLUSION,
-                                SZSStatusType.SuccessOntology.WEAKER_CONCLUSION,
-                                SZSStatusType.SuccessOntology.EQUIVALENT_THEOREM,
-                                SZSStatusType.SuccessOntology.TAUTOLOGY,
-                                SZSStatusType.SuccessOntology.WEAKER_TAUTOLOGOUS_CONCLUSION,
-                                SZSStatusType.SuccessOntology.WEAKER_THEOREM,
-                                SZSStatusType.SuccessOntology.CONTRADICTORY_AXIOMS,
-                                SZSStatusType.SuccessOntology.TAUTOLOGOUS_CONCLUSION_CONTRADICTORY_AXIOMS -> {
-                                    send(success(CheckSuccess.Consequence))
-                                }
-
-                                SZSStatusType.SuccessOntology.SATISFIABLE,
-                                SZSStatusType.SuccessOntology.FINITELY_SATISFIABLE,
-                                SZSStatusType.SuccessOntology.COUNTER_SATISFIABLE,
-                                SZSStatusType.SuccessOntology.FINITELY_COUNTER_SATISFIABLE,
-                                SZSStatusType.SuccessOntology.COUNTER_THEOREM,
-                                SZSStatusType.SuccessOntology.SATISFIABLE_COUNTER_THEOREM,
-                                SZSStatusType.SuccessOntology.COUNTER_EQUIVALENT,
-                                SZSStatusType.SuccessOntology.UNSATISFIABLE_CONCLUSION,
-                                SZSStatusType.SuccessOntology.WEAKER_COUNTER_CONCLUSION,
-                                SZSStatusType.SuccessOntology.WEAKER_COUNTER_THEOREM,
-                                SZSStatusType.SuccessOntology.NO_CONSEQUENCE,
-                                SZSStatusType.SuccessOntology.SATISFIABLE_CONCLUSION_CONTRADICTORY_AXIOMS,
-                                SZSStatusType.SuccessOntology.WEAKER_CONCLUSION_CONTRADICTORY_AXIOMS,
-                                SZSStatusType.SuccessOntology.WEAKER_UNSATISFIABLE_CONCLUSION,
-                                SZSStatusType.SuccessOntology.SATISFIABLE_COUNTER_CONCLUSION_CONTRADICTORY_AXIOMS,
-                                SZSStatusType.SuccessOntology.UNSATISFIABLE_CONCLUSION_CONTRADICTORY_AXIOMS,
-                                SZSStatusType.SuccessOntology.UNSATISFIABLE,
-                                    -> {
-                                    send(success(CheckSuccess.NoConsequence))
-                                }
-
-                                else -> send(success(CheckSuccess.NotKnown(it.statusType)))
+            val szsParseResult =
+                SZSParserService().parse(vampireResult).getOrElse { send(error(it)); close(); return@launch }
+            if (szsParseResult.isEmpty() && !timeoutDeferred.await()) send(error(CheckError.UnknownVampireOutput))
+            szsParseResult.forEach {
+                when (it) {
+                    is SZSStatus, is SZSOutputModel -> {
+                        when (it.statusType) {
+                            SZSStatusType.SuccessOntology.THEOREM,
+                            SZSStatusType.SuccessOntology.SATISFIABLE_THEOREM,
+                            SZSStatusType.SuccessOntology.EQUIVALENT,
+                            SZSStatusType.SuccessOntology.TAUTOLOGOUS_CONCLUSION,
+                            SZSStatusType.SuccessOntology.WEAKER_CONCLUSION,
+                            SZSStatusType.SuccessOntology.EQUIVALENT_THEOREM,
+                            SZSStatusType.SuccessOntology.TAUTOLOGY,
+                            SZSStatusType.SuccessOntology.WEAKER_TAUTOLOGOUS_CONCLUSION,
+                            SZSStatusType.SuccessOntology.WEAKER_THEOREM,
+                            SZSStatusType.SuccessOntology.CONTRADICTORY_AXIOMS,
+                            SZSStatusType.SuccessOntology.TAUTOLOGOUS_CONCLUSION_CONTRADICTORY_AXIOMS -> {
+                                send(success(CheckSuccess.Consequence))
                             }
+
+                            SZSStatusType.SuccessOntology.SATISFIABLE,
+                            SZSStatusType.SuccessOntology.FINITELY_SATISFIABLE,
+                            SZSStatusType.SuccessOntology.COUNTER_SATISFIABLE,
+                            SZSStatusType.SuccessOntology.FINITELY_COUNTER_SATISFIABLE,
+                            SZSStatusType.SuccessOntology.COUNTER_THEOREM,
+                            SZSStatusType.SuccessOntology.SATISFIABLE_COUNTER_THEOREM,
+                            SZSStatusType.SuccessOntology.COUNTER_EQUIVALENT,
+                            SZSStatusType.SuccessOntology.UNSATISFIABLE_CONCLUSION,
+                            SZSStatusType.SuccessOntology.WEAKER_COUNTER_CONCLUSION,
+                            SZSStatusType.SuccessOntology.WEAKER_COUNTER_THEOREM,
+                            SZSStatusType.SuccessOntology.NO_CONSEQUENCE,
+                            SZSStatusType.SuccessOntology.SATISFIABLE_CONCLUSION_CONTRADICTORY_AXIOMS,
+                            SZSStatusType.SuccessOntology.WEAKER_CONCLUSION_CONTRADICTORY_AXIOMS,
+                            SZSStatusType.SuccessOntology.WEAKER_UNSATISFIABLE_CONCLUSION,
+                            SZSStatusType.SuccessOntology.SATISFIABLE_COUNTER_CONCLUSION_CONTRADICTORY_AXIOMS,
+                            SZSStatusType.SuccessOntology.UNSATISFIABLE_CONCLUSION_CONTRADICTORY_AXIOMS,
+                            SZSStatusType.SuccessOntology.UNSATISFIABLE -> {
+                                send(success(CheckSuccess.NoConsequence))
+                            }
+
+                            else -> send(success(CheckSuccess.NotKnown(it.statusType)))
                         }
-
-                        is SZSAnswerTupleFormModel -> send(error(CheckError.UnknownVampireOutput))
                     }
-                    close()
-                }
 
-            send(error(CheckError.UnknownVampireOutput))
-            close()
+                    is SZSAnswerTupleFormModel -> send(error(CheckError.UnknownVampireOutput))
+                }
+            }
         }
     }
 }

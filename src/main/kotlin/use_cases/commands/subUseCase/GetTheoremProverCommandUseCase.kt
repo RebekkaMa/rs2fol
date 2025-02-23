@@ -15,27 +15,22 @@ object GetTheoremProverCommandUseCase {
     ): IntermediateStatus<GetTheoremProverCommandSuccess, Error> {
         val configs = ConfigLoader.loadConfig(configFile.pathString)
 
-        val programConfig = configs.programs.getOrElse(programName) {
-            return intermediateError(
-                GetTheoremProverCommandError.ProgramNotFound(programName)
-            )
-        }
+        val programConfig = configs.programs[programName] ?: return intermediateError(
+            GetTheoremProverCommandError.TheoremProverNotFound(programName)
+        )
+
         val programExe = programConfig.exe
         val selectedOption =
             programConfig.options.find { it.optionId == optionId }
-                ?: run {
-                    return intermediateError(
-                        GetTheoremProverCommandError.ProgramOptionNotFound(
-                            programName,
-                            optionId
-                        )
+                ?: return intermediateError(
+                    GetTheoremProverCommandError.TheoremProverOptionNotFound(
+                        programName,
+                        optionId
                     )
-                }
+                )
 
-        val flags = selectedOption.flags.map { flag ->
-            flag.replace("\${timeLimit}", "$reasoningTimeLimit")
+        val flags = selectedOption.flags.map { it.replace("\${timeLimit}", "$reasoningTimeLimit") }
 
-        }
         return intermediateSuccess(GetTheoremProverCommandSuccess(listOf(programExe) + flags))
     }
 }
@@ -43,6 +38,9 @@ object GetTheoremProverCommandUseCase {
 data class GetTheoremProverCommandSuccess(val command: List<String>) : Success
 
 sealed interface GetTheoremProverCommandError : Error {
-    data class ProgramNotFound(val programName: String) : GetTheoremProverCommandError
-    data class ProgramOptionNotFound(val programName: String, val programOption: Int) : GetTheoremProverCommandError
+    data class TheoremProverNotFound(val programName: String) : GetTheoremProverCommandError
+    data class TheoremProverOptionNotFound(val programName: String, val programOption: Int) :
+        GetTheoremProverCommandError
 }
+
+

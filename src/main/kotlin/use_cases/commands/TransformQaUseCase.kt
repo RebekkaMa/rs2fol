@@ -31,7 +31,7 @@ class TransformQaUseCase {
         baseIri: IRI,
         configFile: Path,
         dEntailment: Boolean
-    ): Flow<CommandStatus<Success, RootError>> = channelFlow<CommandStatus<Success, RootError>> {
+    ): Flow<CommandStatus<Success, RootError>> = channelFlow {
 
         val rdfSurface = inputStream.reader().use { it.readText() }
         val parseResult = RDFSurfaceParseService(useRdfLists).parseToEnd(rdfSurface, baseIri)
@@ -50,15 +50,23 @@ class TransformQaUseCase {
             .joinToString(separator = System.lineSeparator()) { TPTPAnnotatedFormulaModelToStringUseCase(it) }
 
         val qSurfaces = parseResult.getOrElse { PositiveSurface() }.getQSurfaces()
-        val qSurface = let {
-            if (qSurfaces.isEmpty()) send(error(NoQuestionSurface)).also { return@channelFlow }
-            if (qSurfaces.size > 1) send(error(MoreThanOneQuestionSurface)).also { return@channelFlow }
-            qSurfaces.single()
+        val qSurface = when {
+            qSurfaces.isEmpty() -> {
+                send(error(NoQuestionSurface))
+                return@channelFlow
+            }
+
+            qSurfaces.size > 1 -> {
+                send(error(MoreThanOneQuestionSurface))
+                return@channelFlow
+            }
+
+            else -> qSurfaces.single()
         }
 
         outputPath?.let {
             FileService.createNewFile(
-                path = outputPath,
+                path = it,
                 content = folFormula
             )
         }
@@ -77,7 +85,7 @@ class TransformQaUseCase {
             command = command,
             timeLimit = reasoningTimeLimit,
             input = folFormula
-        )
+        ).getOrElse { send(error(it)); close(); return@channelFlow }
 
 
         launch {

@@ -16,12 +16,16 @@ object RewriteUseCase {
         rdfSurface: String,
         rdfList: Boolean,
         baseIRI: IRI,
-        output: Path
+        output: Path,
+        dEntailment: Boolean
     ): Flow<CommandStatus<RewriteResult, RootError>> = flow {
 
         val parserResult = RDFSurfaceParseService(rdfList).parseToEnd(rdfSurface, baseIRI)
         val result = parserResult.runOnSuccess { positiveSurface ->
-            RdfSurfaceModelToN3UseCase(defaultPositiveSurface = positiveSurface)
+            RdfSurfaceModelToN3UseCase(
+                defaultPositiveSurface = positiveSurface,
+                dEntailment = dEntailment
+            )
         }.getOrElse {
             emit(error(it))
             return@flow

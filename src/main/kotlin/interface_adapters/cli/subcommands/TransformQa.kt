@@ -34,6 +34,7 @@ class TransformQa :
         "--input", "-i",
         help = "Get RDF surface from <path>"
     ).path()
+
     private val output by option(
         "--output",
         "-o",
@@ -54,7 +55,7 @@ class TransformQa :
 
     private val dEntailment by option(
         "--d-entailment",
-        help = "Use D-entailment"
+        help = "If this option is activated, literals with different lexical values but the same value in the value range are mapped to a one literal with a canonical lexical value. This only applies to values of one data type. It is presumed here that the value space of the data types is disjoint."
     ).flag(default = false)
 
     override fun help(context: Context) =

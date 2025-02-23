@@ -20,15 +20,7 @@ object QuestionAnsweringOutputToRdfSurfacesCascUseCase {
         var refutationFound = false
 
         val questionAnsweringTPTPAnswers = SZSParserService().parse(questionAnsweringBufferedReader)
-        /*
-                    return IntermediateStatus.Error(
-                        AnswerTupleTransformationError.AnswerTupleTransformation(
-                            affectedFormula = tptpAnswerTupleList,
-                            error = it
-                        )
-                    )
-                */
-
+            .getOrElse { return IntermediateStatus.Error(it) }
 
         questionAnsweringTPTPAnswers.forEach {
             when (it) {

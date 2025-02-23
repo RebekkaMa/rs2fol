@@ -14,8 +14,8 @@ object RdfSurfaceModelToTPTPModelUseCase {
     operator fun invoke(
         defaultPositiveSurface: PositiveSurface,
         ignoreQuerySurfaces: Boolean = false,
-        tptpName: String = "axiom",
         formulaRole: FormulaRole = FormulaRole.Axiom,
+        tptpName: String = formulaRole.name.lowercase(),
         dEntailment: Boolean = false,
     ): IntermediateStatus<List<AnnotatedFormula>, SurfaceNotSupportedError> {
 

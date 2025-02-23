@@ -28,6 +28,10 @@ class Rewrite : SuspendingCliktCommand() {
     private val quiet by option("--quiet", "-q", help = "Display less output")
         .flag(default = false)
 
+    private val dEntailment by option(
+        "--d-entailment",
+        help = "If this option is activated, literals with different lexical values but the same value in the value range are mapped to a one literal with a canonical lexical value. This only applies to values of one data type. It is presumed here that the value space of the data types is disjoint."
+    ).flag(default = false)
 
     override fun help(context: Context) = "Parses and returns an RDF surface using a sublanguage of Notation 3"
 
@@ -58,7 +62,8 @@ class Rewrite : SuspendingCliktCommand() {
                 rdfSurface = rdfSurface,
                 rdfList = commonOptions.rdfList,
                 baseIRI = baseIRI,
-                output = output
+                output = output,
+                dEntailment = dEntailment
             )
 
             result.collect { res ->

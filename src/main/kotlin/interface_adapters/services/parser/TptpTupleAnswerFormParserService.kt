@@ -94,12 +94,11 @@ object TptpTupleAnswerFormToModelService : Grammar<TPTPTupleAnswerFormAnswer>() 
             IntermediateStatus.Result(rootParser.parseToEnd(tokenizer.tokenize(answerTuple)))
         } catch (exc: Throwable) {
             when (exc) {
-                is InvalidFunctionOrPredicateException -> TptpTupleAnswerFormParserError.InvalidFunctionOrPredicate(
-                    element = exc.element
+                is ParseException -> TptpTupleAnswerFormParserError.GenericInvalidInput(
+                    tptpTuple = answerTuple,
+                    throwable = exc
                 )
 
-                is InvalidElementException -> TptpTupleAnswerFormParserError.InvalidElement(element = exc.element)
-                is ParseException -> TptpTupleAnswerFormParserError.GenericInvalidInput(throwable = exc)
                 else -> throw exc
             }.let { IntermediateStatus.Error(it) }
         }
@@ -107,14 +106,8 @@ object TptpTupleAnswerFormToModelService : Grammar<TPTPTupleAnswerFormAnswer>() 
 }
 
 sealed interface TptpTupleAnswerFormParserError : Error {
-    data class InvalidFunctionOrPredicate(val element: String) : TptpTupleAnswerFormParserError
-    data class InvalidElement(val element: String) : TptpTupleAnswerFormParserError
-    data class GenericInvalidInput(val throwable: Throwable) : TptpTupleAnswerFormParserError
+    val tptpTuple: String
+
+    data class GenericInvalidInput(override val tptpTuple: String, val throwable: Throwable) :
+        TptpTupleAnswerFormParserError
 }
-
-class InvalidFunctionOrPredicateException(val element: String) :
-    Exception("Function/predicate \"$element\" is invalid or not supported.")
-
-class InvalidElementException(val element: String) :
-    Exception("Element \"$element\" could not be parsed.")
-

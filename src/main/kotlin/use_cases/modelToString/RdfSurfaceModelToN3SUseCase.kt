@@ -3,11 +3,11 @@ package use_cases.modelToString
 import entities.rdfsurfaces.*
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
+import interface_adapters.services.coder.RDFTermCoderService
 import interface_adapters.services.parser.util.stringLiteralLongQuote
 import interface_adapters.services.parser.util.stringLiteralLongSingleQuote
 import interface_adapters.services.parser.util.stringLiteralQuote
 import interface_adapters.services.parser.util.stringLiteralSingleQuote
-import interface_adapters.services.coder.RDFTermCoderService
 import util.IRIConstants
 import util.LiteralTransformationException
 import util.commandResult.Error
@@ -16,7 +16,8 @@ import util.commandResult.IntermediateStatus
 object RdfSurfaceModelToN3UseCase {
 
     operator fun invoke(
-        defaultPositiveSurface: PositiveSurface
+        defaultPositiveSurface: PositiveSurface,
+        dEntailment: Boolean = false
     ): IntermediateStatus<String, LiteralTransformationError> {
         val spaceBase = "   "
 
@@ -70,7 +71,10 @@ object RdfSurfaceModelToN3UseCase {
         }
 
         fun transform(literal: Literal): String {
-            if (literal is LanguageTaggedString) return "\"${literal.lexicalValue}\"@${literal.langTag}"
+            if (literal is LanguageTaggedString) {
+                if (dEntailment) return "\"${literal.lexicalValue}\"@${literal.normalizedLangTag}"
+                return "\"${literal.lexicalValue}\"@${literal.langTag}"
+            }
             return when (literal.datatypeIRI.iri) {
                 IRIConstants.XSD_STRING_IRI -> {
                     val rawLiteral = literal.lexicalValue
@@ -83,10 +87,12 @@ object RdfSurfaceModelToN3UseCase {
                     }
                 }
 
-                else -> "\"${literal.lexicalValue}\"^^${transform(literal.datatypeIRI)}"
+                else -> {
+                    if (dEntailment) return "\"${literal.literalValue}\"^^${transform(literal.datatypeIRI)}"
+                    "\"${literal.lexicalValue}\"^^${transform(literal.datatypeIRI)}"
+                }
             }
         }
-
 
         fun transform(graffitiList: List<BlankNode>) = graffitiList.joinToString(
             prefix = "(",
@@ -156,7 +162,8 @@ object RdfSurfaceModelToN3UseCase {
                 ) {
                     transform(
                         hayesGraphElement = it,
-                        (0).takeIf { defaultPositiveSurface.graffiti.isEmpty() } ?: 1)
+                        defaultPositiveSurface.graffiti.size.coerceAtMost(1)
+                    )
                 }
 
             if (defaultPositiveSurface.graffiti.isNotEmpty()) rdfSurfacesGraphString.append("$graffitiListString log:onPositiveSurface {$hayesGraphString}.") else rdfSurfacesGraphString.append(

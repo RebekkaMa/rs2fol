@@ -26,6 +26,8 @@ class Transform : SuspendingCliktCommand() {
     private val output by option("--output", "-o", help = "Write output to <path>").path()
         .default(java.nio.file.Path.of("-"))
 
+    private val consequence by option("--consequence", "-c", help = "Path to the consequence RDF surface").path()
+
     private val ignoreQuerySurface by option("--ignoreQuerySurface").flag(default = false, defaultForHelp = "false")
 
     private val quiet by option("--quiet", "-q", help = "Display less output")
@@ -33,7 +35,7 @@ class Transform : SuspendingCliktCommand() {
 
     private val dEntailment by option(
         "--d-entailment",
-        help = "Use D-entailment"
+        help = "If this option is activated, literals with different lexical values but the same value in the value range are mapped to a one literal with a canonical lexical value. This only applies to values of one data type. It is presumed here that the value space of the data types is disjoint."
     ).flag(default = false)
 
     override fun help(context: Context) = "Transforms an RDF surface (--input) to a FOL formula in TPTP format"
@@ -62,8 +64,10 @@ class Transform : SuspendingCliktCommand() {
             }
 
             val rdfSurface = inputStream.bufferedReader().use { it.readText() }
+            val consequenceSurface = consequence?.readText()
             val useCaseResult = TransformUseCase(
                 rdfSurface = rdfSurface,
+                consequenceSurface = consequenceSurface,
                 baseIri = baseIri,
                 useRdfLists = commonOptions.rdfList,
                 ignoreQuerySurface = ignoreQuerySurface,
