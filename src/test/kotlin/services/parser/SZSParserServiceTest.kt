@@ -5,7 +5,7 @@ import entities.SZSOutputType
 import entities.SZSStatus
 import entities.SZSStatusType
 import interface_adapters.services.parser.SZSParserServiceError
-import interface_adapters.services.parser.SZSParserServiceImpl
+import adapter.parser.SZSParserServiceImpl
 import io.kotest.core.spec.style.ShouldSpec
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.first

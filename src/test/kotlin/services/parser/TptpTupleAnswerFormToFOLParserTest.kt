@@ -4,7 +4,7 @@ import entities.fol.FOLConstant
 import entities.fol.FOLFunction
 import entities.fol.tptp.AnswerTuple
 import entities.fol.tptp.TPTPTupleAnswerFormAnswer
-import interface_adapters.services.parser.TptpTupleAnswerFormToModelServiceImpl
+import adapter.parser.TptpTupleAnswerFormToModelServiceImpl
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.nulls.shouldNotBeNull

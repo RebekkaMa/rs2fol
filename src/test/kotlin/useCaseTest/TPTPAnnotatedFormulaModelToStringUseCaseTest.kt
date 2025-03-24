@@ -3,7 +3,7 @@ package useCaseTest
 import entities.fol.FOLConstant
 import entities.fol.tptp.AnnotatedFormula
 import entities.fol.tptp.FormulaType
-import interface_adapters.services.coder.FOLCoderService
+import adapter.coder.FOLCoderService
 import io.kotest.core.spec.style.ShouldSpec
 import use_cases.modelToString.FOLModelToStringUseCase
 import use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase

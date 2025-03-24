@@ -4,7 +4,7 @@ import entities.fol.*
 import entities.fol.tptp.AnnotatedFormula
 import entities.fol.tptp.FormulaType
 import entities.rdfsurfaces.rdf_term.IRI
-import interface_adapters.services.parser.RDFSurfaceParseServiceImpl
+import adapter.parser.RDFSurfaceParseServiceImpl
 import io.kotest.assertions.asClue
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo

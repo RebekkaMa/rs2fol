@@ -6,7 +6,7 @@ import entities.rdfsurfaces.QuerySurface
 import entities.rdfsurfaces.RdfTriple
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
-import interface_adapters.services.parser.RDFSurfaceParseServiceImpl
+import adapter.parser.RDFSurfaceParseServiceImpl
 import interface_adapters.services.parser.RdfSurfaceParserError
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.collections.shouldNotContain

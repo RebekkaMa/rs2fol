@@ -6,7 +6,7 @@ import entities.rdfsurfaces.QuerySurface
 import entities.rdfsurfaces.RdfTriple
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
-import interface_adapters.services.coder.FOLCoderService
+import adapter.coder.FOLCoderService
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.shouldBe

@@ -1,7 +1,7 @@
 package serviceTest
 
 import entities.fol.*
-import interface_adapters.services.coder.FOLCoderService
+import adapter.coder.FOLCoderService
 import io.kotest.core.spec.style.ShouldSpec
 import org.junit.jupiter.api.Assertions.assertEquals
 
