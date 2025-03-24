@@ -3,7 +3,7 @@ package use_cases.modelToString
 import entities.rdfsurfaces.*
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
-import interface_adapters.services.coder.RDFTermCoderService
+import interface_adapters.services.coder.N3SRDFTermCoderService
 import interface_adapters.services.parser.util.stringLiteralLongQuote
 import interface_adapters.services.parser.util.stringLiteralLongSingleQuote
 import interface_adapters.services.parser.util.stringLiteralQuote
@@ -26,7 +26,7 @@ object RdfSurfaceModelToN3UseCase {
 
         fun transform(blankNode: BlankNode): String {
             val blankNodeId =
-                if (RDFTermCoderService.isValid(blankNode)) blankNode.blankNodeId else RDFTermCoderService.encode(
+                if (N3SRDFTermCoderService.isValid(blankNode)) blankNode.blankNodeId else N3SRDFTermCoderService.encode(
                     blankNode
                 ).blankNodeId
             return "_:${blankNodeId}"
@@ -119,12 +119,8 @@ object RdfSurfaceModelToN3UseCase {
                         is PositiveSurface -> "log:onPositiveSurface"
                         is NegativeSurface -> "log:onNegativeSurface"
                         is QuerySurface -> "log:onQuerySurface"
-                        is NegativeTripleSurface -> "log:negativeTriple"
                         is NeutralSurface -> "log:onNeutralSurface"
-                        is QuestionSurface -> "log:onQuestionSurface"
-                        is AnswerSurface -> "log:onAnswerSurface"
                         is NegativeAnswerSurface -> "log:onNegativeAnswerSurface"
-                        is NegativeComponentSurface -> "log:onNegativeComponentSurface"
                     }
                     val graffitiStringList = transform(hayesGraphElement.graffiti)
                     val hayesGraphString =

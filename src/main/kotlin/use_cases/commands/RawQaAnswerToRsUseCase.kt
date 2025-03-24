@@ -2,8 +2,8 @@ package use_cases.commands
 
 import entities.rdfsurfaces.rdf_term.IRI
 import interface_adapters.services.FileService
-import interface_adapters.services.parser.RDFSurfaceParseService
-import interface_adapters.services.parser.TptpTupleAnswerFormToModelService
+import interface_adapters.services.parser.RDFSurfaceParseServiceImpl
+import interface_adapters.services.parser.TptpTupleAnswerFormToModelServiceImpl
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import use_cases.commands.RawQaAnswerToRsError.MoreThanOneQuestionSurface
@@ -23,7 +23,7 @@ object RawQaAnswerToRsUseCase {
         rdfList: Boolean,
     ): Flow<CommandStatus<Success, RootError>> = flow {
 
-        val qSurfaces = RDFSurfaceParseService(rdfList)
+        val qSurfaces = RDFSurfaceParseServiceImpl(rdfList)
             .parseToEnd(rdfSurface, baseIri)
             .getOrElse {
                 emit(error(it))
@@ -38,9 +38,9 @@ object RawQaAnswerToRsUseCase {
 
         val tptpTupleAnswer = inputStream.bufferedReader().use { it.readText() }
 
-        val result = TptpTupleAnswerFormToModelService.parseToEnd(tptpTupleAnswer).runOnSuccess {
+        val result = TptpTupleAnswerFormToModelServiceImpl.parseToEnd(tptpTupleAnswer).runOnSuccess {
             TPTPTupleAnswerModelToRdfSurfaceUseCase(
-                tptpTupleAnswerFormAnswer = it,
+                answerTuples = it.answerTuples,
                 qSurface = qSurface
             )
         }.getOrElse {

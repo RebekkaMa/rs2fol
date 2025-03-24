@@ -30,7 +30,7 @@ object ErrorToStringTransformer {
 
             is CheckError -> {
                 when (error) {
-                    is CheckError.UnknownVampireOutput -> "Vampire output is unknown and can not be interpreted"
+                    is CheckError.UnknownTheoremProverOutput -> "Vampire output is unknown and can not be interpreted"
                     is CheckError.VampireError -> "Vampire error"
                 }
             }

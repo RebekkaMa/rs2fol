@@ -2,7 +2,7 @@ package use_cases.commands
 
 import entities.rdfsurfaces.rdf_term.IRI
 import interface_adapters.services.FileService
-import interface_adapters.services.parser.RDFSurfaceParseService
+import interface_adapters.services.parser.RDFSurfaceParseServiceImpl
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import use_cases.commands.QaAnswerToRsError.MoreThanOneQuestionSurface
@@ -24,7 +24,7 @@ object CascQaAnswerToRsUseCase {
     ): Flow<CommandStatus<Success, RootError>> = flow {
 
         val qSurfaces =
-            RDFSurfaceParseService(rdfList)
+            RDFSurfaceParseServiceImpl(rdfList)
                 .parseToEnd(rdfSurface, baseIri)
                 .getOrElse {
                     emit(CommandStatus.Error(it))

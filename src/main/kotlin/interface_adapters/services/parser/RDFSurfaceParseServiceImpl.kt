@@ -12,6 +12,7 @@ import entities.rdfsurfaces.*
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
 import interface_adapters.services.parser.util.*
+import interfaces.RDFSurfaceParseService
 import use_cases.modelTransformer.SurfaceNotSupportedError
 import util.*
 import util.IRIConstants.RDF_TYPE_IRI
@@ -24,7 +25,7 @@ typealias CollectionBlankNodes = Set<BlankNode>
 typealias InterimParseResult = Triple<HayesGraph, FreeVariables, CollectionBlankNodes>
 
 
-class RDFSurfaceParseService(val useRDFLists: Boolean) : Grammar<PositiveSurface>() {
+class RDFSurfaceParseServiceImpl(val useRDFLists: Boolean) : Grammar<PositiveSurface>(), RDFSurfaceParseService {
 
     private object BlankNodeCounter {
         private var count: Int = 0
@@ -217,7 +218,6 @@ class RDFSurfaceParseService(val useRDFLists: Boolean) : Grammar<PositiveSurface
             IRIConstants.LOG_NEUTRAL_SURFACE_IRI,
             IRIConstants.LOG_QUESTION_SURFACE_IRI,
             IRIConstants.LOG_ANSWER_SURFACE_IRI,
-            IRIConstants.LOG_NEGATIVE_COMPONENT_SURFACE_IRI,
             IRIConstants.LOG_NEGATIVE_ANSWER_SURFACE_IRI -> throw ParseException(InvalidSyntax())
 
             else -> it
@@ -295,20 +295,10 @@ class RDFSurfaceParseService(val useRDFLists: Boolean) : Grammar<PositiveSurface
         val newHayeGraph = buildList<HayesGraphElement> {
             when (surface.iri) {
                 IRIConstants.LOG_POSITIVE_SURFACE_IRI -> this.add(PositiveSurface(graffiti, hayesGraph))
-                IRIConstants.LOG_NEGATIVE_TRIPLE_IRI -> this.add(NegativeTripleSurface(graffiti, hayesGraph))
                 IRIConstants.LOG_QUERY_SURFACE_IRI -> this.add(QuerySurface(graffiti, hayesGraph))
                 IRIConstants.LOG_NEGATIVE_SURFACE_IRI -> this.add(NegativeSurface(graffiti, hayesGraph))
                 IRIConstants.LOG_NEUTRAL_SURFACE_IRI -> this.add(NeutralSurface(graffiti, hayesGraph))
-                IRIConstants.LOG_QUESTION_SURFACE_IRI -> this.add(QuestionSurface(graffiti, hayesGraph))
-                IRIConstants.LOG_ANSWER_SURFACE_IRI -> this.add(AnswerSurface(graffiti, hayesGraph))
                 IRIConstants.LOG_NEGATIVE_ANSWER_SURFACE_IRI -> this.add(NegativeAnswerSurface(graffiti, hayesGraph))
-                IRIConstants.LOG_NEGATIVE_COMPONENT_SURFACE_IRI -> this.add(
-                    NegativeComponentSurface(
-                        graffiti,
-                        hayesGraph
-                    )
-                )
-
                 else -> throw SurfaceNotSupportedException(surface = surface.iri)
             }
         }
@@ -388,7 +378,7 @@ class RDFSurfaceParseService(val useRDFLists: Boolean) : Grammar<PositiveSurface
         .replace("\\'", "\u0027")
         .replace("\\\\'", "\u005C")
 
-    fun parseToEnd(input: String, baseIRI: IRI): IntermediateStatus<PositiveSurface, Error> {
+    override fun parseToEnd(input: String, baseIRI: IRI): IntermediateStatus<PositiveSurface, Error> {
         var bnLabel = "BN_"
         var i = 0
         while (input.contains("_:$bnLabel\\d+".toRegex()) && i++ in 0..10) {

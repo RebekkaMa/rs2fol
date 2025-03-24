@@ -1,5 +1,6 @@
 package interface_adapters.services.theoremProver
 
+import interfaces.TheoremProverRunnerService
 import kotlinx.coroutines.*
 import util.commandResult.IntermediateStatus
 import util.commandResult.RootError
@@ -11,9 +12,9 @@ import java.io.IOException
 
 typealias TimeoutDeferred = Deferred<Boolean>
 
-object TheoremProverRunnerService {
+object TheoremProverRunnerServiceImpl : TheoremProverRunnerService {
 
-    operator fun invoke(
+    override operator fun invoke(
         command: List<String>,
         input: String,
         timeLimit: Long

@@ -1,14 +1,12 @@
 package useCaseTest
 
 import entities.fol.*
+import io.kotest.core.spec.style.ShouldSpec
 import use_cases.modelToString.FOLModelToStringUseCase
-import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class FOLModelToStringUseCaseTest {
-
-    @Test
-    fun testSimplePredicate() {
+class FOLModelToStringUseCaseTest : ShouldSpec({
+    should("convert a simple predicate to string") {
         val expression = FOLPredicate(
             name = "loves",
             arguments = listOf(FOLVariable("X"), FOLConstant("Y"))
@@ -18,8 +16,7 @@ class FOLModelToStringUseCaseTest {
         assertEquals(expected, result)
     }
 
-    @Test
-    fun testNestedAndExpression() {
+    should("convert a nested AND expression to string") {
         val expression = FOLAnd(
             expressions = listOf(
                 FOLPredicate(
@@ -52,8 +49,7 @@ class FOLModelToStringUseCaseTest {
         assertEquals(expected, result)
     }
 
-    @Test
-    fun testComplexForAllExpression() {
+    should("convert a complex FOR ALL expression to string") {
         val expression = FOLForAll(
             variables = listOf(FOLVariable("X")),
             expression = FOLImplies(
@@ -77,8 +73,7 @@ class FOLModelToStringUseCaseTest {
         assertEquals(expected, result)
     }
 
-    @Test
-    fun testNegatedPredicate() {
+    should("convert a negated predicate to string") {
         val expression = FOLNot(
             expression = FOLPredicate(
                 name = "knows",
@@ -92,4 +87,4 @@ class FOLModelToStringUseCaseTest {
         val result = FOLModelToStringUseCase(expression, indent = 0)
         assertEquals(expected, result)
     }
-}
+})

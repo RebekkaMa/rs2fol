@@ -5,8 +5,8 @@ import entities.SZSOutputModel
 import entities.SZSStatus
 import entities.SZSStatusType
 import entities.rdfsurfaces.rdf_term.IRI
-import interface_adapters.services.parser.SZSParserService
-import interface_adapters.services.theoremProver.TheoremProverRunnerService
+import interface_adapters.services.parser.SZSParserServiceImpl
+import interface_adapters.services.theoremProver.TheoremProverRunnerServiceImpl
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import use_cases.commands.subUseCase.GetTheoremProverCommandUseCase
@@ -57,75 +57,81 @@ object CheckUseCase {
             return@channelFlow
         }.command
 
-        val (vampireResult, timeoutDeferred) = TheoremProverRunnerService(
+        val (vampireResult, timeoutDeferred) = TheoremProverRunnerServiceImpl(
             input = tptpFormula,
             timeLimit = reasoningTimeLimit,
             command = command
         ).getOrElse { send(error(it)); close(); return@channelFlow }
 
         launch {
-            if (timeoutDeferred.await()) {
-                send(success(CheckSuccess.Timeout))
-                close()
-            }
-        }
+            val szsParseResult = SZSParserServiceImpl()
+                .parse(vampireResult)
+                .firstOrNull()
+                ?.getOrElse { send(error(it)); close(); return@launch }
 
-        launch {
-            val szsParseResult =
-                SZSParserService().parse(vampireResult).getOrElse { send(error(it)); close(); return@launch }
-            if (szsParseResult.isEmpty() && !timeoutDeferred.await()) send(error(CheckError.UnknownVampireOutput))
-            szsParseResult.forEach {
-                when (it) {
-                    is SZSStatus, is SZSOutputModel -> {
-                        when (it.statusType) {
-                            SZSStatusType.SuccessOntology.THEOREM,
-                            SZSStatusType.SuccessOntology.SATISFIABLE_THEOREM,
-                            SZSStatusType.SuccessOntology.EQUIVALENT,
-                            SZSStatusType.SuccessOntology.TAUTOLOGOUS_CONCLUSION,
-                            SZSStatusType.SuccessOntology.WEAKER_CONCLUSION,
-                            SZSStatusType.SuccessOntology.EQUIVALENT_THEOREM,
-                            SZSStatusType.SuccessOntology.TAUTOLOGY,
-                            SZSStatusType.SuccessOntology.WEAKER_TAUTOLOGOUS_CONCLUSION,
-                            SZSStatusType.SuccessOntology.WEAKER_THEOREM,
-                            SZSStatusType.SuccessOntology.CONTRADICTORY_AXIOMS,
-                            SZSStatusType.SuccessOntology.TAUTOLOGOUS_CONCLUSION_CONTRADICTORY_AXIOMS -> {
-                                send(success(CheckSuccess.Consequence))
-                            }
-
-                            SZSStatusType.SuccessOntology.SATISFIABLE,
-                            SZSStatusType.SuccessOntology.FINITELY_SATISFIABLE,
-                            SZSStatusType.SuccessOntology.COUNTER_SATISFIABLE,
-                            SZSStatusType.SuccessOntology.FINITELY_COUNTER_SATISFIABLE,
-                            SZSStatusType.SuccessOntology.COUNTER_THEOREM,
-                            SZSStatusType.SuccessOntology.SATISFIABLE_COUNTER_THEOREM,
-                            SZSStatusType.SuccessOntology.COUNTER_EQUIVALENT,
-                            SZSStatusType.SuccessOntology.UNSATISFIABLE_CONCLUSION,
-                            SZSStatusType.SuccessOntology.WEAKER_COUNTER_CONCLUSION,
-                            SZSStatusType.SuccessOntology.WEAKER_COUNTER_THEOREM,
-                            SZSStatusType.SuccessOntology.NO_CONSEQUENCE,
-                            SZSStatusType.SuccessOntology.SATISFIABLE_CONCLUSION_CONTRADICTORY_AXIOMS,
-                            SZSStatusType.SuccessOntology.WEAKER_CONCLUSION_CONTRADICTORY_AXIOMS,
-                            SZSStatusType.SuccessOntology.WEAKER_UNSATISFIABLE_CONCLUSION,
-                            SZSStatusType.SuccessOntology.SATISFIABLE_COUNTER_CONCLUSION_CONTRADICTORY_AXIOMS,
-                            SZSStatusType.SuccessOntology.UNSATISFIABLE_CONCLUSION_CONTRADICTORY_AXIOMS,
-                            SZSStatusType.SuccessOntology.UNSATISFIABLE -> {
-                                send(success(CheckSuccess.NoConsequence))
-                            }
-
-                            else -> send(success(CheckSuccess.NotKnown(it.statusType)))
-                        }
-                    }
-
-                    is SZSAnswerTupleFormModel -> send(error(CheckError.UnknownVampireOutput))
+            if (szsParseResult == null) {
+                if (timeoutDeferred.await()) {
+                    send(success(CheckSuccess.Timeout))
+                    close()
+                    return@launch
                 }
+                send(error(CheckError.UnknownTheoremProverOutput))
+                close()
+                return@launch
+            }
+
+            when (szsParseResult) {
+                is SZSStatus, is SZSOutputModel -> {
+                    when (szsParseResult.statusType) {
+                        SZSStatusType.SuccessOntology.THEOREM,
+                        SZSStatusType.SuccessOntology.SATISFIABLE_THEOREM,
+                        SZSStatusType.SuccessOntology.EQUIVALENT,
+                        SZSStatusType.SuccessOntology.TAUTOLOGOUS_CONCLUSION,
+                        SZSStatusType.SuccessOntology.WEAKER_CONCLUSION,
+                        SZSStatusType.SuccessOntology.EQUIVALENT_THEOREM,
+                        SZSStatusType.SuccessOntology.TAUTOLOGY,
+                        SZSStatusType.SuccessOntology.WEAKER_TAUTOLOGOUS_CONCLUSION,
+                        SZSStatusType.SuccessOntology.WEAKER_THEOREM,
+                        SZSStatusType.SuccessOntology.CONTRADICTORY_AXIOMS,
+                        SZSStatusType.SuccessOntology.TAUTOLOGOUS_CONCLUSION_CONTRADICTORY_AXIOMS -> {
+                            send(success(CheckSuccess.Consequence))
+                        }
+
+                        SZSStatusType.SuccessOntology.SATISFIABLE,
+                        SZSStatusType.SuccessOntology.FINITELY_SATISFIABLE,
+                        SZSStatusType.SuccessOntology.COUNTER_SATISFIABLE,
+                        SZSStatusType.SuccessOntology.FINITELY_COUNTER_SATISFIABLE,
+                        SZSStatusType.SuccessOntology.COUNTER_THEOREM,
+                        SZSStatusType.SuccessOntology.SATISFIABLE_COUNTER_THEOREM,
+                        SZSStatusType.SuccessOntology.COUNTER_EQUIVALENT,
+                        SZSStatusType.SuccessOntology.UNSATISFIABLE_CONCLUSION,
+                        SZSStatusType.SuccessOntology.WEAKER_COUNTER_CONCLUSION,
+                        SZSStatusType.SuccessOntology.WEAKER_COUNTER_THEOREM,
+                        SZSStatusType.SuccessOntology.NO_CONSEQUENCE,
+                        SZSStatusType.SuccessOntology.SATISFIABLE_CONCLUSION_CONTRADICTORY_AXIOMS,
+                        SZSStatusType.SuccessOntology.WEAKER_CONCLUSION_CONTRADICTORY_AXIOMS,
+                        SZSStatusType.SuccessOntology.WEAKER_UNSATISFIABLE_CONCLUSION,
+                        SZSStatusType.SuccessOntology.SATISFIABLE_COUNTER_CONCLUSION_CONTRADICTORY_AXIOMS,
+                        SZSStatusType.SuccessOntology.UNSATISFIABLE_CONCLUSION_CONTRADICTORY_AXIOMS,
+                        SZSStatusType.SuccessOntology.UNSATISFIABLE -> {
+                            send(success(CheckSuccess.NoConsequence))
+                        }
+
+                        else -> send(success(CheckSuccess.NotKnown(szsParseResult.statusType)))
+                    }
+                }
+
+                is SZSAnswerTupleFormModel -> send(error(CheckError.UnknownTheoremProverOutput))
+
             }
         }
     }
+
 }
 
 
 sealed interface CheckError : RootError {
-    data object UnknownVampireOutput : CheckError
+    data object UnknownTheoremProverOutput : CheckError
     data object VampireError : CheckError
 }
 

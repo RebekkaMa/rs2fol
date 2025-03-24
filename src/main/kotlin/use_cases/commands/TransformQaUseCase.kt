@@ -3,14 +3,15 @@ package use_cases.commands
 import entities.rdfsurfaces.PositiveSurface
 import entities.rdfsurfaces.rdf_term.IRI
 import interface_adapters.services.FileService
-import interface_adapters.services.parser.RDFSurfaceParseService
-import interface_adapters.services.theoremProver.TheoremProverRunnerService
+import interface_adapters.services.parser.RDFSurfaceParseServiceImpl
+import interface_adapters.services.theoremProver.TheoremProverRunnerServiceImpl
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
 import use_cases.commands.TransformQaError.MoreThanOneQuestionSurface
 import use_cases.commands.TransformQaError.NoQuestionSurface
+import use_cases.commands.subUseCase.AnswerTupleTransformationSuccess
 import use_cases.commands.subUseCase.GetTheoremProverCommandUseCase
 import use_cases.commands.subUseCase.QuestionAnsweringOutputToRdfSurfacesCascUseCase
 import use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
@@ -34,7 +35,7 @@ class TransformQaUseCase {
     ): Flow<CommandStatus<Success, RootError>> = channelFlow {
 
         val rdfSurface = inputStream.reader().use { it.readText() }
-        val parseResult = RDFSurfaceParseService(useRdfLists).parseToEnd(rdfSurface, baseIri)
+        val parseResult = RDFSurfaceParseServiceImpl(useRdfLists).parseToEnd(rdfSurface, baseIri)
         val folFormula = parseResult
             .runOnSuccess { positiveSurface ->
                 RdfSurfaceModelToTPTPModelUseCase(
@@ -81,26 +82,25 @@ class TransformQaUseCase {
             return@channelFlow
         }.command
 
-        val (vampireOutputBufferedReader, timeoutDeferred) = TheoremProverRunnerService(
+        val (vampireOutputBufferedReader, timeoutDeferred) = TheoremProverRunnerServiceImpl(
             command = command,
             timeLimit = reasoningTimeLimit,
             input = folFormula
         ).getOrElse { send(error(it)); close(); return@channelFlow }
-
-
-        launch {
-            if (timeoutDeferred.await()) {
-                send(success(TransformQaResult.Timeout))
-                cancel()
-            }
-        }
 
         launch {
             QuestionAnsweringOutputToRdfSurfacesCascUseCase(
                 qSurface = qSurface,
                 questionAnsweringBufferedReader = vampireOutputBufferedReader,
             ).fold(
-                onSuccess = { send(success(it)) },
+                onSuccess = {
+                    if (it is AnswerTupleTransformationSuccess.NothingFound && timeoutDeferred.await()) {
+                        send(success(TransformQaResult.Timeout))
+                        close()
+                        return@launch
+                    }
+                    send(success(it))
+                },
                 onFailure = { send(error(it)) }
             )
             cancel()

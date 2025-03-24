@@ -3,7 +3,7 @@
 # Create your own .env file with the missing variables within the rs2fol file
 source ../../.env
 
-SEARCH_DIR="${PROJECT_PATH}rs2fol/examples/rdfsurfaces-tests/supported"
+SEARCH_DIR="/home/rebekka/Programs/EyeReasoner/rdfsurfaces-tests/test/pure"
 OUTPUT_FILE="${PROJECT_PATH}rs2fol/examples/rdfsurfaces-tests/check_rdfsurfaces-tests_rdf-lists.csv"
 
 RED='\033[0;31m'
@@ -20,14 +20,14 @@ find "$SEARCH_DIR" -type f -name "*.n3s" | while read -r FILE; do
 
     PARENT_FOLDER=$(basename "$(dirname "$FILE")")
 
-    # Run eye command and store the result
-    EYE_RESULT=$(eye --nope --no-bnode-relabeling --quiet "$FILE")
+#    # Run eye command and store the result
+#    EYE_RESULT=$(eye --nope --no-bnode-relabeling --quiet "$FILE")
+#
+#    # Save the EYE_RESULT to a temporary file
+#    TEMP_EYE_OUT=$(mktemp)
+#    echo "$EYE_RESULT" > "$TEMP_EYE_OUT"
 
-    # Save the EYE_RESULT to a temporary file
-    TEMP_EYE_OUT=$(mktemp)
-    echo "$EYE_RESULT" > "$TEMP_EYE_OUT"
-
-    RESULT=$($RS2FOL_PATH check -q -i "$FILE" -e "$PATH_TO_VAMPIRE" -c "$TEMP_EYE_OUT" -r 2>&1 | tr -d '\n')
+    RESULT=$($RS2FOL_PATH check --program vampire --option-id 2 -q -i "$FILE" -c "/home/rebekka/Programs/EyeReasoner/rdfsurfaces-tests/test/answer.n3s" -cf /home/rebekka/Projects/rs2fol/bin/config.json -r 2>&1 | tr -d '\n')
 
     echo "$FILENAME,$RESULT,$PARENT_FOLDER" >> "$OUTPUT_FILE"
 
@@ -42,22 +42,17 @@ find "$SEARCH_DIR" -type f -name "*.n3s" | while read -r FILE; do
     fi
 
     # Remove the temporary file
-    rm "$TEMP_EYE_OUT"
+   #  rm "$TEMP_EYE_OUT"
 
 done
 
-VAMPIRE_VERSION=$("$PATH_TO_VAMPIRE" --version 2>&1)
 EYE_VERSION=$(eye --version 2>&1)
 
-echo -e "\nVampire Version: $VAMPIRE_VERSION"
 echo -e "\nEye Version: $EYE_VERSION"
 
-VAMPIRE_VERSION_LINES=$(echo "$VAMPIRE_VERSION" | sed 's/^/,,/g')
 EYE_VERSION_LINES=$(echo "$EYE_VERSION" | sed 's/^/,,/g')
 
 {
-    echo -e ",,\nVampire Version:,,"
-    echo -e "$VAMPIRE_VERSION_LINES"
     echo -e "Eye Version:,,"
     echo -e "$EYE_VERSION_LINES"
 } >> "$OUTPUT_FILE"

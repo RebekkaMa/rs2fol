@@ -1,6 +1,6 @@
 package use_cases.commands.subUseCase
 
-import interface_adapters.services.theoremProver.ConfigLoader
+import interface_adapters.services.theoremProver.ConfigLoaderServiceImpl
 import util.commandResult.*
 import java.nio.file.Path
 import kotlin.io.path.pathString
@@ -13,7 +13,7 @@ object GetTheoremProverCommandUseCase {
         reasoningTimeLimit: Long,
         configFile: Path
     ): IntermediateStatus<GetTheoremProverCommandSuccess, Error> {
-        val configs = ConfigLoader.loadConfig(configFile.pathString)
+        val configs = ConfigLoaderServiceImpl.loadConfig(configFile.pathString)
 
         val programConfig = configs.programs[programName] ?: return intermediateError(
             GetTheoremProverCommandError.TheoremProverNotFound(programName)

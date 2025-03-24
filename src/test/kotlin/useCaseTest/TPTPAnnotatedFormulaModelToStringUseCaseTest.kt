@@ -4,15 +4,13 @@ import entities.fol.FOLConstant
 import entities.fol.tptp.AnnotatedFormula
 import entities.fol.tptp.FormulaType
 import interface_adapters.services.coder.FOLCoderService
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
+import io.kotest.core.spec.style.ShouldSpec
 import use_cases.modelToString.FOLModelToStringUseCase
 import use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
+import kotlin.test.assertEquals
 
-class TPTPAnnotatedFormulaModelToStringUseCaseTest {
-
-    @Test
-    fun `invoke with conjecture`() {
+class TPTPAnnotatedFormulaModelToStringUseCaseTest : ShouldSpec({
+    should("invoke with conjecture") {
         val annotatedFormula = AnnotatedFormula("testName", FormulaType.Conjecture, FOLConstant("testConstant"))
         val encodedFOLModel = FOLCoderService.encode(annotatedFormula.expression)
         val transformedFormula = FOLModelToStringUseCase(encodedFOLModel)
@@ -21,8 +19,7 @@ class TPTPAnnotatedFormulaModelToStringUseCaseTest {
         assertEquals("fof(testName, conjecture, $transformedFormula).", result)
     }
 
-    @Test
-    fun `invoke with hypothesis`() {
+    should("invoke with hypothesis") {
         val annotatedFormula = AnnotatedFormula("testName", FormulaType.Hypothesis, FOLConstant("testConstant"))
         val encodedFOLModel = FOLCoderService.encode(annotatedFormula.expression)
         val transformedFormula = FOLModelToStringUseCase(encodedFOLModel)
@@ -31,8 +28,7 @@ class TPTPAnnotatedFormulaModelToStringUseCaseTest {
         assertEquals("fof(testName, hypothesis, $transformedFormula).", result)
     }
 
-    @Test
-    fun `invoke with lemma`() {
+    should("invoke with lemma") {
         val annotatedFormula = AnnotatedFormula("testName", FormulaType.Lemma, FOLConstant("testConstant"))
         val encodedFOLModel = FOLCoderService.encode(annotatedFormula.expression)
         val transformedFormula = FOLModelToStringUseCase(encodedFOLModel)
@@ -41,8 +37,7 @@ class TPTPAnnotatedFormulaModelToStringUseCaseTest {
         assertEquals("fof(testName, lemma, $transformedFormula).", result)
     }
 
-    @Test
-    fun `invoke with question`() {
+    should("invoke with question") {
         val annotatedFormula = AnnotatedFormula("testName", FormulaType.Question, FOLConstant("testConstant"))
         val encodedFOLModel = FOLCoderService.encode(annotatedFormula.expression)
         val transformedFormula = FOLModelToStringUseCase(encodedFOLModel)
@@ -50,4 +45,4 @@ class TPTPAnnotatedFormulaModelToStringUseCaseTest {
         val result = TPTPAnnotatedFormulaModelToStringUseCase(annotatedFormula)
         assertEquals("fof(testName, question, $transformedFormula).", result)
     }
-}
+})

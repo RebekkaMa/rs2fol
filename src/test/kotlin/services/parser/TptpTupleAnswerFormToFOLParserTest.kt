@@ -4,7 +4,7 @@ import entities.fol.FOLConstant
 import entities.fol.FOLFunction
 import entities.fol.tptp.AnswerTuple
 import entities.fol.tptp.TPTPTupleAnswerFormAnswer
-import interface_adapters.services.parser.TptpTupleAnswerFormToModelService
+import interface_adapters.services.parser.TptpTupleAnswerFormToModelServiceImpl
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -15,7 +15,7 @@ class TPTPTupleAnswerFormParserToFOLTest : ShouldSpec(
         should("parse basic example without exception") {
             val str =
                 "[(['http://example.org/ns#beetle','http://example.org/ns#nice']|['http://example.org/ns#beetle','http://example.org/ns#green']),['http://example.org/ns#beetle','http://example.org/ns#beautiful']|_]"
-            TptpTupleAnswerFormToModelService.parseToEnd(str).getSuccessOrNull()
+            TptpTupleAnswerFormToModelServiceImpl.parseToEnd(str).getSuccessOrNull()
                 .shouldNotBeNull() shouldBeEqual TPTPTupleAnswerFormAnswer(
                 answerTuples = listOf(
                     AnswerTuple(
@@ -48,7 +48,7 @@ class TPTPTupleAnswerFormParserToFOLTest : ShouldSpec(
         should("parse sec basic example without exception") {
             val str =
                 "[(['http://example.org/ns#i', 'http://example.org/ns#D']|['http://example.org/ns#i', 'http://example.org/ns#B'])|_]"
-            TptpTupleAnswerFormToModelService.parseToEnd(str).getSuccessOrNull()
+            TptpTupleAnswerFormToModelServiceImpl.parseToEnd(str).getSuccessOrNull()
                 .shouldNotBeNull() shouldBeEqual TPTPTupleAnswerFormAnswer(
                 answerTuples = listOf(),
                 disjunctiveAnswerTuples = listOf(
@@ -74,7 +74,7 @@ class TPTPTupleAnswerFormParserToFOLTest : ShouldSpec(
         should("parse example with lists without exception") {
             val str =
                 "[[list('http://example.org/ns#s',list('http://example.org/ns#s',list('http://example.org/ns#s','\"0\"^^http://www.w3.org/2001/XMLSchema#integer'))),list]|_]"
-            TptpTupleAnswerFormToModelService.parseToEnd(str).getSuccessOrNull()
+            TptpTupleAnswerFormToModelServiceImpl.parseToEnd(str).getSuccessOrNull()
                 .shouldNotBeNull() shouldBeEqual TPTPTupleAnswerFormAnswer(
                 listOf(
                     AnswerTuple(
@@ -109,7 +109,7 @@ class TPTPTupleAnswerFormParserToFOLTest : ShouldSpec(
         should("parse example with rdf literals without exception") {
             val str =
                 "[['\"0\"^^http://www.w3.org/2001/XMLSchema#string','\"0\"@en'],['http://example.org/ns#s', sK5]|_]"
-            TptpTupleAnswerFormToModelService.parseToEnd(str).getSuccessOrNull()
+            TptpTupleAnswerFormToModelServiceImpl.parseToEnd(str).getSuccessOrNull()
                 .shouldNotBeNull() shouldBeEqual TPTPTupleAnswerFormAnswer(
                 listOf(
                     AnswerTuple(
@@ -132,7 +132,7 @@ class TPTPTupleAnswerFormParserToFOLTest : ShouldSpec(
 
         should("parse example with skolem function without exception") {
             val str = "[[sK1('http://example.org/ns#b','http://example.org/ns#c')]|_]"
-            TptpTupleAnswerFormToModelService.parseToEnd(str).getSuccessOrNull()
+            TptpTupleAnswerFormToModelServiceImpl.parseToEnd(str).getSuccessOrNull()
                 .shouldNotBeNull() shouldBeEqual TPTPTupleAnswerFormAnswer(
                 listOf(
                     AnswerTuple(
@@ -153,14 +153,14 @@ class TPTPTupleAnswerFormParserToFOLTest : ShouldSpec(
 
         should("parse empty result") {
             val str = "[|_]"
-            TptpTupleAnswerFormToModelService.parseToEnd(str).getSuccessOrNull()
+            TptpTupleAnswerFormToModelServiceImpl.parseToEnd(str).getSuccessOrNull()
                 .shouldNotBeNull() shouldBeEqual TPTPTupleAnswerFormAnswer(listOf(), listOf())
         }
 
         should("parse another basic example without exception") {
             val str =
                 "[['http://example.org/ns#beetle','\"RDF/XML Syntax Specification (Revised)\"^^http://www.w3.org/2001/XMLSchema#string'],[list('http://example.org/ns#s'),'\"That Seventies Show\"@en'],['http://example.org/ns#beetle','\"http://www.w3.org/2001/XMLSchema#string\"^^http://www.w3.org/2001/XMLSchema#string']|_]"
-            TptpTupleAnswerFormToModelService.parseToEnd(str).getSuccessOrNull()
+            TptpTupleAnswerFormToModelServiceImpl.parseToEnd(str).getSuccessOrNull()
                 .shouldNotBeNull() shouldBeEqual TPTPTupleAnswerFormAnswer(
 
                 listOf(

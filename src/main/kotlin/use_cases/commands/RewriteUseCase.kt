@@ -2,7 +2,7 @@ package use_cases.commands
 
 import entities.rdfsurfaces.rdf_term.IRI
 import interface_adapters.services.FileService
-import interface_adapters.services.parser.RDFSurfaceParseService
+import interface_adapters.services.parser.RDFSurfaceParseServiceImpl
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import use_cases.modelToString.RdfSurfaceModelToN3UseCase
@@ -20,7 +20,7 @@ object RewriteUseCase {
         dEntailment: Boolean
     ): Flow<CommandStatus<RewriteResult, RootError>> = flow {
 
-        val parserResult = RDFSurfaceParseService(rdfList).parseToEnd(rdfSurface, baseIRI)
+        val parserResult = RDFSurfaceParseServiceImpl(rdfList).parseToEnd(rdfSurface, baseIRI)
         val result = parserResult.runOnSuccess { positiveSurface ->
             RdfSurfaceModelToN3UseCase(
                 defaultPositiveSurface = positiveSurface,

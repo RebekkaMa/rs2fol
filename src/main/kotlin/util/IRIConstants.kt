@@ -7,15 +7,13 @@ object IRIConstants {
     const val LOG_IRI = "http://www.w3.org/2000/10/swap/log#"
 
     const val LOG_POSITIVE_SURFACE_IRI = LOG_IRI + "onPositiveSurface"
-    const val LOG_NEGATIVE_SURFACE_IRI = LOG_IRI +"onNegativeSurface"
+    const val LOG_NEGATIVE_SURFACE_IRI = LOG_IRI + "onNegativeSurface"
     const val LOG_NEUTRAL_SURFACE_IRI = LOG_IRI + "onNeutralSurface"
     const val LOG_QUERY_SURFACE_IRI = LOG_IRI + "onQuerySurface"
     const val LOG_NEGATIVE_TRIPLE_IRI = LOG_IRI + "negativeTriple"
     const val LOG_QUESTION_SURFACE_IRI = LOG_IRI + "onQuestionSurface"
     const val LOG_ANSWER_SURFACE_IRI = LOG_IRI + "onAnswerSurface"
     const val LOG_NEGATIVE_ANSWER_SURFACE_IRI = LOG_IRI + "onNegativeAnswerSurface"
-    const val LOG_NEGATIVE_COMPONENT_SURFACE_IRI = LOG_IRI + "onNegativeComponentSurface"
-
 
     const val XSD_STRING_IRI = XSD_IRI + "string"
     const val XSD_BOOLEAN_IRI = XSD_IRI + "boolean"

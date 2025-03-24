@@ -6,7 +6,7 @@ import entities.rdfsurfaces.QuerySurface
 import entities.rdfsurfaces.RdfTriple
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
-import interface_adapters.services.parser.RDFSurfaceParseService
+import interface_adapters.services.parser.RDFSurfaceParseServiceImpl
 import interface_adapters.services.parser.RdfSurfaceParserError
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.collections.shouldNotContain
@@ -34,7 +34,7 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val rdfTriple = RdfTriple(iri1, iri2, iri3)
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -55,7 +55,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple1 = RdfTriple(iri1, iri2, iri3)
                 val rdfTriple2 = RdfTriple(iri1, iri4, literal)
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -76,7 +76,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple1 = RdfTriple(iri1, iri2, iri3)
                 val rdfTriple2 = RdfTriple(iri1, iri4, literal)
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -96,7 +96,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
                 val rdfTriple2 = RdfTriple(iri1, iri2, literal2)
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -116,7 +116,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
                 val rdfTriple2 = RdfTriple(iri1, iri2, literal2)
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -133,7 +133,7 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, iri3)
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -151,7 +151,7 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, iri3)
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -195,7 +195,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple9 = RdfTriple(iri19, iri17, iri20)
 
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -227,7 +227,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
                 val rdfTriple2 = RdfTriple(iri3, iri2, literal2)
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -266,7 +266,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple7 = RdfTriple(iri1, iri4, literal5)
 
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -293,7 +293,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple2 = RdfTriple(iri1, iri3, literal2)
                 val rdfTriple3 = RdfTriple(iri1, iri4, literal3)
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -312,7 +312,7 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -333,7 +333,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple2 = RdfTriple(bn2, iri1, bn1)
 
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -360,7 +360,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple2 = RdfTriple(bn2, iri2, literal)
 
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -397,7 +397,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple6 = RdfTriple(bn3, iri3, iri4)
 
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -434,7 +434,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple5 = RdfTriple(bn3, iri2, literal3)
                 val rdfTriple6 = RdfTriple(bn2, iri3, iri4)
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -460,7 +460,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple1 = RdfTriple(iri1, iri2, collection1)
 
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -491,7 +491,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple5 = RdfTriple(bn2, iri4, bn1)
 
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -512,7 +512,7 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -540,7 +540,7 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val rdfTriple1 = RdfTriple(collection1, iri1, literal1)
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -575,7 +575,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple6 = RdfTriple(bn2, iri3, iri4)
                 val rdfTriple7 = RdfTriple(bn0, iri1, literal1)
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -603,7 +603,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple1 = RdfTriple(collection2, iri3, iri4)
                 val rdfTriple2 = RdfTriple(bn0, iri1, iri2)
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -643,7 +643,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val rdfTriple9 = RdfTriple(bn3, iri3, iri4)
 
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -691,7 +691,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                     NegativeSurface(listOf(bnS), listOf(rdfTriple3, negativeSurface21, negativeSurface22))
                 val querySurface = QuerySurface(listOf(bnS, bnC), listOf(rdfTriple6))
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -736,7 +736,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 )
                 val querySurface = QuerySurface(listOf(bnS, bnC), listOf(rdfTriple8))
 
-                RDFSurfaceParseService(false).parseToEnd(
+                RDFSurfaceParseServiceImpl(false).parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull() shouldBeEqualToComparingFields PositiveSurface(
@@ -748,7 +748,7 @@ class RDFSurfacesParserTest : ShouldSpec(
         context("duplicated Blank Nodes") {
             should("change Blank Nodes Base") {
                 val testStr = "@prefix : <http://example.org#> . _:BN_12 _:BN_043 _:BN_0023. (:a _:BN_23 []) :b :c."
-                val rdfSurfaceParser = RDFSurfaceParseService(true)
+                val rdfSurfaceParser = RDFSurfaceParseServiceImpl(true)
 
                 rdfSurfaceParser.parseToEnd(
                     input = testStr,
@@ -760,7 +760,7 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("throw an exeption") {
                 val testStr =
                     "@prefix : <http://example.org#> . _:BN_12 _:BN_043 _:BN_0000000000000023. (:a _:BN_23 []) :b :c."
-                val rdfSurfaceParser = RDFSurfaceParseService(true)
+                val rdfSurfaceParser = RDFSurfaceParseServiceImpl(true)
                 rdfSurfaceParser.parseToEnd(
                     testStr,
                     IRI.from("file://" + IRI.from(System.getProperty("user.dir")))
@@ -771,7 +771,7 @@ class RDFSurfacesParserTest : ShouldSpec(
         context("case insensitive base") {
             should("accept case insensitive 'base' and 'prefix'") {
                 val testStr = "BaSe <http://example.org#> \n prEfix : <http://example.de#> \n  <#prefix> :a \"base\""
-                val rdfSurfaceParser = RDFSurfaceParseService(false)
+                val rdfSurfaceParser = RDFSurfaceParseServiceImpl(false)
 
                 val iri1 = IRI.from("http://example.org#prefix")
                 val iri2 = IRI.from("http://example.de#a")

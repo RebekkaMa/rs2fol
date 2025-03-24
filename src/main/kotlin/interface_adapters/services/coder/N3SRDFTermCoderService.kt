@@ -1,10 +1,11 @@
 package interface_adapters.services.coder
 
-import entities.rdfsurfaces.rdf_term.*
+import entities.rdfsurfaces.rdf_term.BlankNode
+import entities.rdfsurfaces.rdf_term.RdfTerm
 import interface_adapters.services.parser.util.pnChars
 import interface_adapters.services.parser.util.pnCharsU
 
-object RDFTermCoderService {
+object N3SRDFTermCoderService {
 
     fun isValid(blankNode: BlankNode): Boolean {
         val id = blankNode.blankNodeId
@@ -12,7 +13,7 @@ object RDFTermCoderService {
         id.toCharArray()
             .forEachIndexed { index, char ->
                 if (
-                    isValidBlankNodeChar(
+                    !isValidBlankNodeChar(
                         charPosition = index,
                         char = char,
                         idLength = id.length

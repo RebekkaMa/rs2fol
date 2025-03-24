@@ -1,5 +1,6 @@
 package interface_adapters.services.theoremProver
 
+import interfaces.ConfigLoaderService
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -21,8 +22,8 @@ data class ProgramsConfig(
     val programs: Map<String, Program>
 )
 
-object ConfigLoader {
-    fun loadConfig(filePath: String): ProgramsConfig {
+object ConfigLoaderServiceImpl : ConfigLoaderService {
+    override fun loadConfig(filePath: String): ProgramsConfig {
         val json = Json { ignoreUnknownKeys = true }
 
         val jsonContent = File(filePath).readText()

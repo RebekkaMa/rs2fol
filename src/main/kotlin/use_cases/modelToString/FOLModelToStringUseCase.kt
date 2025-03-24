@@ -23,7 +23,6 @@ object FOLModelToStringUseCase {
 
             FOLTrue -> "\$true"
 
-
             is FOLConstant -> "'${folExpression.name}'"
 
             is FOLPredicate -> {

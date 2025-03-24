@@ -6,6 +6,7 @@ import entities.fol.tptp.FormulaType
 import entities.rdfsurfaces.*
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
+import util.IRIConstants
 import util.SurfaceNotSupportedException
 import util.commandResult.Error
 import util.commandResult.IntermediateStatus
@@ -17,6 +18,7 @@ object RdfSurfaceModelToTPTPModelUseCase {
         formulaRole: FormulaRole = FormulaRole.Axiom,
         tptpName: String = formulaRole.name.lowercase(),
         dEntailment: Boolean = false,
+        listType: ListType = ListType.FUNCTION
     ): IntermediateStatus<List<AnnotatedFormula>, SurfaceNotSupportedError> {
 
         fun transform(blankNode: BlankNode) = FOLVariable(blankNode.blankNodeId)
@@ -38,11 +40,31 @@ object RdfSurfaceModelToTPTPModelUseCase {
         )
 
 
-        fun transform(rdfTerm: RdfTerm): FOLExpression = when (rdfTerm) {
-            is BlankNode -> transform(rdfTerm)
-            is Literal -> transform(rdfTerm)
-            is IRI -> transform(rdfTerm)
-            is Collection -> FOLPredicate("list", rdfTerm.list.map { transform(it) })
+        fun transform(rdfTerm: RdfTerm): GeneralTerm {
+            return when (rdfTerm) {
+                is BlankNode -> transform(rdfTerm)
+                is Literal -> transform(rdfTerm)
+                is IRI -> transform(rdfTerm)
+                is Collection -> {
+                    return when (listType) {
+                        ListType.NESTED_FUNCTIONS -> {
+                            if (rdfTerm.size == 0) return transform(IRI.from(IRIConstants.RDF_NIL_IRI))
+                            FOLFunction(
+                                "list",
+                                listOf(
+                                    transform(rdfTerm.list.first()),
+                                    transform(Collection(rdfTerm.list.drop(1)))
+                                )
+                            )
+                        }
+
+                        ListType.FUNCTION -> FOLFunction(
+                            "list",
+                            rdfTerm.list.map { transform(it) }
+                        )
+                    }
+                }
+            }
         }
 
         fun transform(blankNodeList: List<BlankNode>) = blankNodeList.map { transform(it) }
@@ -67,7 +89,7 @@ object RdfSurfaceModelToTPTPModelUseCase {
                             )
                         }
 
-                        is NegativeSurface, is QuerySurface, is NegativeTripleSurface, is NegativeAnswerSurface, is NegativeComponentSurface -> {
+                        is NegativeSurface, is QuerySurface, is NegativeAnswerSurface -> {
                             val expression =
                                 when {
                                     hayesGraphElement.hayesGraph.isEmpty() -> FOLTrue
@@ -83,7 +105,7 @@ object RdfSurfaceModelToTPTPModelUseCase {
                             )
                         }
 
-                        is NeutralSurface, is QuestionSurface, is AnswerSurface -> throw SurfaceNotSupportedException(
+                        is NeutralSurface -> throw SurfaceNotSupportedException(
                             hayesGraphElement.javaClass.name
                         )
 
@@ -103,15 +125,14 @@ object RdfSurfaceModelToTPTPModelUseCase {
 
         val fofVariableList = transform(defaultPositiveSurface.graffiti)
 
-        val (querySurfaces, questionSurface, otherHayesGraphElements) = defaultPositiveSurface.hayesGraph.fold(
-            Triple<List<QuerySurface>, List<QuestionSurface>, List<HayesGraphElement>>(
-                emptyList(), emptyList(), emptyList()
+        val (querySurfaces, otherHayesGraphElements) = defaultPositiveSurface.hayesGraph.fold(
+            Pair<List<QuerySurface>, List<HayesGraphElement>>(
+                emptyList(), emptyList()
             )
         ) { acc, hayesGraphElement ->
             when (hayesGraphElement) {
                 is QuerySurface -> acc.copy(first = acc.first.plus(hayesGraphElement))
-                is QuestionSurface -> acc.copy(second = acc.second.plus(hayesGraphElement))
-                else -> acc.copy(third = acc.third.plus(hayesGraphElement))
+                else -> acc.copy(second = acc.second.plus(hayesGraphElement))
             }
         }
 
@@ -161,37 +182,11 @@ object RdfSurfaceModelToTPTPModelUseCase {
                 )
             }
 
-            val fofQuantifiedFormulaQuestion = questionSurface.mapIndexed { index, surface ->
-                val hayesGraphElementsWithoutAnswerSurface = surface.hayesGraph.filterNot { it is AnswerSurface }
-                val fofFormula = kotlin.run {
-                    val expression =
-                        when {
-                            hayesGraphElementsWithoutAnswerSurface.isEmpty() -> return@run FOLTrue
-                            hayesGraphElementsWithoutAnswerSurface.size == 1 -> transform(
-                                hayesGraphElementsWithoutAnswerSurface.single()
-                            )
-
-                            else -> FOLAnd(hayesGraphElementsWithoutAnswerSurface.map { transform(it) })
-                        }
-                    if (surface.graffiti.isEmpty()) return@run expression
-                    FOLExists(
-                        variables = transform(surface.graffiti),
-                        expression = expression
-                    )
-                }
-                AnnotatedFormula(
-                    name = "question_$index",
-                    type = FormulaType.Question,
-                    expression = fofFormula
-                )
-            }
-
             IntermediateStatus.Result(
                 buildList {
                     add(fofQuantifiedFormula)
                     if (ignoreQuerySurfaces) return@buildList
                     addAll(fofQuantifiedFormulaQuery)
-                    addAll(fofQuantifiedFormulaQuestion)
                 }
             )
         } catch (exception: SurfaceNotSupportedException) {
@@ -207,6 +202,11 @@ enum class FormulaRole {
     Hypothesis,
     Lemma,
     Question
+}
+
+enum class ListType {
+    NESTED_FUNCTIONS,
+    FUNCTION
 }
 
 private fun FormulaRole.toFormulaType() = when (this) {

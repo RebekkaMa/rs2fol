@@ -1,5 +1,6 @@
 package use_cases.commands.subUseCase
 
+import entities.fol.tptp.AnswerTuple
 import entities.fol.tptp.TPTPTupleAnswerFormAnswer
 import entities.rdfsurfaces.PositiveSurface
 import entities.rdfsurfaces.QSurface
@@ -10,13 +11,11 @@ import util.commandResult.*
 
 object TPTPTupleAnswerModelToRdfSurfaceUseCase {
     operator fun invoke(
-        tptpTupleAnswerFormAnswer: TPTPTupleAnswerFormAnswer,
+        answerTuples: List<AnswerTuple>,
         qSurface: QSurface
     ): IntermediateStatus<String, Error> {
 
-        val resultList = tptpTupleAnswerFormAnswer.answerTuples
-
-        val rdfTransformedAnswerTuples = resultList.map { answerTuple ->
+        val rdfTransformedAnswerTuples = answerTuples.map { answerTuple ->
             answerTuple.map {
                 FOLGeneralTermToRDFTermUseCase(it).getOrElse { err -> return intermediateError(err) }
                 //TODO("Add answer tuple to error")

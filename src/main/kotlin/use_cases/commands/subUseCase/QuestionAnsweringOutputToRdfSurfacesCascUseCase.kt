@@ -4,48 +4,60 @@ import entities.SZSAnswerTupleFormModel
 import entities.SZSOutputModel
 import entities.SZSStatus
 import entities.SZSStatusType
-import entities.fol.tptp.TPTPTupleAnswerFormAnswer
+import entities.fol.tptp.AnswerTuple
 import entities.rdfsurfaces.QSurface
-import interface_adapters.services.parser.SZSParserService
+import interface_adapters.services.parser.SZSParserServiceImpl
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.transformWhile
 import util.commandResult.*
 import java.io.BufferedReader
 
 object QuestionAnsweringOutputToRdfSurfacesCascUseCase {
 
-    operator fun invoke(
+    suspend operator fun invoke(
         qSurface: QSurface,
         questionAnsweringBufferedReader: BufferedReader,
-    ): IntermediateStatus<Success, RootError> {
-        val parsedResult = mutableSetOf<TPTPTupleAnswerFormAnswer>()
+    ): IntermediateStatus<AnswerTupleTransformationSuccess, RootError> {
+        val answerTuples = mutableSetOf<AnswerTuple>()
         var refutationFound = false
 
-        val questionAnsweringTPTPAnswers = SZSParserService().parse(questionAnsweringBufferedReader)
-            .getOrElse { return IntermediateStatus.Error(it) }
+        val error = SZSParserServiceImpl()
+            .parse(questionAnsweringBufferedReader)
+            .transformWhile { res ->
+                res.fold(
+                    onSuccess = { szsModel ->
+                        when (szsModel) {
+                            is SZSAnswerTupleFormModel -> {
+                                answerTuples.addAll(szsModel.tptpTupleAnswerFormAnswer.answerTuples)
+                                true
+                            }
 
-        questionAnsweringTPTPAnswers.forEach {
-            when (it) {
-                is SZSAnswerTupleFormModel -> {
-                    parsedResult.add(it.tptpTupleAnswerFormAnswer)
-                }
+                            is SZSStatus, is SZSOutputModel -> {
+                                if (szsModel.statusType == SZSStatusType.SuccessOntology.CONTRADICTORY_AXIOMS) {
+                                    refutationFound = true
+                                    false
+                                } else true
 
-                is SZSStatus, is SZSOutputModel -> {
-                    if (it.statusType == SZSStatusType.SuccessOntology.CONTRADICTORY_AXIOMS) refutationFound = true
-                }
+                            }
 
-            }
-        }
+                            else -> {
+                                true
+                            }
+                        }
+                    },
+                    onFailure = {
+                        emit(it)
+                        false
+                    }
+                )
+            }.firstOrNull()
 
-        val allAnswers = parsedResult.fold(TPTPTupleAnswerFormAnswer()) { acc, tptpTupleAnswerFormAnswer ->
-            acc.copy(
-                answerTuples = acc.answerTuples + tptpTupleAnswerFormAnswer.answerTuples,
-                disjunctiveAnswerTuples = acc.disjunctiveAnswerTuples + tptpTupleAnswerFormAnswer.disjunctiveAnswerTuples,
-            )
-        }
+        if (error != null) return IntermediateStatus.Error(error)
 
         if (refutationFound) {
             if (qSurface.graffiti.isEmpty()) {
                 return TPTPTupleAnswerModelToRdfSurfaceUseCase(
-                    tptpTupleAnswerFormAnswer = TPTPTupleAnswerFormAnswer(),
+                    answerTuples = answerTuples.toList(),
                     qSurface = qSurface
                 ).map { AnswerTupleTransformationSuccess.Success(it) }
             }
@@ -54,11 +66,12 @@ object QuestionAnsweringOutputToRdfSurfacesCascUseCase {
             )
         }
 
-        return if (parsedResult.isEmpty()) {
+
+        return if (answerTuples.isEmpty()) {
             IntermediateStatus.Result(AnswerTupleTransformationSuccess.NothingFound)
         } else {
             TPTPTupleAnswerModelToRdfSurfaceUseCase(
-                tptpTupleAnswerFormAnswer = allAnswers,
+                answerTuples = answerTuples.toList(),
                 qSurface = qSurface
             ).map {
                 AnswerTupleTransformationSuccess.Success(it)

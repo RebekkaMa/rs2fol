@@ -33,7 +33,7 @@ class IRITest : ShouldSpec(
                 transformReference(IRI.from("../"), baseIRI).iri shouldBe "http://a/b/"
                 transformReference(IRI.from("../g"), baseIRI).iri shouldBe "http://a/b/g"
 
-                transformReference(IRI.from("src"), baseIRI).iri shouldBe "http://a/"
+                transformReference(IRI.from("../.."), baseIRI).iri shouldBe "http://a/"
                 transformReference(IRI.from("../../"), baseIRI).iri shouldBe "http://a/"
                 transformReference(IRI.from("../../g"), baseIRI).iri shouldBe "http://a/g"
             }

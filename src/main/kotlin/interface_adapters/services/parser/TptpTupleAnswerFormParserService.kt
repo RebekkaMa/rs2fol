@@ -14,11 +14,12 @@ import entities.fol.FOLVariable
 import entities.fol.GeneralTerm
 import entities.fol.tptp.AnswerTuple
 import entities.fol.tptp.TPTPTupleAnswerFormAnswer
+import interfaces.TptpTupleAnswerFormParserService
 import util.commandResult.Error
 import util.commandResult.IntermediateStatus
 
 
-object TptpTupleAnswerFormToModelService : Grammar<TPTPTupleAnswerFormAnswer>() {
+object TptpTupleAnswerFormToModelServiceImpl : Grammar<TPTPTupleAnswerFormAnswer>(), TptpTupleAnswerFormParserService {
 
     private val results = mutableListOf<AnswerTuple>()
     private val orResults = mutableListOf<List<AnswerTuple>>()
@@ -89,7 +90,7 @@ object TptpTupleAnswerFormToModelService : Grammar<TPTPTupleAnswerFormAnswer>() 
                 .map { TPTPTupleAnswerFormAnswer(results.toList(), orResults.toList()) }
         }
 
-    fun parseToEnd(answerTuple: String): IntermediateStatus<TPTPTupleAnswerFormAnswer, TptpTupleAnswerFormParserError> {
+    override fun parseToEnd(answerTuple: String): IntermediateStatus<TPTPTupleAnswerFormAnswer, TptpTupleAnswerFormParserError> {
         return try {
             IntermediateStatus.Result(rootParser.parseToEnd(tokenizer.tokenize(answerTuple)))
         } catch (exc: Throwable) {

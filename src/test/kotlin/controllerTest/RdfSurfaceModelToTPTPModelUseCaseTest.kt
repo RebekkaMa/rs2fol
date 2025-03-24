@@ -1,12 +1,11 @@
 package controllerTest
 
-import entities.fol.FOLAnd
-import entities.fol.FOLConstant
-import entities.fol.FOLPredicate
+import entities.fol.*
 import entities.fol.tptp.AnnotatedFormula
 import entities.fol.tptp.FormulaType
 import entities.rdfsurfaces.rdf_term.IRI
-import interface_adapters.services.parser.RDFSurfaceParseService
+import interface_adapters.services.parser.RDFSurfaceParseServiceImpl
+import io.kotest.assertions.asClue
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.equals.shouldBeEqual
@@ -21,7 +20,7 @@ import kotlin.io.path.readText
 
 class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
     {
-        val rdfSurfaceParseService = RDFSurfaceParseService(false)
+        val rdfSurfaceParseService = RDFSurfaceParseServiceImpl(false)
 
         should("transform example2.n3 without exception") {
             val file = Path("src/test/resources/turtle/example2.n3")
@@ -352,33 +351,131 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
 
         should("transform example10.n3 without exception") {
             val file = Path("src/test/resources/turtle/example10.n3")
-            val solutionFile = Path("src/test/resources/turtle/example10.p")
+
             val result = (RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull()
             )).getSuccessOrNull()
-            result?.joinToString(System.lineSeparator()).shouldNotBeNull().replace(
-                "\\s".toRegex(),
-                ""
-            ) shouldBeEqualComparingTo solutionFile.readText().replace("\\s".toRegex(), "")
+
+            val expectedResult = AnnotatedFormula(
+                "axiom",
+                FormulaType.Axiom,
+                FOLAnd(
+                    listOf(
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLConstant("http://example.org/#green-goblin"),
+                                FOLConstant("http://xmlns.com/foaf/0.1/name"),
+                                FOLConstant("\"Green Goblin\"^^http://www.w3.org/2001/XMLSchema#string")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLConstant("http://example.org/#spiderman"),
+                                FOLConstant("http://xmlns.com/foaf/0.1/name"),
+                                FOLConstant("\"Spiderman\"^^http://www.w3.org/2001/XMLSchema#string")
+                            )
+                        )
+                    )
+                )
+            )
+
+            result shouldNotBe null
+            result!! shouldBeEqual listOf(expectedResult)
         }
 
         should("transform example11.n3 without exception") {
             val file = Path("src/test/resources/turtle/example11.n3")
-            val solutionFile = Path("src/test/resources/turtle/example11.p")
-            val result = (RdfSurfaceModelToTPTPModelUseCase(
+
+            val result = RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull()
-            )).getSuccessOrNull().shouldNotBeNull()
-            result.joinToString(System.lineSeparator()).replace(
-                "\\s".toRegex(),
-                ""
-            ) shouldBeEqualComparingTo solutionFile.readText().replace("\\s".toRegex(), "")
+            ).getSuccessOrNull()
+
+
+            val expectedResult =
+                AnnotatedFormula(
+                    "axiom",
+                    FormulaType.Axiom,
+                    FOLAnd(
+                        listOf(
+                            FOLPredicate(
+                                "triple",
+                                listOf(
+                                    FOLConstant("http://example.org/vocab/show/218"),
+                                    FOLConstant("http://www.w3.org/2000/01/rdf-schema#label"),
+                                    FOLConstant("\"That Seventies Show\"^^http://www.w3.org/2001/XMLSchema#string")
+                                )
+                            ),
+                            FOLPredicate(
+                                "triple",
+                                listOf(
+                                    FOLConstant("http://example.org/vocab/show/218"),
+                                    FOLConstant("http://www.w3.org/2000/01/rdf-schema#label"),
+                                    FOLConstant("\"That Seventies Show\"^^http://www.w3.org/2001/XMLSchema#string")
+                                )
+                            ),
+                            FOLPredicate(
+                                "triple",
+                                listOf(
+                                    FOLConstant("http://example.org/vocab/show/218"),
+                                    FOLConstant("http://www.w3.org/2000/01/rdf-schema#label"),
+                                    FOLConstant("\"That Seventies Show\"^^http://www.w3.org/2001/XMLSchema#string")
+                                )
+                            ),
+                            FOLPredicate(
+                                "triple",
+                                listOf(
+                                    FOLConstant("http://example.org/vocab/show/218"),
+                                    FOLConstant("http://example.org/vocab/show/localName"),
+                                    FOLConstant("\"That Seventies Show\"@en")
+                                )
+                            ),
+                            FOLPredicate(
+                                "triple",
+                                listOf(
+                                    FOLConstant("http://example.org/vocab/show/218"),
+                                    FOLConstant("http://example.org/vocab/show/localName"),
+                                    FOLConstant("\"Cette Série des Années Soixante-dix\"@fr")
+                                )
+                            ),
+                            FOLPredicate(
+                                "triple",
+                                listOf(
+                                    FOLConstant("http://example.org/vocab/show/218"),
+                                    FOLConstant("http://example.org/vocab/show/localName"),
+                                    FOLConstant("\"Cette Série des Années Septante\"@fr-be")
+                                )
+                            ),
+                            FOLPredicate(
+                                "triple",
+                                listOf(
+                                    FOLConstant("http://example.org/vocab/show/218"),
+                                    FOLConstant("http://example.org/vocab/show/blurb"),
+                                    FOLConstant(
+                                        "\"This is a multi-line                        # literal with embedded new lines and quotes\n" +
+                                                "literal with many quotes (\"\"\"\"\")\n" +
+                                                "and up to two sequential apostrophes ('').\"^^http://www.w3.org/2001/XMLSchema#string"
+                                    )
+                                )
+                            )
+                        )
+                    )
+                );
+
+            { result.toString() + System.lineSeparator() + listOf(expectedResult).toString() }.asClue {
+                result shouldNotBe null
+                result!! shouldBeEqual listOf(expectedResult)
+            }
+
         }
+
         should("transform example12.n3 without exception") {
             val file = Path("src/test/resources/turtle/example12.n3")
             val solutionFile = Path("src/test/resources/turtle/example12.p")
@@ -389,14 +486,46 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 ).getSuccessOrNull().shouldNotBeNull()
             )).getSuccessOrNull().shouldNotBeNull()
 
-            result.joinToString(System.lineSeparator()).replace(
-                "\\s".toRegex(),
-                ""
-            ) shouldBeEqualComparingTo solutionFile.readText().replace("\\s".toRegex(), "")
+            val expectedResult = AnnotatedFormula(
+                "axiom",
+                FormulaType.Axiom,
+                FOLAnd(
+                    listOf(
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLConstant("http://en.wikipedia.org/wiki/Helium"),
+                                FOLConstant("http://example.org/elementsatomicNumber"),
+                                FOLConstant("\"2\"^^http://www.w3.org/2001/XMLSchema#integer")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLConstant("http://en.wikipedia.org/wiki/Helium"),
+                                FOLConstant("http://example.org/elementsatomicMass"),
+                                FOLConstant("\"4.002602\"^^http://www.w3.org/2001/XMLSchema#decimal")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLConstant("http://en.wikipedia.org/wiki/Helium"),
+                                FOLConstant("http://example.org/elementsspecificGravity"),
+                                FOLConstant("\"1.663E-4\"^^http://www.w3.org/2001/XMLSchema#double")
+                            )
+                        )
+                    )
+                )
+            )
+
+
+            result shouldNotBe null
+            result!! shouldBeEqual listOf(expectedResult)
         }
+
         should("transform example13.n3 without exception") {
             val file = Path("src/test/resources/turtle/example13.n3")
-            val solutionFile = Path("src/test/resources/turtle/example13.p")
             val result = (RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
@@ -404,25 +533,69 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 ).getSuccessOrNull().shouldNotBeNull()
             )).getSuccessOrNull()
 
-            result!!.joinToString(System.lineSeparator()).replace(
-                "\\s".toRegex(),
-                ""
-            ) shouldBeEqualComparingTo solutionFile.readText().replace("\\s".toRegex(), "")
+            val expectedResult = AnnotatedFormula(
+                "axiom",
+                FormulaType.Axiom,
+                FOLPredicate(
+                    "triple",
+                    listOf(
+                        FOLConstant("http://somecountry.example/census2007"),
+                        FOLConstant("http://example.org/statsisLandlocked"),
+                        FOLConstant("\"false\"^^http://www.w3.org/2001/XMLSchema#boolean")
+                    )
+                )
+            )
+
+            result shouldNotBe null
+            result!! shouldBeEqual listOf(expectedResult)
         }
+
         should("transform example14.n3 without exception") {
             val file = Path("src/test/resources/turtle/example14.n3")
-            val solutionFile = Path("src/test/resources/turtle/example14.p")
             val result = (RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull()
             )).getSuccessOrNull().shouldNotBeNull()
-            result.joinToString(System.lineSeparator()).replace(
-                "\\s".toRegex(),
-                ""
-            ) shouldBeEqualComparingTo solutionFile.readText().replace("\\s".toRegex(), "")
+
+            val expectedResult = AnnotatedFormula(
+                "axiom",
+                FormulaType.Axiom,
+                FOLExists(
+                    variables = listOf(
+                        FOLVariable("alice"),
+                        FOLVariable("bob")
+                    ),
+                    FOLAnd(
+                        listOf(
+                            FOLPredicate(
+                                "triple",
+                                listOf(
+                                    FOLVariable("alice"),
+                                    FOLConstant("http://xmlns.com/foaf/0.1/knows"),
+                                    FOLVariable("bob")
+                                )
+                            ),
+                            FOLPredicate(
+                                "triple",
+                                listOf(
+                                    FOLVariable("bob"),
+                                    FOLConstant("http://xmlns.com/foaf/0.1/knows"),
+                                    FOLVariable("alice")
+                                )
+                            )
+                        )
+                    )
+                )
+            );
+
+            { result.toString() + System.lineSeparator() + listOf(expectedResult).toString() }.asClue {
+                result shouldNotBe null
+                result shouldBeEqual listOf(expectedResult)
+            }
         }
+
         should("transform example15.n3 without exception") {
             val file = Path("src/test/resources/turtle/example15.n3")
             val solutionFile = Path("src/test/resources/turtle/example15.p")
@@ -432,161 +605,569 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull()
             )).getSuccessOrNull().shouldNotBeNull()
-            result.joinToString(System.lineSeparator()).replace(
-                "\\s".toRegex(),
-                ""
-            ) shouldBeEqualComparingTo solutionFile.readText().replace("\\s".toRegex(), "")
+            val expectedResult = AnnotatedFormula(
+                "axiom",
+                FormulaType.Axiom,
+                FOLExists(
+                    variables = listOf(
+                        FOLVariable("BN_1"),
+                        FOLVariable("BN_2")
+                    ),
+                    FOLAnd(
+                        listOf(
+                            FOLPredicate(
+                                "triple",
+                                listOf(
+                                    FOLVariable("BN_1"),
+                                    FOLConstant("http://xmlns.com/foaf/0.1/knows"),
+                                    FOLVariable("BN_2")
+                                )
+                            ),
+                            FOLPredicate(
+                                "triple",
+                                listOf(
+                                    FOLVariable("BN_2"),
+                                    FOLConstant("http://xmlns.com/foaf/0.1/name"),
+                                    FOLConstant("\"Bob\"^^http://www.w3.org/2001/XMLSchema#string")
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+
+            result shouldNotBe null
+            result shouldBeEqual listOf(expectedResult)
         }
         should("transform example16.n3 without exception") {
             val file = Path("src/test/resources/turtle/example16.n3")
-
-            val solution = """fof(axiom,axiom,
-                ? [BN_1,BN_2,BN_3] : (
-            triple(BN_1,'http://xmlns.com/foaf/0.1/knows',BN_3)
-            & triple(BN_1,'http://xmlns.com/foaf/0.1/name','"Alice"^^http://www.w3.org/2001/XMLSchema#string')
-            & triple(BN_2,'http://xmlns.com/foaf/0.1/name','"Eve"^^http://www.w3.org/2001/XMLSchema#string')
-            & triple(BN_3,'http://xmlns.com/foaf/0.1/name','"Bob"^^http://www.w3.org/2001/XMLSchema#string')
-            & triple(BN_3,'http://xmlns.com/foaf/0.1/knows',BN_2)
-            & triple(BN_3,'http://xmlns.com/foaf/0.1/mbox','file://${file.absolute().parent.invariantSeparatorsPathString}/bob@example.com')
-            )
-            )."""
-
             val result = (RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull()
             )).getSuccessOrNull().shouldNotBeNull()
-            result.joinToString(System.lineSeparator()).replace(
-                "\\s".toRegex(),
-                ""
-            ) shouldBeEqualComparingTo solution.replace("\\s".toRegex(), "")
+
+            val expectedResult = AnnotatedFormula(
+                "axiom",
+                FormulaType.Axiom,
+                FOLExists(
+                    variables = listOf(
+                        FOLVariable("BN_1"),
+                        FOLVariable("BN_2"),
+                        FOLVariable("BN_3")
+                    ),
+                    FOLAnd(
+                        listOf(
+                            FOLPredicate(
+                                "triple",
+                                listOf(
+                                    FOLVariable("BN_1"),
+                                    FOLConstant("http://xmlns.com/foaf/0.1/knows"),
+                                    FOLVariable("BN_3")
+                                )
+                            ),
+                            FOLPredicate(
+                                "triple",
+                                listOf(
+                                    FOLVariable("BN_1"),
+                                    FOLConstant("http://xmlns.com/foaf/0.1/name"),
+                                    FOLConstant("\"Alice\"^^http://www.w3.org/2001/XMLSchema#string")
+                                )
+                            ),
+                            FOLPredicate(
+                                "triple",
+                                listOf(
+                                    FOLVariable("BN_2"),
+                                    FOLConstant("http://xmlns.com/foaf/0.1/name"),
+                                    FOLConstant("\"Eve\"^^http://www.w3.org/2001/XMLSchema#string")
+                                )
+                            ),
+                            FOLPredicate(
+                                "triple",
+                                listOf(
+                                    FOLVariable("BN_3"),
+                                    FOLConstant("http://xmlns.com/foaf/0.1/name"),
+                                    FOLConstant("\"Bob\"^^http://www.w3.org/2001/XMLSchema#string")
+                                )
+                            ),
+                            FOLPredicate(
+                                "triple",
+                                listOf(
+                                    FOLVariable("BN_3"),
+                                    FOLConstant("http://xmlns.com/foaf/0.1/knows"),
+                                    FOLVariable("BN_2")
+                                )
+                            ),
+                            FOLPredicate(
+                                "triple",
+                                listOf(
+                                    FOLVariable("BN_3"),
+                                    FOLConstant("http://xmlns.com/foaf/0.1/mbox"),
+                                    FOLConstant("file://" + file.absolute().parent.invariantSeparatorsPathString + "/bob@example.com")
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+
+            result shouldNotBe null
+            result shouldBeEqual listOf(expectedResult)
         }
+
         should("transform example17.n3 without exception") {
             val file = Path("src/test/resources/turtle/example17.n3")
-            val solution = """fof(axiom,axiom,
-   ? [Ox0061,Ox0062,Ox0063] : (
-      triple(Ox0061,'http://xmlns.com/foaf/0.1/name','"Alice"^^http://www.w3.org/2001/XMLSchema#string')
-      & triple(Ox0061,'http://xmlns.com/foaf/0.1/knows',Ox0062)
-      & triple(Ox0062,'http://xmlns.com/foaf/0.1/name','"Bob"^^http://www.w3.org/2001/XMLSchema#string')
-      & triple(Ox0062,'http://xmlns.com/foaf/0.1/knows',Ox0063)
-      & triple(Ox0063,'http://xmlns.com/foaf/0.1/name','"Eve"^^http://www.w3.org/2001/XMLSchema#string')
-      & triple(Ox0062,'http://xmlns.com/foaf/0.1/mbox','file://${file.absolute().parent.invariantSeparatorsPathString}/bob@example.com')
-   )
-)."""
-
-            val result = (RdfSurfaceModelToTPTPModelUseCase(
+            val result = RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull()
-            )).getSuccessOrNull().shouldNotBeNull()
-            result.joinToString(System.lineSeparator()).replace(
-                "\\s".toRegex(),
-                ""
-            ) shouldBeEqualComparingTo solution.replace("\\s".toRegex(), "")
+            ).getSuccessOrNull()
+
+            val expectedResult = AnnotatedFormula(
+                "axiom",
+                FormulaType.Axiom,
+                FOLAnd(
+                    listOf(
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("Ox0061"),
+                                FOLConstant("http://xmlns.com/foaf/0.1/name"),
+                                FOLConstant("\"Alice\"^^http://www.w3.org/2001/XMLSchema#string")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("Ox0061"),
+                                FOLConstant("http://xmlns.com/foaf/0.1/knows"),
+                                FOLVariable("Ox0062")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("Ox0062"),
+                                FOLConstant("http://xmlns.com/foaf/0.1/name"),
+                                FOLConstant("\"Bob\"^^http://www.w3.org/2001/XMLSchema#string")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("Ox0062"),
+                                FOLConstant("http://xmlns.com/foaf/0.1/knows"),
+                                FOLVariable("Ox0063")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("Ox0063"),
+                                FOLConstant("http://xmlns.com/foaf/0.1/name"),
+                                FOLConstant("\"Eve\"^^http://www.w3.org/2001/XMLSchema#string")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("Ox0062"),
+                                FOLConstant("http://xmlns.com/foaf/0.1/mbox"),
+                                FOLConstant("file://" + file.absolute().parent.invariantSeparatorsPathString + "/bob@example.com")
+                            )
+                        )
+                    )
+                )
+            )
+
+            result shouldNotBe null
+            result!! shouldBeEqual listOf(expectedResult)
         }
+
         should("transform example20.n3 without exception") {
             val file = Path("src/test/resources/turtle/example20.n3")
             val solutionFile = Path("src/test/resources/turtle/example20.p")
-            val result = (RdfSurfaceModelToTPTPModelUseCase(
+            val result = RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull()
-            )).getSuccessOrNull().shouldNotBeNull()
-            result.joinToString(System.lineSeparator()).replace(
-                "\\s".toRegex(),
-                ""
-            ) shouldBeEqualComparingTo solutionFile.readText().replace("\\s".toRegex(), "")
+            ).getSuccessOrNull()
+
+            val expectedResult = AnnotatedFormula(
+                "axiom",
+                FormulaType.Axiom,
+                FOLPredicate(
+                    "triple",
+                    listOf(
+                        FOLConstant("http://example.org/stuff/1.0/a"),
+                        FOLConstant("http://example.org/stuff/1.0/b"),
+                        FOLFunction(
+                            "list",
+                            listOf(
+                                FOLConstant("\"apple\"^^http://www.w3.org/2001/XMLSchema#string"),
+                                FOLConstant("\"banana\"^^http://www.w3.org/2001/XMLSchema#string")
+                            )
+                        )
+                    )
+                )
+            )
+
+            result shouldNotBe null
+            result!! shouldBeEqual listOf(expectedResult)
         }
         should("transform example21.n3 without exception") {
             val file = Path("src/test/resources/turtle/example21.n3")
-            val solutionFile = Path("src/test/resources/turtle/example21.p")
-            val result = (RdfSurfaceModelToTPTPModelUseCase(
+            val result = RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull()
-            )).getSuccessOrNull().shouldNotBeNull()
-            result.joinToString(System.lineSeparator()).replace(
-                "\\s".toRegex(),
-                ""
-            ) shouldBeEqualComparingTo solutionFile.readText().replace("\\s".toRegex(), "")
+            ).getSuccessOrNull()
 
+            val expectedResult = AnnotatedFormula(
+                "axiom",
+                FormulaType.Axiom,
+                FOLAnd(
+                    listOf(
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLConstant("http://example.org/stuff/1.0/a"),
+                                FOLConstant("http://example.org/stuff/1.0/b"),
+                                FOLVariable("BN_2")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("BN_1"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#first"),
+                                FOLConstant("\"banana\"^^http://www.w3.org/2001/XMLSchema#string")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("BN_1"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("BN_2"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#first"),
+                                FOLConstant("\"apple\"^^http://www.w3.org/2001/XMLSchema#string")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("BN_2"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest"),
+                                FOLVariable("BN_1")
+                            )
+                        )
+                    )
+                )
+            )
+
+            result shouldNotBe null
+            result!! shouldBeEqual listOf(expectedResult)
         }
+
         should("transform example22.n3 without exception") {
             val file = Path("src/test/resources/turtle/example22.n3")
-            val solutionFile = Path("src/test/resources/turtle/example22.p")
-
-            val result = (RdfSurfaceModelToTPTPModelUseCase(
+            val result = RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull()
-            )).getSuccessOrNull()?.joinToString(System.lineSeparator())
-                .shouldNotBeNull() shouldBeEqualComparingTo solutionFile.readText()
+            ).getSuccessOrNull()
+
+            val expectedResult = AnnotatedFormula(
+                "axiom",
+                FormulaType.Axiom,
+                FOLAnd(
+                    listOf(
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLConstant("http://example.org/stuff/1.0/a"),
+                                FOLConstant("http://example.org/stuff/1.0/b"),
+                                FOLConstant("\"The first line\\u000AThe second line\\u000A  more\"^^http://www.w3.org/2001/XMLSchema#string")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLConstant("http://example.org/stuff/1.0/a"),
+                                FOLConstant("http://example.org/stuff/1.0/b"),
+                                FOLConstant("\"The first line\\u000AThe second line\\u000A  more\"^^http://www.w3.org/2001/XMLSchema#string")
+                            )
+                        )
+                    )
+                )
+            )
+
+            result shouldNotBe null
+            result!! shouldBeEqual listOf(expectedResult)
         }
         should("transform example23.n3 without exception") {
             val file = Path("src/test/resources/turtle/example23.n3")
-            val solutionFile = Path("src/test/resources/turtle/example23.p")
-
-            val result = (RdfSurfaceModelToTPTPModelUseCase(
+            val result = RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull()
-            )).getSuccessOrNull().shouldNotBeNull()
-            result.joinToString(System.lineSeparator()).replace(
-                "\\s".toRegex(),
-                ""
-            ) shouldBeEqualComparingTo solutionFile.readText().replace("\\s".toRegex(), "")
+            ).getSuccessOrNull()
+
+            val expectedResult = AnnotatedFormula(
+                "axiom",
+                FormulaType.Axiom,
+                FOLPredicate(
+                    "triple",
+                    listOf(
+                        FOLFunction(
+                            "list",
+                            listOf(
+                                FOLConstant("\"1\"^^http://www.w3.org/2001/XMLSchema#integer"),
+                                FOLConstant("\"2\"^^http://www.w3.org/2001/XMLSchema#decimal"),
+                                FOLConstant("\"30.0\"^^http://www.w3.org/2001/XMLSchema#double")
+                            )
+                        ),
+                        FOLConstant("http://example.org/stuff/1.0/p"),
+                        FOLConstant("\"w\"^^http://www.w3.org/2001/XMLSchema#string")
+                    )
+                )
+            )
+
+            result shouldNotBe null
+            result!! shouldBeEqual listOf(expectedResult)
         }
         should("transform example24.n3 without exception") {
             val file = Path("src/test/resources/turtle/example24.n3")
-            val solutionFile = Path("src/test/resources/turtle/example24.p")
-            val result = (RdfSurfaceModelToTPTPModelUseCase(
+            val result = RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull()
-            )).getSuccessOrNull().shouldNotBeNull()
-            result.joinToString(System.lineSeparator()).replace(
-                "\\s".toRegex(),
-                ""
-            ) shouldBeEqualComparingTo solutionFile.readText().replace("\\s".toRegex(), "")
+            ).getSuccessOrNull()
+
+            val expectedResult = AnnotatedFormula(
+                "axiom",
+                FormulaType.Axiom,
+                FOLAnd(
+                    listOf(
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("b0"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#first"),
+                                FOLConstant("\"1\"^^http://www.w3.org/2001/XMLSchema#integer")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("b0"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest"),
+                                FOLVariable("Ox00621")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("b1"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#first"),
+                                FOLConstant("\"2\"^^http://www.w3.org/2001/XMLSchema#decimal")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("b1"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest"),
+                                FOLVariable("b2")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("b2"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#first"),
+                                FOLConstant("\"30.0\"^^http://www.w3.org/2001/XMLSchema#double")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("b2"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("b0"),
+                                FOLConstant("http://example.org/stuff/1.0/p"),
+                                FOLConstant("\"w\"^^http://www.w3.org/2001/XMLSchema#string")
+                            )
+                        )
+                    )
+                )
+            )
+
+            result shouldNotBe null
+            result!! shouldBeEqual listOf(expectedResult)
         }
+
         should("transform example25.n3 without exception") {
             val file = Path("src/test/resources/turtle/example25.n3")
-            val solutionFile = Path("src/test/resources/turtle/example25.p")
-
-            val result = (RdfSurfaceModelToTPTPModelUseCase(
+            val result = RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull()
-            )).getSuccessOrNull()
-            result shouldNotBe null
+            ).getSuccessOrNull()
 
-            result!!.joinToString(System.lineSeparator()).replace(
-                "\\s".toRegex(),
-                ""
-            ) shouldBeEqualComparingTo solutionFile.readText().replace("\\s".toRegex(), "")
+            val expectedResult = AnnotatedFormula(
+                "axiom",
+                FormulaType.Axiom,
+                FOLAnd(
+                    listOf(
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLFunction(
+                                    "list",
+                                    listOf(
+                                        FOLConstant("\"1\"^^http://www.w3.org/2001/XMLSchema#integer"),
+                                        FOLVariable("BN_1"),
+                                        FOLFunction(
+                                            "list",
+                                            listOf(
+                                                FOLConstant("\"2\"^^http://www.w3.org/2001/XMLSchema#integer")
+                                            )
+                                        )
+                                    )
+                                ),
+                                FOLConstant("http://example.org/stuff/1.0/p2"),
+                                FOLConstant("http://example.org/stuff/1.0/q2")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("BN_1"),
+                                FOLConstant("http://example.org/stuff/1.0/p"),
+                                FOLConstant("http://example.org/stuff/1.0/q")
+                            )
+                        )
+                    )
+                )
+            )
+
+            result shouldNotBe null
+            result!! shouldBeEqual listOf(expectedResult)
         }
         should("transform example26.n3 without exception") {
             val file = Path("src/test/resources/turtle/example26.n3")
-            val solutionFile = Path("src/test/resources/turtle/example26.p")
-
-            val result = (RdfSurfaceModelToTPTPModelUseCase(
+            val result = RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                 ).getSuccessOrNull().shouldNotBeNull()
-            )).getSuccessOrNull().shouldNotBeNull()
-            result.joinToString(System.lineSeparator()).replace(
-                "\\s".toRegex(),
-                ""
-            ) shouldBeEqualComparingTo solutionFile.readText().replace("\\s".toRegex(), "")
+            ).getSuccessOrNull()
+
+            val expectedResult = AnnotatedFormula(
+                "axiom",
+                FormulaType.Axiom,
+                FOLAnd(
+                    listOf(
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("B0"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#first"),
+                                FOLConstant("\"1\"^^http://www.w3.org/2001/XMLSchema#integer")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("B0"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest"),
+                                FOLVariable("B1")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("B1"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#first"),
+                                FOLVariable("B2")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("B2"),
+                                FOLConstant("http://example.org/stuff/1.0/p"),
+                                FOLConstant("http://example.org/stuff/1.0/q")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("B1"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest"),
+                                FOLVariable("B3")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("B3"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#first"),
+                                FOLVariable("B4")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("B4"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#first"),
+                                FOLConstant("\"2\"^^http://www.w3.org/2001/XMLSchema#integer")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("B4"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil")
+                            )
+                        ),
+                        FOLPredicate(
+                            "triple",
+                            listOf(
+                                FOLVariable("B3"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest"),
+                                FOLConstant("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil")
+                            )
+                        )
+                    )
+                )
+            )
+
+            result shouldNotBe null
+            result!! shouldBeEqual listOf(expectedResult)
         }
 
 
@@ -639,7 +1220,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 val file = Path("src/test/resources/turtle/lists.n3")
                 val solutionFile = Path("src/test/resources/turtle/lists-rdf.p")
                 val result = RdfSurfaceModelToTPTPModelUseCase(
-                    RDFSurfaceParseService(useRDFLists = true).parseToEnd(
+                    RDFSurfaceParseServiceImpl(useRDFLists = true).parseToEnd(
                         file.readText(),
                         IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
                     ).getSuccessOrNull().shouldNotBeNull()

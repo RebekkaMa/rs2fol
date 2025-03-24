@@ -1,35 +1,30 @@
 package entities.rdfsurfaces.rdf_term
 
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
-import org.junit.jupiter.api.Test
+import io.kotest.core.spec.style.ShouldSpec
 import util.IRIConstants
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
-class LiteralTest {
-
-    @Test
-    fun createDefaultLiteral_withValidDoubleLiteral() {
+class LiteralTest : ShouldSpec({
+    should("create DefaultLiteral with valid double literal") {
         val literal = DefaultLiteral.fromNumericLiteral("1.23E4")
         assertEquals("1.23E4", literal.lexicalValue)
         assertEquals(IRI.from(IRIConstants.XSD_DOUBLE), literal.datatypeIRI)
     }
 
-    @Test
-    fun createDefaultLiteral_withValidDecimalLiteral() {
+    should("create DefaultLiteral with valid decimal literal") {
         val literal = DefaultLiteral.fromNumericLiteral("123.45")
         assertEquals("123.45", literal.lexicalValue)
         assertEquals(IRI.from(IRIConstants.XSD_DECIMAL), literal.datatypeIRI)
     }
 
-    @Test
-    fun createDefaultLiteral_withValidIntegerLiteral() {
+    should("create DefaultLiteral with valid integer literal") {
         val literal = DefaultLiteral.fromNumericLiteral("123")
         assertEquals("123", literal.lexicalValue)
         assertEquals(IRI.from(IRIConstants.XSD_INTEGER), literal.datatypeIRI)
     }
 
-    @Test
-    fun createDefaultLiteral_withDateTimeLiterals() {
+    should("create DefaultLiteral with date time literals") {
         val literal1 = DefaultLiteral("2002-05-30T09:30:10Z", IRI.from(IRIConstants.XSD_DATE_TIME))
         val literal2 = DefaultLiteral("2002-05-30T03:30:10-06:00", IRI.from(IRIConstants.XSD_DATE_TIME))
 
@@ -42,23 +37,20 @@ class LiteralTest {
         assertEquals(IRI.from(IRIConstants.XSD_DATE_TIME), literal2.datatypeIRI)
     }
 
-    @Test
-    fun createDefaultLiteral_withCustomDatatypeLiteral() {
+    should("create DefaultLiteral with custom datatype literal") {
         val literal = DefaultLiteral("123", IRI.from("http://example.com/datatype"))
         assertEquals("123", literal.lexicalValue)
         assertEquals(IRI.from("http://example.com/datatype"), literal.datatypeIRI)
         assertEquals("123", literal.literalValue)
     }
 
-    @Test
-    fun createDefaultLiteral_withEmptyLiteral() {
+    should("create DefaultLiteral with empty literal") {
         val literal = DefaultLiteral.fromNumericLiteral("")
         assertEquals("", literal.lexicalValue)
         assertEquals(IRI.from(IRIConstants.XSD_INTEGER), literal.datatypeIRI)
     }
 
-    @Test
-    fun createLanguageTaggedString_withValidLangTag() {
+    should("create LanguageTaggedString with valid lang tag") {
         val literal = LanguageTaggedString("Hello", "eN-uS")
         assertEquals("Hello", literal.lexicalValue)
         assertEquals("eN-uS", literal.langTag)
@@ -66,8 +58,7 @@ class LiteralTest {
         assertEquals(IRI.from(IRIConstants.RDF_LANG_STRING_IRI), literal.datatypeIRI)
     }
 
-    @Test
-    fun createLanguageTaggedString_withEmptyLangTag() {
+    should("create LanguageTaggedString with empty lang tag") {
         val literal = LanguageTaggedString("Hello", "")
         assertEquals("Hello", literal.lexicalValue)
         assertEquals("", literal.langTag)
@@ -75,24 +66,21 @@ class LiteralTest {
         assertEquals(IRI.from(IRIConstants.RDF_LANG_STRING_IRI), literal.datatypeIRI)
     }
 
-    @Test
-    fun equalsAndHashCode_withEqualLiterals() {
+    should("test equals and hashCode with equal literals") {
         val literal1 = DefaultLiteral("123", IRI.from(IRIConstants.XSD_INTEGER))
         val literal2 = DefaultLiteral("123", IRI.from(IRIConstants.XSD_INTEGER))
         assertEquals(literal1, literal2)
         assertEquals(literal1.hashCode(), literal2.hashCode())
     }
 
-    @Test
-    fun equalsAndHashCode_withDifferentLiterals() {
+    should("test equals and hashCode with different literals") {
         val literal1 = DefaultLiteral("123", IRI.from(IRIConstants.XSD_INTEGER))
         val literal2 = DefaultLiteral("124", IRI.from(IRIConstants.XSD_INTEGER))
         assertNotEquals(literal1, literal2)
         assertNotEquals(literal1.hashCode(), literal2.hashCode())
     }
 
-    @Test
-    fun equalsAndHashCode_withDifferentLexicalValues() {
+    should("test equals and hashCode with different lexical values") {
         val literal1 = DefaultLiteral("0123", IRI.from(IRIConstants.XSD_INTEGER))
         val literal2 = DefaultLiteral("123", IRI.from(IRIConstants.XSD_INTEGER))
         assertNotEquals(literal1, literal2)
@@ -100,4 +88,4 @@ class LiteralTest {
         assertNotEquals(literal1.lexicalValue, literal2.lexicalValue)
         assertEquals(literal1.literalValue, literal2.literalValue)
     }
-}
+})

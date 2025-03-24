@@ -74,35 +74,11 @@ sealed class QSurface(override val graffiti: List<BlankNode>, override val hayes
             is NegativeSurface -> NegativeSurface(rdfSurface.graffiti, hayesGraph)
             is QuerySurface -> QuerySurface(rdfSurface.graffiti, hayesGraph)
             is NeutralSurface -> NeutralSurface(rdfSurface.graffiti, hayesGraph)
-            is NegativeTripleSurface -> NegativeTripleSurface(rdfSurface.graffiti, hayesGraph)
-            is QuestionSurface -> QuestionSurface(rdfSurface.graffiti, hayesGraph)
-            is AnswerSurface -> AnswerSurface(rdfSurface.graffiti, hayesGraph)
-            is NegativeComponentSurface -> NegativeComponentSurface(rdfSurface.graffiti, hayesGraph)
             is NegativeAnswerSurface -> NegativeAnswerSurface(rdfSurface.graffiti, hayesGraph)
         }
     }
 
-    abstract fun replaceBlankNodes(list: List<List<RdfTerm>>): PositiveSurface
-
-}
-
-data class PositiveSurface(
-    override val graffiti: List<BlankNode> = emptyList(),
-    override val hayesGraph: List<HayesGraphElement> = emptyList()
-) :
-    RdfSurface() {
-
-    fun getQSurfaces(): List<QSurface> = hayesGraph.filterIsInstance<QSurface>()
-
-}
-
-data class NegativeSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
-    RdfSurface()
-
-data class QuerySurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
-    QSurface(graffiti, hayesGraph) {
-
-    override fun replaceBlankNodes(list: List<List<RdfTerm>>): PositiveSurface {
+    fun replaceBlankNodes(list: List<List<RdfTerm>>): PositiveSurface {
 
         val maps = list.map {
             if (containsVariables().not()) return PositiveSurface(listOf(), this.hayesGraph)
@@ -130,65 +106,29 @@ data class QuerySurface(override val graffiti: List<BlankNode>, override val hay
             }.distinct()
         )
     }
+
 }
+
+data class PositiveSurface(
+    override val graffiti: List<BlankNode> = emptyList(),
+    override val hayesGraph: List<HayesGraphElement> = emptyList()
+) :
+    RdfSurface() {
+
+    fun getQSurfaces(): List<QSurface> = hayesGraph.filterIsInstance<QSurface>()
+
+}
+
+data class NegativeSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
+    RdfSurface()
+
+data class QuerySurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
+    QSurface(graffiti, hayesGraph)
 
 data class NeutralSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
-    RdfSurface()
-
-data class NegativeTripleSurface(
-    override val graffiti: List<BlankNode>,
-    override val hayesGraph: List<HayesGraphElement>
-) :
-    RdfSurface()
-
-data class QuestionSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
-    QSurface(graffiti, hayesGraph) {
-
-    override fun replaceBlankNodes(list: List<List<RdfTerm>>): PositiveSurface {
-        val maps = list.map {
-            if (it.isEmpty() || this.containsVariables().not()) return PositiveSurface(
-                listOf(),
-                this.hayesGraph.filterIsInstance<AnswerSurface>().singleOrNull()?.hayesGraph
-                    ?: throw IllegalArgumentException("A question surface must contain exactly one answer surface!")
-            )
-            if (graffiti.size != it.size) {
-                val relevantGraffiti = this.graffiti.filter { blankNode -> isBounded(blankNode) }
-                if (relevantGraffiti.size != it.size) throw IllegalArgumentException("The arity of the answer tuples doesn't match the number of graffiti on the query surface!")
-                return@map buildMap {
-                    relevantGraffiti.forEachIndexed { index, blankNode ->
-                        this[blankNode] = it[index]
-                    }
-                }
-            }
-
-            buildMap {
-                graffiti.forEachIndexed { index, blankNode ->
-                    this[blankNode] = it[index]
-                }
-            }
-        }
-        val answerSurface = this.hayesGraph.filterIsInstance<AnswerSurface>().singleOrNull()
-            ?: throw IllegalArgumentException("A question surface must contain exactly one answer surface!")
-        return PositiveSurface(
-            listOf(),
-            maps.flatMap { map ->
-                replaceBlankNodes(map, answerSurface).hayesGraph
-            }.distinct()
-        )
-    }
-}
-
-data class AnswerSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
     RdfSurface()
 
 data class NegativeAnswerSurface(
     override val graffiti: List<BlankNode>,
     override val hayesGraph: List<HayesGraphElement>
-) :
-    RdfSurface()
-
-data class NegativeComponentSurface(
-    override val graffiti: List<BlankNode>,
-    override val hayesGraph: List<HayesGraphElement>
-) :
-    RdfSurface()
+) : QSurface(graffiti, hayesGraph)

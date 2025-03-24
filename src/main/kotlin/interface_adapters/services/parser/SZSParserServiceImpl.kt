@@ -1,10 +1,13 @@
 package interface_adapters.services.parser
 
 import entities.*
+import interfaces.SZSParserService
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import util.commandResult.*
 import java.io.BufferedReader
 
-class SZSParserService {
+class SZSParserServiceImpl : SZSParserService {
 
     private val statusRegex = Regex("[#%]{1,2} SZS status ([\\w-]+)(?: for ([^\\s:]+)?)?(?:\\s*:\\s*(.+))?")
     private val outputStartRegex =
@@ -14,8 +17,10 @@ class SZSParserService {
         Regex("[#%]{1,2} SZS answers Tuple (\\[.*\\])(?: for ([^\\s:]+)?)?(?:\\s*:\\s*(.+))?")
 
 
-    fun parse(bufferedReader: BufferedReader): IntermediateStatus<List<SZSModel>, RootError> {
-        val models = mutableListOf<SZSModel>()
+    override fun parse(bufferedReader: BufferedReader): Flow<IntermediateStatus<SZSModel, RootError>> = flow {
+
+        var szsStatus: SZSStatus? = null
+
         var currentOutputType: String? = null
         var currentOutputStartDetails: String? = null
         val currentOutputData = StringBuilder()
@@ -29,21 +34,27 @@ class SZSParserService {
                             val identifier = matchResult.groupValues.getOrNull(2)?.takeIf { it.isNotEmpty() }
                             val details = matchResult.groupValues.getOrNull(3)?.takeIf { it.isNotEmpty() }
 
-                            models.add(
-                                SZSStatus(
-                                    statusType = outputType.toSZSStatusType(),
-                                    identifier = identifier,
-                                    statusDetails = details
-                                )
-                            )
+                            szsStatus?.let { emit(intermediateSuccess(it)) }
 
+                            szsStatus = SZSStatus(
+                                statusType = outputType.toSZSStatusType(),
+                                identifier = identifier,
+                                statusDetails = details
+                            )
                         }
                     }
 
                     outputStartRegex.matches(line) -> {
                         when {
-                            currentOutputType != null -> return intermediateError(SZSParserServiceError.OutputStartBeforeEndAndStatus)
-                            models.lastOrNull() !is SZSStatus -> return intermediateError(SZSParserServiceError.OutputStartBeforeStatus)
+                            currentOutputType != null -> {
+                                emit(intermediateError(SZSParserServiceError.OutputStartBeforeEndAndStatus))
+                                return@flow
+                            }
+
+                            szsStatus == null -> {
+                                emit(intermediateError(SZSParserServiceError.OutputStartBeforeStatus))
+                                return@flow
+                            }
                         }
 
                         outputStartRegex.find(line)?.let { matchResult ->
@@ -56,25 +67,30 @@ class SZSParserService {
                     }
 
                     outputEndRegex.matches(line) -> {
-                        if (currentOutputType == null) return intermediateError(SZSParserServiceError.OutputEndBeforeStart)
+                        if (currentOutputType == null) {
+                            emit(intermediateError(SZSParserServiceError.OutputEndBeforeStart))
+                            return@flow
+                        }
 
                         outputEndRegex.find(line)?.let { matchResult ->
                             val outputType = matchResult.groupValues[1] // Immer vorhanden
                             val details = matchResult.groupValues.getOrNull(3)?.takeIf { it.isNotEmpty() }
 
-                            val status = models.removeLastOrNull() as? SZSStatus
-
-                            status?.let { stat ->
-                                models.add(
-                                    SZSOutputModel(
-                                        status = stat,
-                                        outputType = outputType.toSZSOutputType(),
-                                        output = currentOutputData.lines().filter { it.isNotBlank() },
-                                        outputStartDetails = currentOutputStartDetails,
-                                        outputEndDetails = details
+                            szsStatus?.let { stat ->
+                                emit(
+                                    intermediateSuccess(
+                                        SZSOutputModel(
+                                            status = stat,
+                                            outputType = outputType.toSZSOutputType(),
+                                            output = currentOutputData.lines().filter { it.isNotBlank() },
+                                            outputStartDetails = currentOutputStartDetails,
+                                            outputEndDetails = details
+                                        )
                                     )
                                 )
                             }
+
+                            szsStatus = null
                             currentOutputType = null
                             currentOutputStartDetails = null
                             currentOutputData.clear()
@@ -86,28 +102,32 @@ class SZSParserService {
                             val answers = matchResult.groupValues[1] // Immer vorhanden
                             val details = matchResult.groupValues.getOrNull(3) // Optional
 
-                            val status = (models.lastOrNull() as? SZSStatus)?.let {
-                                models.removeLastOrNull()
-                                it
-                            } ?: SZSStatus(
+                            val status = szsStatus ?: SZSStatus(
                                 SZSStatusType.SuccessOntology.SUCCESS,
                                 null,
                                 null
                             )
 
-                            val tptpTupleAnswerFormAnswer = TptpTupleAnswerFormToModelService.parseToEnd(answers)
-                                .getOrElse { return intermediateError(it) }
+                            val tptpTupleAnswerFormAnswer = TptpTupleAnswerFormToModelServiceImpl.parseToEnd(answers)
+                                .getOrElse {
+                                    emit(intermediateError(it))
+                                    return@flow
+                                }
 
-                            models.add(
-                                SZSAnswerTupleFormModel(
-                                    status = status,
-                                    tptpTupleAnswerFormAnswer = tptpTupleAnswerFormAnswer,
-                                    outputStartDetails = currentOutputStartDetails,
-                                    outputEndDetails = details?.takeIf { it.isNotBlank() }
+                            emit(
+                                intermediateSuccess(
+                                    SZSAnswerTupleFormModel(
+                                        status = status,
+                                        tptpTupleAnswerFormAnswer = tptpTupleAnswerFormAnswer,
+                                        outputStartDetails = currentOutputStartDetails,
+                                        outputEndDetails = details?.takeIf { it.isNotBlank() }
+                                    )
                                 )
                             )
+
                         }
 
+                        szsStatus = null
                         currentOutputType = null
                         currentOutputStartDetails = null
                         currentOutputData.clear()
@@ -122,7 +142,7 @@ class SZSParserService {
 
             }
         }
-        return intermediateSuccess(models)
+        szsStatus?.let { emit(intermediateSuccess(it)) }
     }
 }
 

@@ -2,7 +2,7 @@ package use_cases.commands
 
 import entities.rdfsurfaces.rdf_term.IRI
 import interface_adapters.services.FileService
-import interface_adapters.services.parser.RDFSurfaceParseService
+import interface_adapters.services.parser.RDFSurfaceParseServiceImpl
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import use_cases.commands.TransformUseCaseSuccess.WriteToFile
@@ -26,7 +26,7 @@ object TransformUseCase {
         outputPath: Path?
     ): Flow<CommandStatus<TransformUseCaseSuccess, RootError>> = flow {
 
-        val parseResult = RDFSurfaceParseService(useRdfLists).parseToEnd(rdfSurface, baseIri)
+        val parseResult = RDFSurfaceParseServiceImpl(useRdfLists).parseToEnd(rdfSurface, baseIri)
         val axiomFormula = parseResult
             .runOnSuccess { positiveSurface ->
                 RdfSurfaceModelToTPTPModelUseCase(
@@ -42,7 +42,7 @@ object TransformUseCase {
             .joinToString(separator = System.lineSeparator()) { TPTPAnnotatedFormulaModelToStringUseCase(it) }
 
         val consequenceFormula = consequenceSurface?.let {
-            val consequenceParseResult = RDFSurfaceParseService(useRdfLists).parseToEnd(it, baseIri)
+            val consequenceParseResult = RDFSurfaceParseServiceImpl(useRdfLists).parseToEnd(it, baseIri)
             consequenceParseResult
                 .runOnSuccess { positiveSurface ->
                     RdfSurfaceModelToTPTPModelUseCase(
