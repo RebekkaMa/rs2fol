@@ -1,7 +1,5 @@
 package app.use_cases.commands
 
-import app.interfaces.results.SZSParserServiceResult
-import app.interfaces.results.TheoremProverRunnerResult
 import app.interfaces.services.TheoremProverRunnerService
 import app.use_cases.commands.subUseCase.GetTheoremProverCommandUseCase
 import app.use_cases.results.CheckResult
@@ -65,17 +63,17 @@ class CheckUseCase(
             return@channelFlow
         }.command
 
-        val (vampireResult, timeoutDeferred) = (theoremProverRunnerService(
+        val (vampireResult, timeoutDeferred) = theoremProverRunnerService(
             input = tptpFormula,
             timeLimit = reasoningTimeLimit,
             command = command
-        ).getOrElse { send(infoError(it)); close(); return@channelFlow } as TheoremProverRunnerResult.Success.Ran).output
+        ).getOrElse { send(infoError(it)); close(); return@channelFlow }.output
 
         launch {
-            val szsParseResult = (szsParserService
+            val szsParseResult = szsParserService
                 .parse(vampireResult)
                 .firstOrNull()
-                ?.getOrElse { send(infoError(it)); close(); return@launch } as? SZSParserServiceResult.Success.Parsed)?.szsModel
+                ?.getOrElse { send(infoError(it)); close(); return@launch }?.szsModel
 
             if (szsParseResult == null) {
                 if (timeoutDeferred.await()) {

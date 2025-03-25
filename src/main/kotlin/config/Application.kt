@@ -3,6 +3,7 @@ package config
 import adapter.coder.FOLCoderService
 import adapter.coder.N3SRDFTermCoderService
 import adapter.file.FileServiceImpl
+import adapter.jena.LiteralServiceImpl
 import adapter.parser.RDFSurfaceParseServiceImpl
 import adapter.parser.SZSParserServiceImpl
 import adapter.parser.TptpTupleAnswerFormToModelServiceImpl
@@ -88,7 +89,9 @@ object Application {
     }
 
     private fun createFolGeneralTermToRdfTermUseCase(): FOLGeneralTermToRDFTermUseCase {
-        return FOLGeneralTermToRDFTermUseCase()
+        return FOLGeneralTermToRDFTermUseCase(
+            literalService = createLiteralService()
+        )
     }
 
     fun createTransformUseCase(): TransformUseCase {
@@ -139,7 +142,9 @@ object Application {
     }
 
     private fun createRDFSurfaceParseService(): RDFSurfaceParseService {
-        return RDFSurfaceParseServiceImpl()
+        return RDFSurfaceParseServiceImpl(
+            literalService = createLiteralService()
+        )
     }
 
     private fun createConfigLoaderService(): ConfigLoaderService {
@@ -184,5 +189,9 @@ object Application {
 
     private fun createCliTextStylerService(): TextStylerService {
         return AjaltMordantTextStylerServiceImpl()
+    }
+
+    private fun createLiteralService(): LiteralService {
+        return LiteralServiceImpl()
     }
 }

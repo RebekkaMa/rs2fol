@@ -1,7 +1,6 @@
 package adapter.parser
 
 import app.interfaces.results.SZSParserServiceResult
-import app.interfaces.results.TptpTupleAnswerFormParserResult
 import app.interfaces.services.SZSParserService
 import app.interfaces.services.TptpTupleAnswerFormParserService
 import entities.*
@@ -21,79 +20,119 @@ class SZSParserServiceImpl(
     private val answerTupleRegex =
         Regex("[#%]{1,2} SZS answers Tuple (\\[.*\\])(?: for ([^\\s:]+)?)?(?:\\s*:\\s*(.+))?")
 
-    override fun parse(bufferedReader: BufferedReader): Flow<Result<SZSParserServiceResult.Success.Parsed, RootError>> = flow {
+    override fun parse(bufferedReader: BufferedReader): Flow<Result<SZSParserServiceResult.Success.Parsed, RootError>> =
+        flow {
 
-        var szsStatus: SZSStatus? = null
+            var szsStatus: SZSStatus? = null
 
-        var currentOutputType: String? = null
-        var currentOutputStartDetails: String? = null
-        val currentOutputData = StringBuilder()
+            var currentOutputType: String? = null
+            var currentOutputStartDetails: String? = null
+            val currentOutputData = StringBuilder()
 
-        bufferedReader.useLines { lines ->
-            lines.forEach { line ->
-                when {
-                    statusRegex.matches(line) -> {
-                        statusRegex.find(line)?.let { matchResult ->
-                            val outputType = matchResult.groupValues[1]
-                            val identifier = matchResult.groupValues.getOrNull(2)?.takeIf { it.isNotEmpty() }
-                            val details = matchResult.groupValues.getOrNull(3)?.takeIf { it.isNotEmpty() }
+            bufferedReader.useLines { lines ->
+                lines.forEach { line ->
+                    when {
+                        statusRegex.matches(line) -> {
+                            statusRegex.find(line)?.let { matchResult ->
+                                val outputType = matchResult.groupValues[1]
+                                val identifier = matchResult.groupValues.getOrNull(2)?.takeIf { it.isNotEmpty() }
+                                val details = matchResult.groupValues.getOrNull(3)?.takeIf { it.isNotEmpty() }
 
-                            szsStatus?.let { emit(success(SZSParserServiceResult.Success.Parsed(it))) }
+                                szsStatus?.let { emit(success(SZSParserServiceResult.Success.Parsed(it))) }
 
-                            szsStatus = SZSStatus(
-                                statusType = outputType.toSZSStatusType(),
-                                identifier = identifier,
-                                statusDetails = details
-                            )
-                        }
-                    }
-
-                    outputStartRegex.matches(line) -> {
-                        when {
-                            currentOutputType != null -> {
-                                emit(error(SZSParserServiceResult.Error.OutputStartBeforeEndAndStatus))
-                                return@flow
-                            }
-
-                            szsStatus == null -> {
-                                emit(error(SZSParserServiceResult.Error.OutputStartBeforeStatus))
-                                return@flow
+                                szsStatus = SZSStatus(
+                                    statusType = outputType.toSZSStatusType(),
+                                    identifier = identifier,
+                                    statusDetails = details
+                                )
                             }
                         }
 
-                        outputStartRegex.find(line)?.let { matchResult ->
-                            val outputType = matchResult.groupValues[1]
-                            val details = matchResult.groupValues.getOrNull(3)?.takeIf { it.isNotEmpty() }
+                        outputStartRegex.matches(line) -> {
+                            when {
+                                currentOutputType != null -> {
+                                    emit(error(SZSParserServiceResult.Error.OutputStartBeforeEndAndStatus))
+                                    return@flow
+                                }
 
-                            currentOutputType = outputType
-                            currentOutputStartDetails = details
+                                szsStatus == null -> {
+                                    emit(error(SZSParserServiceResult.Error.OutputStartBeforeStatus))
+                                    return@flow
+                                }
+                            }
+
+                            outputStartRegex.find(line)?.let { matchResult ->
+                                val outputType = matchResult.groupValues[1]
+                                val details = matchResult.groupValues.getOrNull(3)?.takeIf { it.isNotEmpty() }
+
+                                currentOutputType = outputType
+                                currentOutputStartDetails = details
+                            }
                         }
-                    }
 
-                    outputEndRegex.matches(line) -> {
-                        if (currentOutputType == null) {
-                            emit(error(SZSParserServiceResult.Error.OutputEndBeforeStart))
-                            return@flow
+                        outputEndRegex.matches(line) -> {
+                            if (currentOutputType == null) {
+                                emit(error(SZSParserServiceResult.Error.OutputEndBeforeStart))
+                                return@flow
+                            }
+
+                            outputEndRegex.find(line)?.let { matchResult ->
+                                val outputType = matchResult.groupValues[1] // Immer vorhanden
+                                val details = matchResult.groupValues.getOrNull(3)?.takeIf { it.isNotEmpty() }
+
+                                szsStatus?.let { stat ->
+                                    emit(
+                                        success(
+                                            SZSParserServiceResult.Success.Parsed(
+                                                SZSOutputModel(
+                                                    status = stat,
+                                                    outputType = outputType.toSZSOutputType(),
+                                                    output = currentOutputData.lines().filter { it.isNotBlank() },
+                                                    outputStartDetails = currentOutputStartDetails,
+                                                    outputEndDetails = details
+                                                )
+                                            )
+                                        )
+                                    )
+                                }
+
+                                szsStatus = null
+                                currentOutputType = null
+                                currentOutputStartDetails = null
+                                currentOutputData.clear()
+                            }
                         }
 
-                        outputEndRegex.find(line)?.let { matchResult ->
-                            val outputType = matchResult.groupValues[1] // Immer vorhanden
-                            val details = matchResult.groupValues.getOrNull(3)?.takeIf { it.isNotEmpty() }
+                        answerTupleRegex.matches(line) -> {
+                            answerTupleRegex.find(line)?.let { matchResult ->
+                                val answers = matchResult.groupValues[1] // Immer vorhanden
+                                val details = matchResult.groupValues.getOrNull(3) // Optional
 
-                            szsStatus?.let { stat ->
+                                val status = szsStatus ?: SZSStatus(
+                                    SZSStatusType.SuccessOntology.SUCCESS,
+                                    null,
+                                    null
+                                )
+
+                                val tptpTupleAnswerFormAnswer = tptpTupleAnswerFormToModelService.parseToEnd(answers)
+                                    .getOrElse {
+                                        emit(error(it))
+                                        return@flow
+                                    }.tPTPTupleAnswerFormAnswer
+
                                 emit(
                                     success(
                                         SZSParserServiceResult.Success.Parsed(
-                                            SZSOutputModel(
-                                                status = stat,
-                                                outputType = outputType.toSZSOutputType(),
-                                                output = currentOutputData.lines().filter { it.isNotBlank() },
+                                            SZSAnswerTupleFormModel(
+                                                status = status,
+                                                tptpTupleAnswerFormAnswer = tptpTupleAnswerFormAnswer,
                                                 outputStartDetails = currentOutputStartDetails,
-                                                outputEndDetails = details
+                                                outputEndDetails = details?.takeIf { it.isNotBlank() }
                                             )
                                         )
                                     )
                                 )
+
                             }
 
                             szsStatus = null
@@ -101,55 +140,16 @@ class SZSParserServiceImpl(
                             currentOutputStartDetails = null
                             currentOutputData.clear()
                         }
-                    }
 
-                    answerTupleRegex.matches(line) -> {
-                        answerTupleRegex.find(line)?.let { matchResult ->
-                            val answers = matchResult.groupValues[1] // Immer vorhanden
-                            val details = matchResult.groupValues.getOrNull(3) // Optional
-
-                            val status = szsStatus ?: SZSStatus(
-                                SZSStatusType.SuccessOntology.SUCCESS,
-                                null,
-                                null
-                            )
-
-                            val tptpTupleAnswerFormAnswer = (tptpTupleAnswerFormToModelService.parseToEnd(answers)
-                                .getOrElse {
-                                    emit(error(it))
-                                    return@flow
-                                } as TptpTupleAnswerFormParserResult.Success.Parsed).tPTPTupleAnswerFormAnswer
-
-                            emit(
-                                success(
-                                    SZSParserServiceResult.Success.Parsed(
-                                        SZSAnswerTupleFormModel(
-                                            status = status,
-                                            tptpTupleAnswerFormAnswer = tptpTupleAnswerFormAnswer,
-                                            outputStartDetails = currentOutputStartDetails,
-                                            outputEndDetails = details?.takeIf { it.isNotBlank() }
-                                        )
-                                    )
-                                )
-                            )
-
+                        currentOutputType != null && line.isNotBlank() -> {
+                            currentOutputData.appendLine(line)
                         }
 
-                        szsStatus = null
-                        currentOutputType = null
-                        currentOutputStartDetails = null
-                        currentOutputData.clear()
+                        else -> Unit
                     }
 
-                    currentOutputType != null && line.isNotBlank() -> {
-                        currentOutputData.appendLine(line)
-                    }
-
-                    else -> Unit
                 }
-
             }
+            szsStatus?.let { emit(success(SZSParserServiceResult.Success.Parsed(it))) }
         }
-        szsStatus?.let { emit(success(SZSParserServiceResult.Success.Parsed(it))) }
-    }
 }

@@ -1,6 +1,7 @@
 package entities.rdfsurfaces.rdf_term
 
 import io.kotest.core.spec.style.ShouldSpec
+import org.apache.jena.graph.langtag.LangTags
 import util.IRIConstants
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -51,7 +52,7 @@ class LiteralTest : ShouldSpec({
     }
 
     should("create LanguageTaggedString with valid lang tag") {
-        val literal = LanguageTaggedString("Hello", "eN-uS")
+        val literal = LanguageTaggedString("Hello", "eN-uS", LangTags.formatLangtag(langTag))
         assertEquals("Hello", literal.lexicalValue)
         assertEquals("eN-uS", literal.langTag)
         assertEquals("en-US", literal.normalizedLangTag)
@@ -59,7 +60,7 @@ class LiteralTest : ShouldSpec({
     }
 
     should("create LanguageTaggedString with empty lang tag") {
-        val literal = LanguageTaggedString("Hello", "")
+        val literal = LanguageTaggedString("Hello", "", LangTags.formatLangtag(langTag))
         assertEquals("Hello", literal.lexicalValue)
         assertEquals("", literal.langTag)
         assertEquals("", literal.normalizedLangTag)

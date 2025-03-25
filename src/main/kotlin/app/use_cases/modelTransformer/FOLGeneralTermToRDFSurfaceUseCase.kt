@@ -1,5 +1,6 @@
 package app.use_cases.modelTransformer
 
+import app.interfaces.services.LiteralService
 import app.use_cases.results.modelTransformerResults.FOLGeneralTermToRDFSurfaceResult
 import entities.fol.FOLConstant
 import entities.fol.FOLFunction
@@ -9,7 +10,7 @@ import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
 import util.commandResult.*
 
-class FOLGeneralTermToRDFTermUseCase {
+class FOLGeneralTermToRDFTermUseCase(val literalService: LiteralService) {
 
     operator fun invoke(generalTerm: GeneralTerm): Result<RdfTerm, RootError> {
         return when (generalTerm) {
@@ -59,14 +60,17 @@ class FOLGeneralTermToRDFTermUseCase {
 
     private fun getLiteralFromStringOrNull(literal: String) =
         ("\"(.*)\"\\^\\^(.+)".toRegex()).matchEntire(literal)?.let {
-            val (literalValue, datatypeIri) = it.destructured
-            DefaultLiteral(literalValue, IRI.from(datatypeIri))
+            val (lexicalValue, datatypeIri) = it.destructured
+            literalService.createDefaultLiteral(lexicalValue, IRI.from(datatypeIri))
         }
 
 
     private fun getLangLiteralFromStringOrNull(literal: String) =
         ("\"(.*)\"@(.+)".toRegex()).matchEntire(literal)?.let {
             val (literalValue, languageTag) = it.destructured
-            LanguageTaggedString(literalValue, languageTag)
+            literalService.createLanguageTaggedString(
+                lexicalValue = literalValue,
+                langTag = languageTag
+            )
         }
 }

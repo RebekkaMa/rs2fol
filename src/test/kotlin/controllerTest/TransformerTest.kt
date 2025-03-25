@@ -1,17 +1,17 @@
 package controllerTest
 
+import adapter.coder.FOLCoderService
 import entities.rdfsurfaces.NegativeSurface
 import entities.rdfsurfaces.PositiveSurface
 import entities.rdfsurfaces.QuerySurface
 import entities.rdfsurfaces.RdfTriple
 import entities.rdfsurfaces.rdf_term.*
-import entities.rdfsurfaces.rdf_term.Collection
-import adapter.coder.FOLCoderService
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.apache.jena.datatypes.xsd.XSDDatatype
+import org.apache.jena.graph.langtag.LangTags
 import use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
 import util.commandResult.getSuccessOrNull
 import java.io.File
@@ -53,11 +53,11 @@ class TransformerTest
                 val literal1 =
                     DefaultLiteral("That Seventies Show", IRI.from(XSDDatatype.XSDstring.uri))
                 val literal2 =
-                    LanguageTaggedString("That Seventies Show", "en")
+                    LanguageTaggedString("That Seventies Show", "en", LangTags.formatLangtag(langTag))
                 val literal3 =
-                    LanguageTaggedString("Cette Série des Années Soixante-dix", "fr")
+                    LanguageTaggedString("Cette Série des Années Soixante-dix", "fr", LangTags.formatLangtag(langTag))
                 val literal4 =
-                    LanguageTaggedString("Cette Série des Années Septante", "fr-be")
+                    LanguageTaggedString("Cette Série des Années Septante", "fr-be", LangTags.formatLangtag(langTag))
                 val literal5 = DefaultLiteral(
                     "This is a multi-line                        # literal with embedded new lines and quotes\n" +
                             "literal with many quotes (\"\"\"\"\")\n" +

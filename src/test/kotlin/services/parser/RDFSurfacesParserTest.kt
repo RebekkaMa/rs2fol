@@ -1,12 +1,11 @@
 package services.parser
 
+import adapter.parser.RDFSurfaceParseServiceImpl
 import entities.rdfsurfaces.NegativeSurface
 import entities.rdfsurfaces.PositiveSurface
 import entities.rdfsurfaces.QuerySurface
 import entities.rdfsurfaces.RdfTriple
 import entities.rdfsurfaces.rdf_term.*
-import entities.rdfsurfaces.rdf_term.Collection
-import adapter.parser.RDFSurfaceParseServiceImpl
 import interface_adapters.services.parser.RdfSurfaceParserError
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.collections.shouldNotContain
@@ -14,6 +13,7 @@ import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.apache.jena.datatypes.xsd.XSDDatatype
+import org.apache.jena.graph.langtag.LangTags
 import util.IRIConstants
 import util.commandResult.getErrorOrNull
 import util.commandResult.getSuccessOrNull
@@ -91,7 +91,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val iri2 = IRI.from("http://xmlns.com/foaf/0.1/name")
 
                 val literal1 = DefaultLiteral("Spiderman", IRI.from(XSDDatatype.XSDstring.uri))
-                val literal2 = LanguageTaggedString("Человек-паук", "ru")
+                val literal2 = LanguageTaggedString("Человек-паук", "ru", LangTags.formatLangtag(langTag))
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
                 val rdfTriple2 = RdfTriple(iri1, iri2, literal2)
@@ -110,7 +110,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val iri1 = IRI.from("http://example.org/#spiderman")
                 val iri2 = IRI.from("http://xmlns.com/foaf/0.1/name")
                 val literal1 = DefaultLiteral("Spiderman", IRI.from(XSDDatatype.XSDstring.uri))
-                val literal2 = LanguageTaggedString("Человек-паук", "ru")
+                val literal2 = LanguageTaggedString("Человек-паук", "ru", LangTags.formatLangtag(langTag))
 
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
@@ -246,11 +246,11 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val literal1 =
                     DefaultLiteral("That Seventies Show", IRI.from(XSDDatatype.XSDstring.uri))
                 val literal2 =
-                    LanguageTaggedString("That Seventies Show", "en")
+                    LanguageTaggedString("That Seventies Show", "en", LangTags.formatLangtag(langTag))
                 val literal3 =
-                    LanguageTaggedString("Cette Série des Années Soixante-dix", "fr")
+                    LanguageTaggedString("Cette Série des Années Soixante-dix", "fr", LangTags.formatLangtag(langTag))
                 val literal4 =
-                    LanguageTaggedString("Cette Série des Années Septante", "fr-be")
+                    LanguageTaggedString("Cette Série des Années Septante", "fr-be", LangTags.formatLangtag(langTag))
                 val literal5 = DefaultLiteral(
                     "This is a multi-line                        # literal with embedded new lines and quotes\n" +
                             "literal with many quotes (\"\"\"\"\")\n" +
