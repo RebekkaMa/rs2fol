@@ -16,8 +16,8 @@ import com.github.ajalt.clikt.parameters.types.path
 import config.Application
 import entities.rdfsurfaces.rdf_term.IRI
 import framework.cli.CommonOptions
-import framework.cli.util.workingDir
 import util.commandResult.fold
+import util.workingDir
 import kotlin.io.path.*
 
 class TransformQa :
@@ -49,7 +49,8 @@ class TransformQa :
         "--config-file",
         "-cf",
         help = "Path to the configuration file"
-    ).path(mustExist = true, mustBeReadable = true).default(Path(workingDir.path + "/config.json"))
+    ).path(mustExist = true, mustBeReadable = true)
+        .default(Path(workingDir.path + "/config.json"))
 
 
     private val dEntailment by option(

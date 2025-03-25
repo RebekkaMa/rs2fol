@@ -1,6 +1,8 @@
 package controllerTest
 
+import adapter.jena.LiteralServiceImpl
 import adapter.parser.RDFSurfaceParseServiceImpl
+import app.use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
 import entities.fol.*
 import entities.fol.tptp.AnnotatedFormula
 import entities.fol.tptp.FormulaType
@@ -11,7 +13,6 @@ import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldNotBe
-import use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
 import util.commandResult.getSuccessOrNull
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
@@ -20,16 +21,18 @@ import kotlin.io.path.readText
 
 class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
     {
-        val rdfSurfaceParseService = RDFSurfaceParseServiceImpl(false)
+        val rdfSurfaceParseService = RDFSurfaceParseServiceImpl(
+            literalService = LiteralServiceImpl()
+        )
 
         should("transform example2.n3 without exception") {
             val file = Path("src/test/resources/turtle/example2.n3")
-            val solutionFile = Path("src/test/resources/turtle/example2.p")
-            val result = RdfSurfaceModelToTPTPModelUseCase(
+            val result = RdfSurfaceModelToTPTPModelUseCase().invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
-                    IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                    IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
+                    useRDFLists = true
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             ).getSuccessOrNull()
 
             val expectedResult = AnnotatedFormula(
@@ -55,7 +58,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             )).getSuccessOrNull()
 
             val expectedResult = AnnotatedFormula(
@@ -94,7 +97,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             )).getSuccessOrNull()
             val expectedResult = AnnotatedFormula(
                 "axiom",
@@ -130,7 +133,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             )).getSuccessOrNull()
 
             val expectedResult = AnnotatedFormula(
@@ -168,7 +171,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             )).getSuccessOrNull()
 
             val expectedResult = AnnotatedFormula(
@@ -207,7 +210,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             )).getSuccessOrNull()
 
             val expectedResult = AnnotatedFormula(
@@ -234,7 +237,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             )).getSuccessOrNull()
 
             val expectedResult = AnnotatedFormula(
@@ -261,7 +264,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             )).getSuccessOrNull()
 
             val expectedResult = AnnotatedFormula(
@@ -356,7 +359,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             )).getSuccessOrNull()
 
             val expectedResult = AnnotatedFormula(
@@ -395,7 +398,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             ).getSuccessOrNull()
 
 
@@ -483,7 +486,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             )).getSuccessOrNull().shouldNotBeNull()
 
             val expectedResult = AnnotatedFormula(
@@ -530,7 +533,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             )).getSuccessOrNull()
 
             val expectedResult = AnnotatedFormula(
@@ -556,7 +559,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             )).getSuccessOrNull().shouldNotBeNull()
 
             val expectedResult = AnnotatedFormula(
@@ -603,7 +606,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             )).getSuccessOrNull().shouldNotBeNull()
             val expectedResult = AnnotatedFormula(
                 "axiom",
@@ -645,7 +648,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             )).getSuccessOrNull().shouldNotBeNull()
 
             val expectedResult = AnnotatedFormula(
@@ -721,8 +724,9 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
             val result = RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
-                    IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                    IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
+                    useRDFLists = true
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             ).getSuccessOrNull()
 
             val expectedResult = AnnotatedFormula(
@@ -792,8 +796,9 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
             val result = RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
-                    IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                    IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
+                    useRDFLists = true
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             ).getSuccessOrNull()
 
             val expectedResult = AnnotatedFormula(
@@ -823,8 +828,9 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
             val result = RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
-                    IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                    IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
+                    useRDFLists = true
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             ).getSuccessOrNull()
 
             val expectedResult = AnnotatedFormula(
@@ -885,8 +891,9 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
             val result = RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
-                    IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                    IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
+                    useRDFLists = true
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             ).getSuccessOrNull()
 
             val expectedResult = AnnotatedFormula(
@@ -922,8 +929,9 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
             val result = RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
-                    IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                    IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
+                    useRDFLists = true
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             ).getSuccessOrNull()
 
             val expectedResult = AnnotatedFormula(
@@ -954,8 +962,9 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
             val result = RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
-                    IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                    IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
+                    useRDFLists = true
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             ).getSuccessOrNull()
 
             val expectedResult = AnnotatedFormula(
@@ -1032,8 +1041,9 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
             val result = RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
-                    IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                    IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
+                    useRDFLists = true
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             ).getSuccessOrNull()
 
             val expectedResult = AnnotatedFormula(
@@ -1081,8 +1091,9 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
             val result = RdfSurfaceModelToTPTPModelUseCase(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
-                    IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                ).getSuccessOrNull().shouldNotBeNull()
+                    IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
+                    useRDFLists = true
+                ).getSuccessOrNull().shouldNotBeNull().positiveSurface
             ).getSuccessOrNull()
 
             val expectedResult = AnnotatedFormula(
@@ -1179,8 +1190,9 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 val result = RdfSurfaceModelToTPTPModelUseCase(
                     rdfSurfaceParseService.parseToEnd(
                         file.readText(),
-                        IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                    ).getSuccessOrNull().shouldNotBeNull()
+                        IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
+                        useRDFLists = true
+                    ).getSuccessOrNull().shouldNotBeNull().positiveSurface
                 ).getSuccessOrNull().shouldNotBeNull()
                 result.joinToString(System.lineSeparator())
                     .replace("\\s+".toRegex(), "") shouldBeEqualComparingTo solutionFile.readText()
@@ -1193,8 +1205,9 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 RdfSurfaceModelToTPTPModelUseCase(
                     rdfSurfaceParseService.parseToEnd(
                         file.readText(),
-                        IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                    ).getSuccessOrNull().shouldNotBeNull()
+                        IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
+                        useRDFLists = true
+                    ).getSuccessOrNull().shouldNotBeNull().positiveSurface
                 ).getSuccessOrNull().shouldNotBeNull().joinToString(System.lineSeparator())
                     .replace("\\s+".toRegex(), "") shouldBeEqualComparingTo solutionFile.readText()
                     .replace("\\s+".toRegex(), "")
@@ -1207,8 +1220,9 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 val result = (RdfSurfaceModelToTPTPModelUseCase(
                     rdfSurfaceParseService.parseToEnd(
                         file.readText(),
-                        IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                    ).getSuccessOrNull().shouldNotBeNull()
+                        IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
+                        useRDFLists = true
+                    ).getSuccessOrNull().shouldNotBeNull().positiveSurface
                 )).getSuccessOrNull()
                 result shouldNotBe null
                 result!!.joinToString(System.lineSeparator()).replace(
@@ -1220,10 +1234,11 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec(
                 val file = Path("src/test/resources/turtle/lists.n3")
                 val solutionFile = Path("src/test/resources/turtle/lists-rdf.p")
                 val result = RdfSurfaceModelToTPTPModelUseCase(
-                    RDFSurfaceParseServiceImpl(useRDFLists = true).parseToEnd(
+                    RDFSurfaceParseServiceImpl.parseToEnd(
                         file.readText(),
-                        IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/")
-                    ).getSuccessOrNull().shouldNotBeNull()
+                        IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
+                        useRDFLists = true
+                    ).getSuccessOrNull().shouldNotBeNull().positiveSurface
                 ).getSuccessOrNull().shouldNotBeNull().joinToString(System.lineSeparator()).replace(
                     "\\s".toRegex(),
                     ""

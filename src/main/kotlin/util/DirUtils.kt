@@ -1,4 +1,4 @@
-package framework.cli.util
+package util
 
 import entities.rdfsurfaces.rdf_term.IRI
 
