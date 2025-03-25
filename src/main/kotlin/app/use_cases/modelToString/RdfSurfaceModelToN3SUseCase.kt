@@ -5,13 +5,12 @@ import adapter.parser.util.stringLiteralLongQuote
 import adapter.parser.util.stringLiteralLongSingleQuote
 import adapter.parser.util.stringLiteralQuote
 import adapter.parser.util.stringLiteralSingleQuote
+import app.use_cases.results.modelToString.RdfSurfaceModelToN3sResult
 import entities.rdfsurfaces.*
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
 import util.IRIConstants
-import util.LiteralTransformationException
-import util.commandResult.Error
-import util.commandResult.IntermediateStatus
+import util.commandResult.Result
 
 class RdfSurfaceModelToN3UseCase(
     private val n3SRDFTermCoderService: N3SRDFTermCoderService
@@ -20,7 +19,7 @@ class RdfSurfaceModelToN3UseCase(
     operator fun invoke(
         defaultPositiveSurface: PositiveSurface,
         dEntailment: Boolean = false
-    ): IntermediateStatus<String, LiteralTransformationError> {
+    ): Result<String, RdfSurfaceModelToN3sResult.Error> {
         val spaceBase = "   "
 
         var prefixCounter = 0
@@ -85,7 +84,7 @@ class RdfSurfaceModelToN3UseCase(
                         "'$rawLiteral'".matches(stringLiteralSingleQuote) -> "'$rawLiteral'"
                         "\"\"\"$rawLiteral\"\"\"".matches(stringLiteralLongQuote) -> "\"\"\"$rawLiteral\"\"\""
                         "'''$rawLiteral'''".matches(stringLiteralLongSingleQuote) -> "'''$rawLiteral'''"
-                        else -> throw LiteralTransformationException(literal = "Value: $rawLiteral, URI: ${literal.datatypeIRI.iri}")
+                        else -> throw LiteralTransformationException(value = rawLiteral, iri = literal.datatypeIRI.iri)
                     }
                 }
 
@@ -172,12 +171,11 @@ class RdfSurfaceModelToN3UseCase(
                 rdfSurfacesGraphString.insert(0, "@prefix $prefix: <$iri>.${System.lineSeparator()}")
             }
         } catch (exception: LiteralTransformationException) {
-            return IntermediateStatus.Error(LiteralTransformationError(exception.literal))
+            return Result.Error(RdfSurfaceModelToN3sResult.Error.LiteralTransformationError(exception.value, exception.iri))
         }
 
-        return IntermediateStatus.Result(rdfSurfacesGraphString.toString())
+        return Result.Success(rdfSurfacesGraphString.toString())
     }
 }
 
-
-data class LiteralTransformationError(val literal: String) : Error
+private class LiteralTransformationException(val value: String,val iri: String) : Exception()

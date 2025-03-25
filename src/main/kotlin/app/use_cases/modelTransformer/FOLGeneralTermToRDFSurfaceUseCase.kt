@@ -1,5 +1,6 @@
 package app.use_cases.modelTransformer
 
+import app.use_cases.results.modelTransformerResults.FOLGeneralTermToRDFSurfaceResult
 import entities.fol.FOLConstant
 import entities.fol.FOLFunction
 import entities.fol.FOLVariable
@@ -10,14 +11,14 @@ import util.commandResult.*
 
 class FOLGeneralTermToRDFTermUseCase {
 
-    operator fun invoke(generalTerm: GeneralTerm): IntermediateStatus<RdfTerm, RootError> {
+    operator fun invoke(generalTerm: GeneralTerm): Result<RdfTerm, RootError> {
         return when (generalTerm) {
-            is FOLVariable -> intermediateSuccess(BlankNode(generalTerm.name))
+            is FOLVariable -> success(BlankNode(generalTerm.name))
             is FOLFunction -> {
                 val functionName = generalTerm.name
                 when {
                     functionName.startsWith("sk") -> {
-                        intermediateSuccess(
+                        success(
                             BlankNode(
                                 generalTerm.name + "-" + generalTerm.arguments.hashCode()
                             )
@@ -25,14 +26,14 @@ class FOLGeneralTermToRDFTermUseCase {
                     }
 
                     functionName == "list" -> {
-                        intermediateSuccess(
-                            generalTerm.arguments.map { invoke(it).getOrElse { err -> return intermediateError(err) } }
+                        success(
+                            generalTerm.arguments.map { invoke(it).getOrElse { err -> return error(err) } }
                                 .let { Collection(it) }
                         )
                     }
 
                     else -> {
-                        intermediateError(FOLGeneralTermToRDFSurfaceUseCaseError.InvalidFunctionOrPredicate(functionName))
+                        error(FOLGeneralTermToRDFSurfaceResult.Error.InvalidFunctionOrPredicate(functionName))
                     }
                 }
             }
@@ -40,15 +41,15 @@ class FOLGeneralTermToRDFTermUseCase {
             is FOLConstant -> {
                 val constantName = generalTerm.name
                 when {
-                    constantName.startsWith("sk") -> intermediateSuccess(BlankNode(constantName))
-                    constantName.startsWith("list") -> intermediateSuccess(Collection(emptyList()))
+                    constantName.startsWith("sk") -> success(BlankNode(constantName))
+                    constantName.startsWith("list") -> success(Collection(emptyList()))
                     else -> {
                         (getLiteralFromStringOrNull(constantName)
                             ?: getLangLiteralFromStringOrNull(constantName)
                             ?: IRI.from(constantName)
                                 .takeUnless { it.isRelativeReference() || it.iri.contains("\\s".toRegex()) }
-                                )?.let { intermediateSuccess(it) } ?: intermediateError(
-                            FOLGeneralTermToRDFSurfaceUseCaseError.InvalidElement(element = constantName)
+                                )?.let { success(it) } ?: error(
+                            FOLGeneralTermToRDFSurfaceResult.Error.InvalidElement(element = constantName)
                         )
                     }
                 }
@@ -68,9 +69,4 @@ class FOLGeneralTermToRDFTermUseCase {
             val (literalValue, languageTag) = it.destructured
             LanguageTaggedString(literalValue, languageTag)
         }
-}
-
-sealed interface FOLGeneralTermToRDFSurfaceUseCaseError : Error {
-    data class InvalidFunctionOrPredicate(val element: String) : FOLGeneralTermToRDFSurfaceUseCaseError
-    data class InvalidElement(val element: String) : FOLGeneralTermToRDFSurfaceUseCaseError
 }

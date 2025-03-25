@@ -1,9 +1,8 @@
 package adapter.parser
 
 import adapter.parser.util.*
-import app.interfaces.serviceResults.RdfSurfaceParserError
+import app.interfaces.results.RdfSurfaceParserResult
 import app.interfaces.services.RDFSurfaceParseService
-import app.use_cases.modelTransformer.SurfaceNotSupportedError
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parser
@@ -17,8 +16,8 @@ import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
 import util.*
 import util.IRIConstants.RDF_TYPE_IRI
-import util.commandResult.Error
-import util.commandResult.IntermediateStatus
+import util.commandResult.Result
+import util.commandResult.success
 
 typealias HayesGraph = List<HayesGraphElement>
 typealias FreeVariables = Set<BlankNode>
@@ -381,26 +380,26 @@ class RDFSurfaceParseServiceImpl : Grammar<PositiveSurface>(), RDFSurfaceParseSe
         .replace("\\'", "\u0027")
         .replace("\\\\'", "\u005C")
 
-    override fun parseToEnd(input: String, baseIRI: IRI, useRDFLists: Boolean): IntermediateStatus<PositiveSurface, Error> {
+    override fun parseToEnd(input: String, baseIRI: IRI, useRDFLists: Boolean): Result<RdfSurfaceParserResult.Success.Parsed, RdfSurfaceParserResult.Error> {
         this.useRDFLists = useRDFLists
         var bnLabel = "BN_"
         var i = 0
         while (input.contains("_:$bnLabel\\d+".toRegex()) && i++ in 0..10) {
             bnLabel += '0'
         }
-        if (i > 10) return IntermediateStatus.Error(RdfSurfaceParserError.BlankNodeLabelCollision) //("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
+        if (i > 10) return Result.Error(RdfSurfaceParserResult.Error.BlankNodeLabelCollision) //("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
         this.bnLabel = bnLabel
         this.baseIri = baseIRI
         return try {
-            IntermediateStatus.Result(rootParser.parseToEnd(tokenizer.tokenize(input)))
+            success(RdfSurfaceParserResult.Success.Parsed(rootParser.parseToEnd(tokenizer.tokenize(input))))
         } catch (exc: Throwable) {
             when (exc) {
-                is SurfaceNotSupportedException -> SurfaceNotSupportedError(surface = exc.surface)
-                is UndefinedPrefixException -> RdfSurfaceParserError.UndefinedPrefix(prefix = exc.prefix)
-                is LiteralNotValidException -> RdfSurfaceParserError.LiteralNotValid(value = exc.value, iri = exc.iri)
-                is ParseException -> RdfSurfaceParserError.GenericInvalidInput(throwable = exc)
+                is SurfaceNotSupportedException -> RdfSurfaceParserResult.Error.SurfaceNotSupported(surface = exc.surface)
+                is UndefinedPrefixException -> RdfSurfaceParserResult.Error.UndefinedPrefix(prefix = exc.prefix)
+                is LiteralNotValidException -> RdfSurfaceParserResult.Error.LiteralNotValid(value = exc.value, iri = exc.iri)
+                is ParseException -> RdfSurfaceParserResult.Error.GenericInvalidInput(throwable = exc)
                 else -> throw exc
-            }.let { IntermediateStatus.Error(it) }
+            }.let { error(it) }
         }
     }
 }

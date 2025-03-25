@@ -5,6 +5,7 @@ import app.interfaces.services.RDFSurfaceParseService
 import app.use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
 import app.use_cases.modelTransformer.FormulaRole
 import app.use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
+import app.use_cases.results.TransformResult
 import entities.rdfsurfaces.rdf_term.IRI
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -27,19 +28,19 @@ class TransformUseCase(
         baseIri: IRI,
         dEntailment: Boolean,
         outputPath: Path?,
-    ): Flow<CommandStatus<TransformUseCaseSuccess, RootError>> = flow {
+    ): Flow<InfoResult<TransformResult.Success, RootError>> = flow {
 
         val parseResult = rdfSurfaceParseService.parseToEnd(rdfSurface, baseIri, useRdfLists)
         val axiomFormula = parseResult
-            .runOnSuccess { positiveSurface ->
+            .runOnSuccess { successResult ->
                 rdfSurfaceModelToTPTPModelUseCase.invoke(
-                    defaultPositiveSurface = positiveSurface,
+                    defaultPositiveSurface = successResult.positiveSurface,
                     ignoreQuerySurfaces = ignoreQuerySurface,
                     dEntailment = dEntailment
                 )
             }
             .getOrElse {
-                emit(error(it))
+                emit(infoError(it))
                 return@flow
             }
             .joinToString(separator = System.lineSeparator()) { tPTPAnnotatedFormulaModelToStringUseCase.invoke(it) }
@@ -47,16 +48,16 @@ class TransformUseCase(
         val consequenceFormula = consequenceSurface?.let {
             val consequenceParseResult = rdfSurfaceParseService.parseToEnd(it, baseIri, useRdfLists)
             consequenceParseResult
-                .runOnSuccess { positiveSurface ->
+                .runOnSuccess { successResult ->
                     rdfSurfaceModelToTPTPModelUseCase.invoke(
-                        defaultPositiveSurface = positiveSurface,
+                        defaultPositiveSurface = successResult.positiveSurface,
                         ignoreQuerySurfaces = ignoreQuerySurface,
                         formulaRole = FormulaRole.Conjecture,
                         dEntailment = dEntailment
                     )
                 }
                 .getOrElse { err ->
-                    emit(error(err))
+                    emit(infoError(err))
                     return@flow
                 }
                 .joinToString(separator = System.lineSeparator()) { formula ->
@@ -68,22 +69,15 @@ class TransformUseCase(
 
         when {
             outputPath == null || outputPath.pathString == "-" -> {
-                emit(success(TransformUseCaseSuccess.WriteToLine(folFormula)))
+                emit(infoSuccess(TransformResult.Success.WriteToLine(folFormula)))
             }
 
             else -> {
                 fileService.createNewFile(
                     path = outputPath,
                     content = folFormula
-                ).let { emit(success(TransformUseCaseSuccess.WriteToFile(folFormula, it))) }
+                ).let { emit(infoSuccess(TransformResult.Success.WriteToFile(folFormula, it))) }
             }
         }
     }
-}
-
-sealed interface TransformUseCaseSuccess : Success {
-    val res: String
-
-    data class WriteToLine(override val res: String) : TransformUseCaseSuccess
-    data class WriteToFile(override val res: String, val success: Boolean) : TransformUseCaseSuccess
 }

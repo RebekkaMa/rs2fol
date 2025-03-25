@@ -1,5 +1,6 @@
 package app.use_cases.modelTransformer
 
+import app.use_cases.results.modelTransformerResults.RdfSurfaceModelToTPTPModelResult
 import entities.fol.*
 import entities.fol.tptp.AnnotatedFormula
 import entities.fol.tptp.FormulaType
@@ -8,8 +9,7 @@ import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
 import util.IRIConstants
 import util.SurfaceNotSupportedException
-import util.commandResult.Error
-import util.commandResult.IntermediateStatus
+import util.commandResult.Result
 
 class RdfSurfaceModelToTPTPModelUseCase {
     operator fun invoke(
@@ -19,7 +19,7 @@ class RdfSurfaceModelToTPTPModelUseCase {
         tptpName: String = formulaRole.name.lowercase(),
         dEntailment: Boolean = false,
         listType: ListType = ListType.FUNCTION
-    ): IntermediateStatus<List<AnnotatedFormula>, SurfaceNotSupportedError> {
+    ): Result<List<AnnotatedFormula>, RdfSurfaceModelToTPTPModelResult.Error> {
 
         fun transform(blankNode: BlankNode) = FOLVariable(blankNode.blankNodeId)
 
@@ -182,7 +182,7 @@ class RdfSurfaceModelToTPTPModelUseCase {
                 )
             }
 
-            IntermediateStatus.Result(
+            Result.Success(
                 buildList {
                     add(fofQuantifiedFormula)
                     if (ignoreQuerySurfaces) return@buildList
@@ -190,7 +190,7 @@ class RdfSurfaceModelToTPTPModelUseCase {
                 }
             )
         } catch (exception: SurfaceNotSupportedException) {
-            return IntermediateStatus.Error(SurfaceNotSupportedError(surface = exception.surface))
+            return Result.Error(RdfSurfaceModelToTPTPModelResult.Error.SurfaceNotSupported(surface = exception.surface))
         }
     }
 
@@ -216,5 +216,3 @@ private fun FormulaRole.toFormulaType() = when (this) {
     FormulaRole.Lemma -> FormulaType.Lemma
     FormulaRole.Question -> FormulaType.Question
 }
-
-data class SurfaceNotSupportedError(val surface: String) : Error

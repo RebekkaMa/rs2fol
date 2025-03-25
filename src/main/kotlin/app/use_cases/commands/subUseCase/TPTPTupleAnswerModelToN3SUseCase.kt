@@ -2,10 +2,9 @@ package app.use_cases.commands.subUseCase
 
 import app.use_cases.modelToString.RdfSurfaceModelToN3UseCase
 import app.use_cases.modelTransformer.FOLGeneralTermToRDFTermUseCase
+import app.use_cases.results.subUseCaseResults.TPTPTupleAnswerModelToN3SResult
 import entities.fol.tptp.AnswerTuple
-import entities.rdfsurfaces.PositiveSurface
 import entities.rdfsurfaces.QSurface
-import util.InvalidInputException
 import util.commandResult.*
 
 class TPTPTupleAnswerModelToRdfSurfaceUseCase(
@@ -15,32 +14,34 @@ class TPTPTupleAnswerModelToRdfSurfaceUseCase(
     operator fun invoke(
         answerTuples: List<AnswerTuple>,
         qSurface: QSurface
-    ): IntermediateStatus<String, Error> {
+    ): Result<String, Error> {
 
         val rdfTransformedAnswerTuples = answerTuples.map { answerTuple ->
             answerTuple.map {
-                fOLGeneralTermToRDFTermUseCase.invoke(it).getOrElse { err -> return intermediateError(err) }
-                //TODO("Add answer tuple to error")
+                fOLGeneralTermToRDFTermUseCase.invoke(it).getOrElse { err ->
+                    return error(
+                        TPTPTupleAnswerModelToN3SResult.Error.TransformationError(
+                            affectedFormula = answerTuple.toString(),
+                            error = err
+                        )
+                    )
+                }
             }
         }
 
-        val replacedASurface: IntermediateStatus<PositiveSurface, Error> = try {
-            IntermediateStatus.Result(qSurface.replaceBlankNodes(rdfTransformedAnswerTuples))
-        } catch (exc: InvalidInputException) {
-            IntermediateStatus.Error(
-                TPTPTupleAnswerModelToN3SUseCaseError.InvalidInputError(
-                    cause = exc
+       return qSurface.replaceBlankNodes(rdfTransformedAnswerTuples).fold(
+            onSuccess = { surface ->
+                rdfSurfaceModelToN3UseCase.invoke(surface)
+            },
+            onFailure = {
+                error(
+                    TPTPTupleAnswerModelToN3SResult.Error.TransformationError(
+                        affectedFormula = answerTuples.toString(),
+                        error = it
+                    )
                 )
-            )
-        }
-        return replacedASurface.runOnSuccess { replacedSurface ->
-            rdfSurfaceModelToN3UseCase.invoke(replacedSurface)
-        }
+            }
+        )
     }
-}
-
-sealed interface TPTPTupleAnswerModelToN3SUseCaseError : Error {
-    data class InvalidInputError(val affectedFormula: String? = null, val cause: Exception) :
-        TPTPTupleAnswerModelToN3SUseCaseError
 }
 

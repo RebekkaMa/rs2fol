@@ -1,17 +1,17 @@
 package adapter.theoremProver
 
-import app.interfaces.serviceResults.TheoremProverRunnerError
+import app.interfaces.results.TheoremProverRunnerResult
 import app.interfaces.services.TheoremProverRunnerService
-import kotlinx.coroutines.*
-import util.commandResult.IntermediateStatus
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import util.commandResult.Result
 import util.commandResult.RootError
-import util.commandResult.intermediateError
-import util.commandResult.intermediateSuccess
-import java.io.BufferedReader
+import util.commandResult.error
+import util.commandResult.success
 import java.io.File
 import java.io.IOException
-
-typealias TimeoutDeferred = Deferred<Boolean>
 
 class TheoremProverRunnerServiceImpl : TheoremProverRunnerService {
 
@@ -19,7 +19,7 @@ class TheoremProverRunnerServiceImpl : TheoremProverRunnerService {
         command: List<String>,
         input: String,
         timeLimit: Long
-    ): IntermediateStatus<Pair<BufferedReader, TimeoutDeferred>, RootError> {
+    ): Result<TheoremProverRunnerResult.Success.Ran, RootError> {
 
         val theoremProverProcess = try {
             ProcessBuilder(*command.toTypedArray())
@@ -27,7 +27,7 @@ class TheoremProverRunnerServiceImpl : TheoremProverRunnerService {
                 .redirectErrorStream(true)
                 .start()
         } catch (e: IOException) {
-            return intermediateError(TheoremProverRunnerError.CouldNotBeStarted(e))
+            return error(TheoremProverRunnerResult.Error.CouldNotBeStarted(e))
         }
 
         kotlin.runCatching {
@@ -36,7 +36,7 @@ class TheoremProverRunnerServiceImpl : TheoremProverRunnerService {
                 it.flush()
             }
         }.onFailure {
-            return intermediateError(TheoremProverRunnerError.CouldNotWriteInput(it))
+            return error(TheoremProverRunnerResult.Error.CouldNotWriteInput(it))
         }
 
         val timeout = CoroutineScope(Dispatchers.IO).async {
@@ -50,6 +50,6 @@ class TheoremProverRunnerServiceImpl : TheoremProverRunnerService {
             return@async true
         }
 
-        return intermediateSuccess(theoremProverProcess.inputReader() to timeout)
+        return success(TheoremProverRunnerResult.Success.Ran(theoremProverProcess.inputReader() to timeout))
     }
 }

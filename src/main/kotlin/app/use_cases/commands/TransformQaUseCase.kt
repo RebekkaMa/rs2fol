@@ -3,12 +3,12 @@ package app.use_cases.commands
 import app.interfaces.services.FileService
 import app.interfaces.services.RDFSurfaceParseService
 import app.interfaces.services.TheoremProverRunnerService
-import app.use_cases.commands.subUseCase.AnswerTupleTransformationSuccess
 import app.use_cases.commands.subUseCase.GetTheoremProverCommandUseCase
 import app.use_cases.commands.subUseCase.QuestionAnsweringOutputToRdfSurfacesCascUseCase
 import app.use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
 import app.use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
-import entities.rdfsurfaces.PositiveSurface
+import app.use_cases.results.TransformQaResult
+import app.use_cases.results.subUseCaseResults.QuestionAnsweringOutputToRdfSurfacesCascResult
 import entities.rdfsurfaces.rdf_term.IRI
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
@@ -38,33 +38,33 @@ class TransformQaUseCase(
         baseIri: IRI,
         configFile: Path,
         dEntailment: Boolean,
-        ): Flow<CommandStatus<Success, RootError>> = channelFlow {
+        ): Flow<InfoResult<Success, RootError>> = channelFlow {
 
         val rdfSurface = inputStream.reader().use { it.readText() }
         val parseResult = rdfSurfaceParseService.parseToEnd(rdfSurface, baseIri, useRdfLists)
         val folFormula = parseResult
-            .runOnSuccess { positiveSurface ->
+            .runOnSuccess { successResult ->
                 rdfSurfaceModelToTPTPModelUseCase.invoke(
-                    defaultPositiveSurface = positiveSurface,
+                    defaultPositiveSurface = successResult.positiveSurface,
                     ignoreQuerySurfaces = false,
                     dEntailment = dEntailment
                 )
             }
             .getOrElse {
-                send(error(it))
+                send(infoError(it))
                 return@channelFlow
             }
             .joinToString(separator = System.lineSeparator()) { tPTPAnnotatedFormulaModelToStringUseCase.invoke(it) }
 
-        val qSurfaces = parseResult.getOrElse { PositiveSurface() }.getQSurfaces()
+        val qSurfaces = parseResult.getSuccessOrNull()?.positiveSurface?.getQSurfaces() ?: emptyList()
         val qSurface = when {
             qSurfaces.isEmpty() -> {
-                send(error(TransformQaError.NoQuestionSurface))
+                send(infoError(TransformQaResult.Error.NoQuestionSurface))
                 return@channelFlow
             }
 
             qSurfaces.size > 1 -> {
-                send(error(TransformQaError.MoreThanOneQuestionSurface))
+                send(infoError(TransformQaResult.Error.MoreThanOneQuestionSurface))
                 return@channelFlow
             }
 
@@ -84,7 +84,7 @@ class TransformQaUseCase(
             reasoningTimeLimit,
             configFile,
         ).getOrElse {
-            send(error(it))
+            send(infoError(it))
             return@channelFlow
         }.command
 
@@ -92,7 +92,7 @@ class TransformQaUseCase(
             command = command,
             timeLimit = reasoningTimeLimit,
             input = folFormula
-        ).getOrElse { send(error(it)); close(); return@channelFlow }
+        ).getOrElse { send(infoError(it)); close(); return@channelFlow }.output
 
         launch {
             questionAnsweringOutputToRdfSurfacesCascUseCase.invoke(
@@ -100,25 +100,16 @@ class TransformQaUseCase(
                 questionAnsweringBufferedReader = vampireOutputBufferedReader,
             ).fold(
                 onSuccess = {
-                    if (it is AnswerTupleTransformationSuccess.NothingFound && timeoutDeferred.await()) {
-                        send(success(TransformQaResult.Timeout))
+                    if (it is QuestionAnsweringOutputToRdfSurfacesCascResult.Success.NothingFound && timeoutDeferred.await()) {
+                        send(infoSuccess(TransformQaResult.Success.Timeout))
                         close()
                         return@launch
                     }
-                    send(success(it))
+                    send(infoSuccess(it))
                 },
-                onFailure = { send(error(it)) }
+                onFailure = { send(infoError(it)) }
             )
             cancel()
         }
     }
-}
-
-sealed interface TransformQaResult : Success {
-    data object Timeout : TransformQaResult
-}
-
-sealed interface TransformQaError : RootError {
-    data object NoQuestionSurface : TransformQaError
-    data object MoreThanOneQuestionSurface : TransformQaError
 }

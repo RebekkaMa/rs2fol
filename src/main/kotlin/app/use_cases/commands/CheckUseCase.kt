@@ -1,8 +1,11 @@
 package app.use_cases.commands
 
-import app.interfaces.services.FileService
+import app.interfaces.results.SZSParserServiceResult
+import app.interfaces.results.TheoremProverRunnerResult
 import app.interfaces.services.TheoremProverRunnerService
 import app.use_cases.commands.subUseCase.GetTheoremProverCommandUseCase
+import app.use_cases.results.CheckResult
+import app.use_cases.results.TransformResult
 import entities.SZSAnswerTupleFormModel
 import entities.SZSOutputModel
 import entities.SZSStatus
@@ -16,7 +19,6 @@ import java.nio.file.Path
 class CheckUseCase(
     private val theoremProverRunnerService: TheoremProverRunnerService,
     private val szsParserService: app.interfaces.services.SZSParserService,
-    private val fileService: FileService,
     private val transformUseCase: TransformUseCase,
     private val getTheoremProverCommandUseCase: GetTheoremProverCommandUseCase
 ) {
@@ -32,7 +34,7 @@ class CheckUseCase(
         baseIri: IRI,
         configFile: Path,
         dEntailment: Boolean,
-    ): Flow<CommandStatus<CheckSuccess, Error>?> = channelFlow {
+    ): Flow<InfoResult<CheckResult.Success, Error>?> = channelFlow {
 
         val tptpFormula = transformUseCase.invoke(
             rdfSurface = antecedent,
@@ -44,11 +46,11 @@ class CheckUseCase(
             outputPath = outputPath,
         ).onEach { result ->
             result.fold(
-                onInfo = { send(info(it)) },
+                onInfo = { send(infoInfo(it)) },
                 onSuccess = { },
-                onFailure = { send(error(it)); close() }
+                onFailure = { send(infoError(it)); close() }
             )
-        }.mapNotNull { it.getSuccessOrNull() as TransformUseCaseSuccess }
+        }.mapNotNull { it.getSuccessOrNull() as TransformResult.Success }
             .first()
             .res
 
@@ -58,30 +60,30 @@ class CheckUseCase(
             reasoningTimeLimit,
             configFile,
         ).getOrElse {
-            send(error(it))
+            send(infoError(it))
             close()
             return@channelFlow
         }.command
 
-        val (vampireResult, timeoutDeferred) = theoremProverRunnerService(
+        val (vampireResult, timeoutDeferred) = (theoremProverRunnerService(
             input = tptpFormula,
             timeLimit = reasoningTimeLimit,
             command = command
-        ).getOrElse { send(error(it)); close(); return@channelFlow }
+        ).getOrElse { send(infoError(it)); close(); return@channelFlow } as TheoremProverRunnerResult.Success.Ran).output
 
         launch {
-            val szsParseResult = szsParserService
+            val szsParseResult = (szsParserService
                 .parse(vampireResult)
                 .firstOrNull()
-                ?.getOrElse { send(error(it)); close(); return@launch }
+                ?.getOrElse { send(infoError(it)); close(); return@launch } as? SZSParserServiceResult.Success.Parsed)?.szsModel
 
             if (szsParseResult == null) {
                 if (timeoutDeferred.await()) {
-                    send(success(CheckSuccess.Timeout))
+                    send(infoSuccess(CheckResult.Success.Timeout))
                     close()
                     return@launch
                 }
-                send(error(CheckError.UnknownTheoremProverOutput))
+                send(infoError(CheckResult.Error.UnknownTheoremProverOutput))
                 close()
                 return@launch
             }
@@ -100,7 +102,7 @@ class CheckUseCase(
                         SZSStatusType.SuccessOntology.WEAKER_THEOREM,
                         SZSStatusType.SuccessOntology.CONTRADICTORY_AXIOMS,
                         SZSStatusType.SuccessOntology.TAUTOLOGOUS_CONCLUSION_CONTRADICTORY_AXIOMS -> {
-                            send(success(app.use_cases.commands.CheckSuccess.Consequence))
+                            send(infoSuccess(CheckResult.Success.Consequence))
                         }
 
                         SZSStatusType.SuccessOntology.SATISFIABLE,
@@ -120,30 +122,17 @@ class CheckUseCase(
                         SZSStatusType.SuccessOntology.SATISFIABLE_COUNTER_CONCLUSION_CONTRADICTORY_AXIOMS,
                         SZSStatusType.SuccessOntology.UNSATISFIABLE_CONCLUSION_CONTRADICTORY_AXIOMS,
                         SZSStatusType.SuccessOntology.UNSATISFIABLE -> {
-                            send(success(CheckSuccess.NoConsequence))
+                            send(infoSuccess(CheckResult.Success.NoConsequence))
                         }
 
-                        else -> send(success(CheckSuccess.NotKnown(szsParseResult.statusType)))
+                        else -> send(infoSuccess(CheckResult.Success.NotKnown(szsParseResult.statusType)))
                     }
                 }
 
-                is SZSAnswerTupleFormModel -> send(error(CheckError.UnknownTheoremProverOutput))
+                is SZSAnswerTupleFormModel -> send(infoError(CheckResult.Error.UnknownTheoremProverOutput))
 
             }
         }
     }
 
-}
-
-
-sealed interface CheckError : RootError {
-    data object UnknownTheoremProverOutput : CheckError
-    data object VampireError : CheckError
-}
-
-sealed interface CheckSuccess : Success {
-    data object Consequence : app.use_cases.commands.CheckSuccess
-    data object NoConsequence : app.use_cases.commands.CheckSuccess
-    data class NotKnown(val szsStatusType: SZSStatusType) : app.use_cases.commands.CheckSuccess
-    data object Timeout : app.use_cases.commands.CheckSuccess
 }

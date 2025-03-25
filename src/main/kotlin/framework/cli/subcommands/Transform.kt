@@ -13,9 +13,6 @@ import com.github.ajalt.clikt.parameters.types.path
 import config.Application
 import entities.rdfsurfaces.rdf_term.IRI
 import framework.cli.CommonOptions
-import framework.cli.outputtransformer.ErrorToStringTransformer
-import framework.cli.outputtransformer.InfoToStringTransformer
-import framework.cli.outputtransformer.SolutionToStringTransformer
 import framework.cli.util.workingDir
 import util.commandResult.fold
 import kotlin.io.path.*
@@ -75,16 +72,20 @@ class Transform : SuspendingCliktCommand() {
                 dEntailment = dEntailment,
             )
 
+            val infoToStringTransformerService = Application.createInfoToStringTransformerService()
+            val successToStringTransformerService = Application.createCliSuccessToStringTransformerService()
+            val errorToStringTransformerService = Application.createErrorToStringTransformerService()
+
             useCaseResult.collect { result ->
                 result.fold(
                     onInfo = {
-                        if (!quiet) echo(InfoToStringTransformer(it))
+                        if (!quiet) echo(infoToStringTransformerService.invoke(it))
                     },
                     onSuccess = {
-                        echo(SolutionToStringTransformer(it))
+                        echo(successToStringTransformerService.invoke(it))
                     },
                     onFailure = {
-                        echo(ErrorToStringTransformer(it), err = true)
+                        echo(errorToStringTransformerService.invoke(it), err = true)
                     }
                 )
 

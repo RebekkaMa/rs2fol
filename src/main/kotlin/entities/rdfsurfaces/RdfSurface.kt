@@ -3,6 +3,9 @@ package entities.rdfsurfaces
 import entities.rdfsurfaces.rdf_term.BlankNode
 import entities.rdfsurfaces.rdf_term.Collection
 import entities.rdfsurfaces.rdf_term.RdfTerm
+import entities.rdfsurfaces.results.RdfSurfaceResult
+import util.commandResult.Result
+import util.commandResult.success
 
 
 sealed class RdfSurface : HayesGraphElement() {
@@ -78,13 +81,15 @@ sealed class QSurface(override val graffiti: List<BlankNode>, override val hayes
         }
     }
 
-    fun replaceBlankNodes(list: List<List<RdfTerm>>): PositiveSurface {
+    fun replaceBlankNodes(list: List<List<RdfTerm>>): Result<PositiveSurface, RdfSurfaceResult.Error> {
 
         val maps = list.map {
-            if (containsVariables().not()) return PositiveSurface(listOf(), this.hayesGraph)
+            if (containsVariables().not()) return success(PositiveSurface(listOf(), this.hayesGraph))
             if (graffiti.size != it.size) {
                 val relevantGraffiti = this.graffiti.filter { blankNode -> isBounded(blankNode) }
-                if (relevantGraffiti.size != it.size) throw IllegalArgumentException("The arity of the answer tuples doesn't match the number of graffiti on the query surface!")
+                if (relevantGraffiti.size != it.size) {
+                    return error(RdfSurfaceResult.Error.TupleArityUnequalToGraffitiCount)
+                }
                 return@map buildMap {
                     relevantGraffiti.forEachIndexed { index, blankNode ->
                         this[blankNode] = it[index]
@@ -99,11 +104,13 @@ sealed class QSurface(override val graffiti: List<BlankNode>, override val hayes
             }
         }
 
-        return PositiveSurface(
-            listOf(),
-            maps.flatMap { map ->
-                replaceBlankNodes(map, this).hayesGraph
-            }.distinct()
+        return success(
+            PositiveSurface(
+                listOf(),
+                maps.flatMap { map ->
+                    replaceBlankNodes(map, this).hayesGraph
+                }.distinct()
+            )
         )
     }
 
@@ -112,21 +119,24 @@ sealed class QSurface(override val graffiti: List<BlankNode>, override val hayes
 data class PositiveSurface(
     override val graffiti: List<BlankNode> = emptyList(),
     override val hayesGraph: List<HayesGraphElement> = emptyList()
-) :
-    RdfSurface() {
-
+) : RdfSurface() {
     fun getQSurfaces(): List<QSurface> = hayesGraph.filterIsInstance<QSurface>()
-
 }
 
-data class NegativeSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
-    RdfSurface()
+data class NegativeSurface(
+    override val graffiti: List<BlankNode>,
+    override val hayesGraph: List<HayesGraphElement>
+) : RdfSurface()
 
-data class QuerySurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
-    QSurface(graffiti, hayesGraph)
+data class QuerySurface(
+    override val graffiti: List<BlankNode>,
+    override val hayesGraph: List<HayesGraphElement>
+) : QSurface(graffiti, hayesGraph)
 
-data class NeutralSurface(override val graffiti: List<BlankNode>, override val hayesGraph: List<HayesGraphElement>) :
-    RdfSurface()
+data class NeutralSurface(
+    override val graffiti: List<BlankNode>,
+    override val hayesGraph: List<HayesGraphElement>
+) : RdfSurface()
 
 data class NegativeAnswerSurface(
     override val graffiti: List<BlankNode>,

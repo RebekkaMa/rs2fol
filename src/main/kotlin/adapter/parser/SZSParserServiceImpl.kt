@@ -1,5 +1,7 @@
 package adapter.parser
 
+import app.interfaces.results.SZSParserServiceResult
+import app.interfaces.results.TptpTupleAnswerFormParserResult
 import app.interfaces.services.SZSParserService
 import app.interfaces.services.TptpTupleAnswerFormParserService
 import entities.*
@@ -19,8 +21,7 @@ class SZSParserServiceImpl(
     private val answerTupleRegex =
         Regex("[#%]{1,2} SZS answers Tuple (\\[.*\\])(?: for ([^\\s:]+)?)?(?:\\s*:\\s*(.+))?")
 
-
-    override fun parse(bufferedReader: BufferedReader): Flow<IntermediateStatus<SZSModel, RootError>> = flow {
+    override fun parse(bufferedReader: BufferedReader): Flow<Result<SZSParserServiceResult.Success.Parsed, RootError>> = flow {
 
         var szsStatus: SZSStatus? = null
 
@@ -37,7 +38,7 @@ class SZSParserServiceImpl(
                             val identifier = matchResult.groupValues.getOrNull(2)?.takeIf { it.isNotEmpty() }
                             val details = matchResult.groupValues.getOrNull(3)?.takeIf { it.isNotEmpty() }
 
-                            szsStatus?.let { emit(intermediateSuccess(it)) }
+                            szsStatus?.let { emit(success(SZSParserServiceResult.Success.Parsed(it))) }
 
                             szsStatus = SZSStatus(
                                 statusType = outputType.toSZSStatusType(),
@@ -50,12 +51,12 @@ class SZSParserServiceImpl(
                     outputStartRegex.matches(line) -> {
                         when {
                             currentOutputType != null -> {
-                                emit(intermediateError(app.interfaces.serviceResults.SZSParserServiceError.OutputStartBeforeEndAndStatus))
+                                emit(error(SZSParserServiceResult.Error.OutputStartBeforeEndAndStatus))
                                 return@flow
                             }
 
                             szsStatus == null -> {
-                                emit(intermediateError(app.interfaces.serviceResults.SZSParserServiceError.OutputStartBeforeStatus))
+                                emit(error(SZSParserServiceResult.Error.OutputStartBeforeStatus))
                                 return@flow
                             }
                         }
@@ -71,7 +72,7 @@ class SZSParserServiceImpl(
 
                     outputEndRegex.matches(line) -> {
                         if (currentOutputType == null) {
-                            emit(intermediateError(app.interfaces.serviceResults.SZSParserServiceError.OutputEndBeforeStart))
+                            emit(error(SZSParserServiceResult.Error.OutputEndBeforeStart))
                             return@flow
                         }
 
@@ -81,13 +82,15 @@ class SZSParserServiceImpl(
 
                             szsStatus?.let { stat ->
                                 emit(
-                                    intermediateSuccess(
-                                        SZSOutputModel(
-                                            status = stat,
-                                            outputType = outputType.toSZSOutputType(),
-                                            output = currentOutputData.lines().filter { it.isNotBlank() },
-                                            outputStartDetails = currentOutputStartDetails,
-                                            outputEndDetails = details
+                                    success(
+                                        SZSParserServiceResult.Success.Parsed(
+                                            SZSOutputModel(
+                                                status = stat,
+                                                outputType = outputType.toSZSOutputType(),
+                                                output = currentOutputData.lines().filter { it.isNotBlank() },
+                                                outputStartDetails = currentOutputStartDetails,
+                                                outputEndDetails = details
+                                            )
                                         )
                                     )
                                 )
@@ -111,19 +114,21 @@ class SZSParserServiceImpl(
                                 null
                             )
 
-                            val tptpTupleAnswerFormAnswer = tptpTupleAnswerFormToModelService.parseToEnd(answers)
+                            val tptpTupleAnswerFormAnswer = (tptpTupleAnswerFormToModelService.parseToEnd(answers)
                                 .getOrElse {
-                                    emit(intermediateError(it))
+                                    emit(error(it))
                                     return@flow
-                                }
+                                } as TptpTupleAnswerFormParserResult.Success.Parsed).tPTPTupleAnswerFormAnswer
 
                             emit(
-                                intermediateSuccess(
-                                    SZSAnswerTupleFormModel(
-                                        status = status,
-                                        tptpTupleAnswerFormAnswer = tptpTupleAnswerFormAnswer,
-                                        outputStartDetails = currentOutputStartDetails,
-                                        outputEndDetails = details?.takeIf { it.isNotBlank() }
+                                success(
+                                    SZSParserServiceResult.Success.Parsed(
+                                        SZSAnswerTupleFormModel(
+                                            status = status,
+                                            tptpTupleAnswerFormAnswer = tptpTupleAnswerFormAnswer,
+                                            outputStartDetails = currentOutputStartDetails,
+                                            outputEndDetails = details?.takeIf { it.isNotBlank() }
+                                        )
                                     )
                                 )
                             )
@@ -145,6 +150,6 @@ class SZSParserServiceImpl(
 
             }
         }
-        szsStatus?.let { emit(intermediateSuccess(it)) }
+        szsStatus?.let { emit(success(SZSParserServiceResult.Success.Parsed(it))) }
     }
 }

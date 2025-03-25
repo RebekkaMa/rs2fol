@@ -1,5 +1,8 @@
 package framework.cli.subcommands
 
+import adapter.presenter.ErrorToStringTransformerServiceImpl
+import adapter.presenter.SuccessToStringTransformerServiceImpl
+import app.interfaces.services.presenter.InfoToStringTransformerService
 import com.github.ajalt.clikt.command.SuspendingCliktCommand
 import com.github.ajalt.clikt.core.BadParameterValue
 import com.github.ajalt.clikt.core.CliktError
@@ -15,9 +18,6 @@ import com.github.ajalt.clikt.parameters.types.path
 import config.Application
 import entities.rdfsurfaces.rdf_term.IRI
 import framework.cli.CommonOptions
-import framework.cli.outputtransformer.ErrorToStringTransformer
-import framework.cli.outputtransformer.InfoToStringTransformer
-import framework.cli.outputtransformer.SolutionToStringTransformer
 import framework.cli.util.workingDir
 import util.commandResult.fold
 import kotlin.io.path.*
@@ -89,16 +89,20 @@ class QaAnswerToRs : SuspendingCliktCommand() {
                 )
             }
 
+            val infoToStringTransformerService = Application.createInfoToStringTransformerService()
+            val successToStringTransformerService = Application.createCliSuccessToStringTransformerService()
+            val errorToStringTransformerService = Application.createErrorToStringTransformerService()
+
             result.collect { res ->
                 res.fold(
                     onInfo = {
-                        if (!quiet) echo(InfoToStringTransformer(it))
+                        if (!quiet) echo(infoToStringTransformerService.invoke(it))
                     },
                     onSuccess = {
-                        echo(SolutionToStringTransformer(it))
+                        echo(successToStringTransformerService.invoke(it))
                     },
                     onFailure = {
-                        echo(ErrorToStringTransformer(it), err = true)
+                        echo(errorToStringTransformerService.invoke(it), err = true)
                     }
                 )
             }

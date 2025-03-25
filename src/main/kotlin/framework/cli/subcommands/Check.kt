@@ -16,9 +16,6 @@ import com.github.ajalt.clikt.parameters.types.path
 import config.Application
 import entities.rdfsurfaces.rdf_term.IRI
 import framework.cli.CommonOptions
-import framework.cli.outputtransformer.ErrorToStringTransformer
-import framework.cli.outputtransformer.InfoToStringTransformer
-import framework.cli.outputtransformer.SolutionToStringTransformer
 import framework.cli.util.workingDir
 import util.commandResult.fold
 import java.nio.file.Path
@@ -54,7 +51,7 @@ class Check : SuspendingCliktCommand() {
     private val timeLimit by option("--time-limit", "-t", help = "Time limit in seconds")
         .long()
         .default(120)
-        .validate { it > 0 }
+        .validate { require(it > 0) { "Time limit must be greater than 0!" } }
 
     private val configFile by option(
         "--config-file",
@@ -163,16 +160,20 @@ class Check : SuspendingCliktCommand() {
                 dEntailment = dEntailment,
             )
 
+            val infoToStringTransformerService = Application.createInfoToStringTransformerService()
+            val successToStringTransformerService = Application.createCliSuccessToStringTransformerService()
+            val errorToStringTransformerService = Application.createErrorToStringTransformerService()
+
             result.collect { res ->
                 res?.fold(
                     onInfo = {
-                        if (!quiet) echo(InfoToStringTransformer(it))
+                        if (!quiet) echo(infoToStringTransformerService.invoke(it))
                     },
                     onSuccess = {
-                        echo(SolutionToStringTransformer(it))
+                        echo(successToStringTransformerService.invoke(it))
                     },
                     onFailure = {
-                        echo(ErrorToStringTransformer(it), err = true)
+                        echo(errorToStringTransformerService.invoke(it), err = true)
                     }
                 )
             }

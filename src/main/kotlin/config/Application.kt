@@ -6,9 +6,14 @@ import adapter.file.FileServiceImpl
 import adapter.parser.RDFSurfaceParseServiceImpl
 import adapter.parser.SZSParserServiceImpl
 import adapter.parser.TptpTupleAnswerFormToModelServiceImpl
+import adapter.presenter.*
 import adapter.theoremProver.ConfigLoaderServiceImpl
 import adapter.theoremProver.TheoremProverRunnerServiceImpl
 import app.interfaces.services.*
+import app.interfaces.services.presenter.ErrorToStringTransformerService
+import app.interfaces.services.presenter.InfoToStringTransformerService
+import app.interfaces.services.presenter.SuccessToStringTransformerService
+import app.interfaces.services.presenter.TextStylerService
 import app.use_cases.commands.*
 import app.use_cases.commands.subUseCase.GetTheoremProverCommandUseCase
 import app.use_cases.commands.subUseCase.QuestionAnsweringOutputToRdfSurfacesCascUseCase
@@ -25,7 +30,6 @@ object Application {
         return CheckUseCase(
             theoremProverRunnerService = createTheoremProverRunnerService(),
             szsParserService = createSzsParserService(),
-            fileService = createFileService(),
             transformUseCase = createTransformUseCase(),
             getTheoremProverCommandUseCase = createGetTheoremProverCommandUseCase(),
         )
@@ -35,15 +39,17 @@ object Application {
         return CascQaAnswerToRsUseCase(
             rdfSurfaceParseService = createRDFSurfaceParseService(),
             fileService = createFileService(),
-            questionAnsweringOutputToRdfSurfacesCascUseCase = createQuestionAnsweringOutputToRdfSurfacesCascUseCase()
+            questionAnsweringOutputToRdfSurfacesCascUseCase = createQuestionAnsweringOutputToRdfSurfacesCascUseCase(),
+            successToStringTransformerService = createFileSuccessToStringTransformerService()
         )
     }
 
-    fun createRawQaAnswerToRsUseCase(): CascQaAnswerToRsUseCase {
-        return CascQaAnswerToRsUseCase(
+    fun createRawQaAnswerToRsUseCase(): RawQaAnswerToRsUseCase {
+        return RawQaAnswerToRsUseCase(
             rdfSurfaceParseService = createRDFSurfaceParseService(),
+            tPTPTupleAnswerModelToRdfSurfaceUseCase = createTptpTupleAnswerModelToRdfSurfaceUseCase(),
             fileService = createFileService(),
-            questionAnsweringOutputToRdfSurfacesCascUseCase = createQuestionAnsweringOutputToRdfSurfacesCascUseCase()
+            tptpTupleAnswerFormParserService = createTptpTupleAnswerFormParserService(),
         )
     }
 
@@ -67,21 +73,21 @@ object Application {
         )
     }
 
-    fun createQuestionAnsweringOutputToRdfSurfacesCascUseCase(): QuestionAnsweringOutputToRdfSurfacesCascUseCase {
+    private fun createQuestionAnsweringOutputToRdfSurfacesCascUseCase(): QuestionAnsweringOutputToRdfSurfacesCascUseCase {
         return QuestionAnsweringOutputToRdfSurfacesCascUseCase(
             tptpTupleAnswerModelToRdfSurfaceUseCase = createTptpTupleAnswerModelToRdfSurfaceUseCase(),
             szsParserService = createSzsParserService()
         )
     }
 
-    fun createTptpTupleAnswerModelToRdfSurfaceUseCase(): TPTPTupleAnswerModelToRdfSurfaceUseCase {
+    private fun createTptpTupleAnswerModelToRdfSurfaceUseCase(): TPTPTupleAnswerModelToRdfSurfaceUseCase {
         return TPTPTupleAnswerModelToRdfSurfaceUseCase(
             rdfSurfaceModelToN3UseCase = createRdfSurfaceModelToN3UseCase(),
             fOLGeneralTermToRDFTermUseCase = createFolGeneralTermToRdfTermUseCase()
         )
     }
 
-    fun createFolGeneralTermToRdfTermUseCase(): FOLGeneralTermToRDFTermUseCase {
+    private fun createFolGeneralTermToRdfTermUseCase(): FOLGeneralTermToRDFTermUseCase {
         return FOLGeneralTermToRDFTermUseCase()
     }
 
@@ -100,7 +106,7 @@ object Application {
         )
     }
 
-    fun createGetTheoremProverCommandUseCase(): GetTheoremProverCommandUseCase {
+    private fun createGetTheoremProverCommandUseCase(): GetTheoremProverCommandUseCase {
         return GetTheoremProverCommandUseCase(
             createConfigLoaderService(),
         )
@@ -156,4 +162,27 @@ object Application {
         return N3SRDFTermCoderService()
     }
 
+    fun createCliSuccessToStringTransformerService(): SuccessToStringTransformerService {
+        return SuccessToStringTransformerServiceImpl(createCliTextStylerService())
+    }
+
+    private fun createFileSuccessToStringTransformerService(): SuccessToStringTransformerService {
+        return SuccessToStringTransformerServiceImpl(createFileTextStylerService())
+    }
+
+    fun createErrorToStringTransformerService(): ErrorToStringTransformerService {
+        return ErrorToStringTransformerServiceImpl(createCliTextStylerService())
+    }
+
+    fun createInfoToStringTransformerService(): InfoToStringTransformerService {
+        return InfoToStringTransformerServiceImpl(createCliTextStylerService())
+    }
+
+    private fun createFileTextStylerService(): TextStylerService {
+        return FileTextStylerServiceImpl()
+    }
+
+    private fun createCliTextStylerService(): TextStylerService {
+        return AjaltMordantTextStylerServiceImpl()
+    }
 }

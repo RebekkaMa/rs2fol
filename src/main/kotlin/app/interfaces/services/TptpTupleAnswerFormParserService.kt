@@ -1,9 +1,8 @@
 package app.interfaces.services
 
-import entities.fol.tptp.TPTPTupleAnswerFormAnswer
-import util.commandResult.Error
-import util.commandResult.IntermediateStatus
+import app.interfaces.results.TptpTupleAnswerFormParserResult
+import util.commandResult.Result
 
 interface TptpTupleAnswerFormParserService {
-    fun parseToEnd(answerTuple: String): IntermediateStatus<TPTPTupleAnswerFormAnswer, Error>
+    fun parseToEnd(answerTuple: String): Result<TptpTupleAnswerFormParserResult.Success.Parsed, TptpTupleAnswerFormParserResult.Error>
 }

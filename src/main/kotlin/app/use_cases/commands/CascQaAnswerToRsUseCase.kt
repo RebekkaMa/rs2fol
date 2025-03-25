@@ -2,7 +2,9 @@ package app.use_cases.commands
 
 import app.interfaces.services.FileService
 import app.interfaces.services.RDFSurfaceParseService
+import app.interfaces.services.presenter.SuccessToStringTransformerService
 import app.use_cases.commands.subUseCase.QuestionAnsweringOutputToRdfSurfacesCascUseCase
+import app.use_cases.results.CascQaAnswerToRsResult
 import entities.rdfsurfaces.rdf_term.IRI
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -14,6 +16,7 @@ import kotlin.io.path.pathString
 class CascQaAnswerToRsUseCase(
     private val rdfSurfaceParseService: RDFSurfaceParseService,
     private val fileService: FileService,
+    private val successToStringTransformerService: SuccessToStringTransformerService,
     private val questionAnsweringOutputToRdfSurfacesCascUseCase: QuestionAnsweringOutputToRdfSurfacesCascUseCase
 ) {
 
@@ -23,20 +26,18 @@ class CascQaAnswerToRsUseCase(
         baseIri: IRI,
         outputPath: Path,
         rdfList: Boolean,
-    ): Flow<CommandStatus<Success, RootError>> = flow {
+    ): Flow<InfoResult<Success, RootError>> = flow {
 
-        val qSurfaces =
-            rdfSurfaceParseService
-                .parseToEnd(rdfSurface, baseIri, rdfList)
-                .getOrElse {
-                    emit(CommandStatus.Error(it))
-                    return@flow
-                }
-                .getQSurfaces()
+        val qSurfaces = rdfSurfaceParseService
+            .parseToEnd(rdfSurface, baseIri, rdfList)
+            .getOrElse {
+                emit(InfoResult.Error(it))
+                return@flow
+            }.positiveSurface.getQSurfaces()
 
 
-        if (qSurfaces.isEmpty()) emit(error(QaAnswerToRsError.NoQuestionSurface)).also { return@flow }
-        if (qSurfaces.size > 1) emit(error(QaAnswerToRsError.MoreThanOneQuestionSurface)).also { return@flow }
+        if (qSurfaces.isEmpty()) emit(infoError(CascQaAnswerToRsResult.Error.NoQuestionSurface)).also { return@flow }
+        if (qSurfaces.size > 1) emit(infoError(CascQaAnswerToRsResult.Error.MoreThanOneQuestionSurface)).also { return@flow }
 
         val qSurface = qSurfaces.single()
 
@@ -47,8 +48,8 @@ class CascQaAnswerToRsUseCase(
 
         if (outputPath.pathString == "-") {
             result.fold(
-                onSuccess = { emit(success(it)) },
-                onFailure = { emit(error(it)) }
+                onSuccess = { emit(infoSuccess(it)) },
+                onFailure = { emit(infoError(it)) }
             )
             return@flow
         }
@@ -56,20 +57,11 @@ class CascQaAnswerToRsUseCase(
         fileService.createNewFile(
             path = outputPath,
             content = result.getOrElse {
-                emit(CommandStatus.Error(it))
+                emit(infoError(it))
                 return@flow
-            }
+            }.let { successToStringTransformerService(it).orEmpty() }
         ).also {
-            emit(success(QaAnswerToRsResult.WriteToFile(success = it)))
+            emit(infoSuccess(CascQaAnswerToRsResult.Success.WriteToFile(success = it)))
         }
     }
-}
-
-sealed interface QaAnswerToRsResult : Success {
-    data class WriteToFile(val success: Boolean) : QaAnswerToRsResult
-}
-
-sealed interface QaAnswerToRsError : RootError {
-    data object NoQuestionSurface : QaAnswerToRsError
-    data object MoreThanOneQuestionSurface : QaAnswerToRsError
 }

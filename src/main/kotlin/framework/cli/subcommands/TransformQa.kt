@@ -16,9 +16,6 @@ import com.github.ajalt.clikt.parameters.types.path
 import config.Application
 import entities.rdfsurfaces.rdf_term.IRI
 import framework.cli.CommonOptions
-import framework.cli.outputtransformer.ErrorToStringTransformer
-import framework.cli.outputtransformer.InfoToStringTransformer
-import framework.cli.outputtransformer.SolutionToStringTransformer
 import framework.cli.util.workingDir
 import util.commandResult.fold
 import kotlin.io.path.*
@@ -43,8 +40,10 @@ class TransformQa :
 
     private val quiet by option("--quiet", "-q", help = "Display less output").flag(default = false)
 
-    private val timeLimit by option("--time-limit", "-t", help = "Time limit in seconds").long().default(120)
-        .validate { it > 0 }
+    private val timeLimit by option("--time-limit", "-t", help = "Time limit in seconds")
+        .long()
+        .default(120)
+        .validate { require(it > 0) { "Time limit must be greater than 0!" } }
 
     private val configFile by option(
         "--config-file",
@@ -103,17 +102,21 @@ class TransformQa :
                 dEntailment = dEntailment,
             )
 
-            useCaseResult.collect { result ->
+            val infoToStringTransformerService = Application.createInfoToStringTransformerService()
+            val successToStringTransformerService = Application.createCliSuccessToStringTransformerService()
+            val errorToStringTransformerService = Application.createErrorToStringTransformerService()
 
+
+            useCaseResult.collect { result ->
                 result.fold(
                     onInfo = {
-                        if (!quiet) echo(InfoToStringTransformer(it))
+                        if (!quiet) echo(infoToStringTransformerService.invoke(it))
                     },
                     onSuccess = {
-                        echo(SolutionToStringTransformer(it))
+                        echo(successToStringTransformerService.invoke(it))
                     },
                     onFailure = {
-                        echo(ErrorToStringTransformer(it), err = true)
+                        echo(errorToStringTransformerService.invoke(it), err = true)
                     }
                 )
             }

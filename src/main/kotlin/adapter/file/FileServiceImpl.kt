@@ -1,8 +1,6 @@
 package adapter.file
 
 import app.interfaces.services.FileService
-import framework.cli.outputtransformer.SolutionToStringTransformer
-import util.commandResult.Success
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
@@ -15,12 +13,5 @@ class FileServiceImpl : FileService {
             path.parent?.createDirectories()
             if (path.exists().not()) path.createFile()
             path.writeText(content)
-        }.isSuccess
-
-    override fun createNewFile(path: Path, content: Success): Boolean =
-        runCatching {
-            path.parent?.createDirectories()
-            if (path.exists().not()) path.createFile()
-            SolutionToStringTransformer(content)?.let { path.writeText(it) }
         }.isSuccess
 }

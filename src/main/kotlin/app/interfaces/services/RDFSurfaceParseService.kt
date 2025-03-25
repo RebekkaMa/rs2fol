@@ -1,10 +1,9 @@
 package app.interfaces.services
 
-import entities.rdfsurfaces.PositiveSurface
+import app.interfaces.results.RdfSurfaceParserResult
 import entities.rdfsurfaces.rdf_term.IRI
-import util.commandResult.Error
-import util.commandResult.IntermediateStatus
+import util.commandResult.Result
 
 interface RDFSurfaceParseService {
-    fun parseToEnd(input: String, baseIRI: IRI, useRDFLists: Boolean): IntermediateStatus<PositiveSurface, Error>
+    fun parseToEnd(input: String, baseIRI: IRI, useRDFLists: Boolean): Result<RdfSurfaceParserResult.Success.Parsed, RdfSurfaceParserResult.Error>
 }

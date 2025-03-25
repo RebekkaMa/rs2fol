@@ -1,6 +1,7 @@
 package app.use_cases.commands.subUseCase
 
 import app.interfaces.services.SZSParserService
+import app.use_cases.results.subUseCaseResults.QuestionAnsweringOutputToRdfSurfacesCascResult
 import entities.SZSAnswerTupleFormModel
 import entities.SZSOutputModel
 import entities.SZSStatus
@@ -20,7 +21,7 @@ class QuestionAnsweringOutputToRdfSurfacesCascUseCase(
     suspend operator fun invoke(
         qSurface: QSurface,
         questionAnsweringBufferedReader: BufferedReader,
-    ): IntermediateStatus<AnswerTupleTransformationSuccess, RootError> {
+    ): Result<QuestionAnsweringOutputToRdfSurfacesCascResult.Success, RootError> {
         val answerTuples = mutableSetOf<AnswerTuple>()
         var refutationFound = false
 
@@ -28,7 +29,8 @@ class QuestionAnsweringOutputToRdfSurfacesCascUseCase(
             .parse(questionAnsweringBufferedReader)
             .transformWhile { res ->
                 res.fold(
-                    onSuccess = { szsModel ->
+                    onSuccess = { successResult ->
+                        val szsModel = successResult.szsModel
                         when (szsModel) {
                             is SZSAnswerTupleFormModel -> {
                                 answerTuples.addAll(szsModel.tptpTupleAnswerFormAnswer.answerTuples)
@@ -55,41 +57,29 @@ class QuestionAnsweringOutputToRdfSurfacesCascUseCase(
                 )
             }.firstOrNull()
 
-        if (error != null) return IntermediateStatus.Error(error)
+        if (error != null) return Result.Error(error)
 
         if (refutationFound) {
             if (qSurface.graffiti.isEmpty()) {
                 return tptpTupleAnswerModelToRdfSurfaceUseCase(
                     answerTuples = answerTuples.toList(),
                     qSurface = qSurface
-                ).map { AnswerTupleTransformationSuccess.Success(it) }
+                ).map { QuestionAnsweringOutputToRdfSurfacesCascResult.Success.Answer(it) }
             }
-            return IntermediateStatus.Result(
-                AnswerTupleTransformationSuccess.Refutation
+            return Result.Success(
+                QuestionAnsweringOutputToRdfSurfacesCascResult.Success.Refutation
             )
         }
 
-
         return if (answerTuples.isEmpty()) {
-            IntermediateStatus.Result(AnswerTupleTransformationSuccess.NothingFound)
+            Result.Success(QuestionAnsweringOutputToRdfSurfacesCascResult.Success.NothingFound)
         } else {
             tptpTupleAnswerModelToRdfSurfaceUseCase(
                 answerTuples = answerTuples.toList(),
                 qSurface = qSurface
             ).map {
-                AnswerTupleTransformationSuccess.Success(it)
+                QuestionAnsweringOutputToRdfSurfacesCascResult.Success.Answer(it)
             }
         }
     }
-}
-
-sealed interface AnswerTupleTransformationError : Error {
-    data class AnswerTupleTransformation(val affectedFormula: String? = null, val error: Error) :
-        AnswerTupleTransformationError
-}
-
-sealed interface AnswerTupleTransformationSuccess : Success {
-    data object Refutation : AnswerTupleTransformationSuccess
-    data object NothingFound : AnswerTupleTransformationSuccess
-    data class Success(val answer: String) : AnswerTupleTransformationSuccess
 }
