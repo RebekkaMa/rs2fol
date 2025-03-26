@@ -106,7 +106,7 @@ class QaAnswerToRs : SuspendingCliktCommand() {
 
         } catch (exception: Exception) {
             if (exception is CliktError) throw exception
-            if (commonOptions.debug) echo(exception.stackTraceToString(), true) else echo(exception.toString(), true)
+            if (commonOptions.debug) echo(exception.stackTraceToString(), true) else echo(exception.message, true)
             throw ProgramResult(1)
         }
     }

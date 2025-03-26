@@ -6,7 +6,7 @@ import entities.rdfsurfaces.rdf_term.IRI
 import entities.rdfsurfaces.rdf_term.LanguageTaggedString
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
-import org.apache.jena.graph.langtag.LangTags
+import util.IRIConstants
 
 class QuerySurfaceTest : ShouldSpec({
 
@@ -20,7 +20,7 @@ class QuerySurfaceTest : ShouldSpec({
 
             val bn1_r = BlankNode("Bn1_r")
             val bn2_r = IRI.from("http://example.com#bn2_r")
-            val bn3_r = LanguageTaggedString("bn3_r", "en", LangTags.formatLangtag(langTag))
+            val bn3_r = LanguageTaggedString("bn3_r", "en", "en")
 
             val bn4 = BlankNode("Bn4")
 
@@ -28,11 +28,12 @@ class QuerySurfaceTest : ShouldSpec({
             val iri2 = IRI.from("http://example.com#2")
             val iri3 = IRI.from("http://example.com#3")
 
-            val literal1 = DefaultLiteral.fromNumericLiteral("4545")
-            val literal2 = LanguageTaggedString("cat", "en", LangTags.formatLangtag(langTag))
+            val literal1 = DefaultLiteral("4545", IRI.from(IRIConstants.XSD_INTEGER), 4545)
+            val literal2 = LanguageTaggedString("cat", "en", "en")
             val literal3 = DefaultLiteral(
                 "Tomatensalat",
-                IRI.from("http://www.w3.org/2001/XMLSchema#string")
+                IRI.from("http://www.w3.org/2001/XMLSchema#string"),
+                "Tomatensalat"
             )
 
             val triple11 = RdfTriple(bn1, iri1, literal1)

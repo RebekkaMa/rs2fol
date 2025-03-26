@@ -1,8 +1,8 @@
 package useCaseTest
 
+import app.use_cases.modelToString.FOLModelToStringUseCase
 import entities.fol.*
 import io.kotest.core.spec.style.ShouldSpec
-import use_cases.modelToString.FOLModelToStringUseCase
 import kotlin.test.assertEquals
 
 class FOLModelToStringUseCaseTest : ShouldSpec({
@@ -12,7 +12,7 @@ class FOLModelToStringUseCaseTest : ShouldSpec({
             arguments = listOf(FOLVariable("X"), FOLConstant("Y"))
         )
         val expected = "loves(X, 'Y')"
-        val result = FOLModelToStringUseCase(expression, indent = 0)
+        val result = FOLModelToStringUseCase().invoke(expression, indent = 0)
         assertEquals(expected, result)
     }
 
@@ -45,7 +45,7 @@ class FOLModelToStringUseCaseTest : ShouldSpec({
     cousin(Y, Z)
   )
 )""".trimIndent()
-        val result = FOLModelToStringUseCase(expression, indent = 0)
+        val result = FOLModelToStringUseCase().invoke(expression, indent = 0)
         assertEquals(expected, result)
     }
 
@@ -69,7 +69,7 @@ class FOLModelToStringUseCaseTest : ShouldSpec({
     human(X) =>
     mortal(X)
   )""".trimIndent()
-        val result = FOLModelToStringUseCase(expression, indent = 0)
+        val result = FOLModelToStringUseCase().invoke(expression, indent = 0)
         assertEquals(expected, result)
     }
 
@@ -84,7 +84,7 @@ class FOLModelToStringUseCaseTest : ShouldSpec({
 ~(
   knows(X, Y)
 )""".trimIndent()
-        val result = FOLModelToStringUseCase(expression, indent = 0)
+        val result = FOLModelToStringUseCase().invoke(expression, indent = 0)
         assertEquals(expected, result)
     }
 })

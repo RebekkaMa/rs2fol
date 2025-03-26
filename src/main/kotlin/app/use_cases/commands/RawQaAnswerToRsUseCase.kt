@@ -3,7 +3,7 @@ package app.use_cases.commands
 import app.interfaces.services.FileService
 import app.interfaces.services.RDFSurfaceParseService
 import app.interfaces.services.TptpTupleAnswerFormParserService
-import app.use_cases.commands.subUseCase.TPTPTupleAnswerModelToRdfSurfaceUseCase
+import app.use_cases.commands.subUseCase.TPTPTupleAnswerModelToN3SUseCase
 import app.use_cases.results.RawQaAnswerToRsResult
 import entities.rdfsurfaces.rdf_term.IRI
 import kotlinx.coroutines.flow.Flow
@@ -17,7 +17,7 @@ class RawQaAnswerToRsUseCase(
     private val rdfSurfaceParseService: RDFSurfaceParseService,
     private val tptpTupleAnswerFormParserService: TptpTupleAnswerFormParserService,
     private val fileService: FileService,
-    private val tPTPTupleAnswerModelToRdfSurfaceUseCase: TPTPTupleAnswerModelToRdfSurfaceUseCase
+    private val tPTPTupleAnswerModelToN3SUseCase: TPTPTupleAnswerModelToN3SUseCase
 ) {
     operator fun invoke(
         inputStream: InputStream,
@@ -44,7 +44,7 @@ class RawQaAnswerToRsUseCase(
         val tptpTupleAnswer = inputStream.bufferedReader().use { it.readText() }
 
         val result = tptpTupleAnswerFormParserService.parseToEnd(tptpTupleAnswer).runOnSuccess {
-            tPTPTupleAnswerModelToRdfSurfaceUseCase.invoke(
+            tPTPTupleAnswerModelToN3SUseCase.invoke(
                 answerTuples = it.tPTPTupleAnswerFormAnswer.answerTuples,
                 qSurface = qSurface
             )

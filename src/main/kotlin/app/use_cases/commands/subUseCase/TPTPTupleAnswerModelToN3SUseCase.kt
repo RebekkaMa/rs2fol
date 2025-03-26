@@ -7,7 +7,7 @@ import entities.fol.tptp.AnswerTuple
 import entities.rdfsurfaces.QSurface
 import util.commandResult.*
 
-class TPTPTupleAnswerModelToRdfSurfaceUseCase(
+class TPTPTupleAnswerModelToN3SUseCase(
     private val rdfSurfaceModelToN3UseCase: RdfSurfaceModelToN3UseCase,
     private val fOLGeneralTermToRDFTermUseCase: FOLGeneralTermToRDFTermUseCase
 ) {

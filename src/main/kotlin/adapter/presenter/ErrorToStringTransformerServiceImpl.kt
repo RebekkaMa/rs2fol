@@ -69,7 +69,7 @@ class ErrorToStringTransformerServiceImpl(private val textStylerService: TextSty
             }
 
             is TptpTupleAnswerFormParserResult.Error -> {
-                "Could not parse TPTP Tuple Answer '${error.tptpTuple}' - " +
+                "Could not parse TPTP Tuple Answer '${error.tptpTuple}'" + System.lineSeparator() + textStylerService.bold("Reason: ") +
                         when (error) {
                             is TptpTupleAnswerFormParserResult.Error.GenericInvalidInput -> "Invalid input. Please check the syntax! ${error.throwable}"
                         }
@@ -90,7 +90,7 @@ class ErrorToStringTransformerServiceImpl(private val textStylerService: TextSty
             }
 
             is TPTPTupleAnswerModelToN3SResult.Error.TransformationError -> {
-                "Invalid input affecting '${error.affectedFormula}': " + System.lineSeparator() + invoke(error)
+                "Invalid input affecting '${error.affectedFormula}': " + System.lineSeparator() + invoke(error.error)
             }
 
             is QuestionAnsweringOutputToRdfSurfacesCascResult.Error.AnswerTupleTransformation -> {

@@ -55,7 +55,7 @@ class TransformQa :
 
     private val dEntailment by option(
         "--d-entailment",
-        help = "If this option is activated, literals with different lexical values but the same value in the value range are mapped to a one literal with a canonical lexical value. This only applies to values of one data type. It is presumed here that the value space of the data types is disjoint."
+        help = "If this option is activated, literals with different lexical values but the same value in the value space are mapped to one literal with a canonical lexical value. This only applies to values of one data type. It is presumed here that the value space of the data types is disjoint."
     ).flag(default = false)
 
     override fun help(context: Context) =
@@ -121,7 +121,6 @@ class TransformQa :
                     }
                 )
             }
-
         } catch (exception: Exception) {
             if (exception is CliktError) throw exception
             if (commonOptions.debug) echo(exception.stackTraceToString(), err = true) else echo(

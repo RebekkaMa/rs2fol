@@ -1,11 +1,14 @@
 package useCaseTest
 
+import app.use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
+import app.use_cases.results.modelTransformerResults.RdfSurfaceModelToTPTPModelResult
 import entities.fol.*
 import entities.rdfsurfaces.*
 import entities.rdfsurfaces.rdf_term.BlankNode
 import entities.rdfsurfaces.rdf_term.IRI
 import io.kotest.core.spec.style.ShouldSpec
-import use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
+import io.kotest.matchers.types.shouldBeTypeOf
+import util.commandResult.getErrorOrNull
 import util.commandResult.getSuccessOrNull
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -17,7 +20,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec({
         val positiveSurfaceWithBlankNode =
             PositiveSurface(emptyList(), listOf(RdfTriple(blankNode, IRI(path = "p"), IRI(path = "o"))))
 
-        val result = RdfSurfaceModelToTPTPModelUseCase(positiveSurfaceWithBlankNode)
+        val result = RdfSurfaceModelToTPTPModelUseCase().invoke(positiveSurfaceWithBlankNode)
 
         val expectedFormula = FOLPredicate("triple", listOf(FOLVariable("b1"), FOLConstant("p"), FOLConstant("o")))
 
@@ -28,7 +31,7 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec({
         val iri = IRI.from("http://example.org")
         val positiveSurfaceWithIRI =
             PositiveSurface(emptyList(), listOf(RdfTriple(iri, IRI(path = "p"), IRI(path = "o"))))
-        val result = RdfSurfaceModelToTPTPModelUseCase(positiveSurfaceWithIRI)
+        val result = RdfSurfaceModelToTPTPModelUseCase().invoke(positiveSurfaceWithIRI)
         assertEquals(
             FOLPredicate(
                 "triple",
@@ -39,16 +42,16 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec({
 
     should("transform empty PositiveSurface to FOLTrue") {
         val positiveSurface = PositiveSurface(emptyList(), emptyList())
-        val result = RdfSurfaceModelToTPTPModelUseCase(positiveSurface)
-        assertTrue(result.isResult)
+        val result = RdfSurfaceModelToTPTPModelUseCase().invoke(positiveSurface)
+        assertTrue(result.isSuccess)
         assertEquals(FOLTrue, result.getSuccessOrNull()?.single()?.expression)
     }
 
     should("transform empty NegativeSurface to negated FOLTrue") {
         val negativeSurface = NegativeSurface(emptyList(), emptyList())
         val positiveSurface = PositiveSurface(emptyList(), listOf(negativeSurface))
-        val result = RdfSurfaceModelToTPTPModelUseCase(positiveSurface)
-        assertTrue(result.isResult)
+        val result = RdfSurfaceModelToTPTPModelUseCase().invoke(positiveSurface)
+        assertTrue(result.isSuccess)
         assertEquals(FOLNot(FOLTrue), result.getSuccessOrNull()?.single()?.expression)
     }
 
@@ -66,8 +69,8 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec({
                 negativeSurface
             )
         )
-        val result = RdfSurfaceModelToTPTPModelUseCase(positiveSurface)
-        assertTrue(result.isResult)
+        val result = RdfSurfaceModelToTPTPModelUseCase().invoke(positiveSurface)
+        assertTrue(result.isSuccess)
         val expectedExpression = FOLAnd(
             listOf(
                 FOLPredicate(
@@ -108,16 +111,16 @@ class RdfSurfaceModelToTPTPModelUseCaseTest : ShouldSpec({
         val unsupportedSurface = NeutralSurface(emptyList(), emptyList())
         val positiveSurface = PositiveSurface(emptyList(), listOf(unsupportedSurface))
 
-        val result = RdfSurfaceModelToTPTPModelUseCase(positiveSurface)
-        assertTrue(result.isFailure)
+        val result = RdfSurfaceModelToTPTPModelUseCase().invoke(positiveSurface).getErrorOrNull()
+        result.shouldBeTypeOf<RdfSurfaceModelToTPTPModelResult.Error.SurfaceNotSupported>()
     }
 
     should("transform QuerySurface to AnnotatedFormula") {
         val querySurface =
             QuerySurface(emptyList(), listOf(RdfTriple(IRI(path = "p"), IRI(path = "o"), IRI(path = "c"))))
         val positiveSurface = PositiveSurface(emptyList(), listOf(querySurface))
-        val result = RdfSurfaceModelToTPTPModelUseCase(positiveSurface)
-        assertTrue(result.isResult)
+        val result = RdfSurfaceModelToTPTPModelUseCase().invoke(positiveSurface)
+        assertTrue(result.isSuccess)
         val expectedExpression = FOLPredicate("triple", listOf(FOLConstant("p"), FOLConstant("o"), FOLConstant("c")))
         assertContains(result.getSuccessOrNull()?.map { it.expression } ?: listOf(), expectedExpression)
     }

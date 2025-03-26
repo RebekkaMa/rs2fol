@@ -1,18 +1,17 @@
 package controllerTest
 
-import adapter.coder.FOLCoderService
+import app.use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
 import entities.rdfsurfaces.NegativeSurface
 import entities.rdfsurfaces.PositiveSurface
 import entities.rdfsurfaces.QuerySurface
 import entities.rdfsurfaces.RdfTriple
 import entities.rdfsurfaces.rdf_term.*
+import entities.rdfsurfaces.rdf_term.Collection
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
-import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.graph.langtag.LangTags
-import use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
 import util.commandResult.getSuccessOrNull
 import java.io.File
 
@@ -29,7 +28,7 @@ class TransformerTest
 
                 val rdfTriple = RdfTriple(iri1, iri2, iri3)
 
-                val result = RdfSurfaceModelToTPTPModelUseCase(
+                val result = RdfSurfaceModelToTPTPModelUseCase().invoke(
                     PositiveSurface(
                         listOf(),
                         listOf(rdfTriple)
@@ -51,18 +50,26 @@ class TransformerTest
                 val iri4 = IRI.from("http://example.org/vocab/show/blurb")
 
                 val literal1 =
-                    DefaultLiteral("That Seventies Show", IRI.from(XSDDatatype.XSDstring.uri))
+                    DefaultLiteral(
+                        lexicalValue = "That Seventies Show",
+                        datatypeIRI = IRI.from(XSDDatatype.XSDstring.uri),
+                        literalValue = "That Seventies Show"
+                    )
                 val literal2 =
-                    LanguageTaggedString("That Seventies Show", "en", LangTags.formatLangtag(langTag))
+                    LanguageTaggedString(
+                        "That Seventies Show",
+                        "en",
+                        LangTags.formatLangtag("en")
+                    )
                 val literal3 =
-                    LanguageTaggedString("Cette Série des Années Soixante-dix", "fr", LangTags.formatLangtag(langTag))
+                    LanguageTaggedString("Cette Série des Années Soixante-dix", "fr", LangTags.formatLangtag("fr"))
                 val literal4 =
-                    LanguageTaggedString("Cette Série des Années Septante", "fr-be", LangTags.formatLangtag(langTag))
-                val literal5 = DefaultLiteral(
+                    LanguageTaggedString("Cette Série des Années Septante", "fr-be", LangTags.formatLangtag("fr-be"))
+                val literal5Value =
                     "This is a multi-line                        # literal with embedded new lines and quotes\n" +
                             "literal with many quotes (\"\"\"\"\")\n" +
-                            "and up to two sequential apostrophes ('').", IRI.from(XSDDatatype.XSDstring.uri)
-                )
+                            "and up to two sequential apostrophes ('')."
+                val literal5 = DefaultLiteral(literal5Value, IRI.from(XSDDatatype.XSDstring.uri), literal5Value)
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
                 val rdfTriple2 = RdfTriple(iri1, iri2, literal1)
@@ -72,7 +79,7 @@ class TransformerTest
                 val rdfTriple6 = RdfTriple(iri1, iri3, literal4)
                 val rdfTriple7 = RdfTriple(iri1, iri4, literal5)
 
-                val result = RdfSurfaceModelToTPTPModelUseCase(
+                val result = RdfSurfaceModelToTPTPModelUseCase().invoke(
                     PositiveSurface(
                         listOf(),
                         listOf(rdfTriple1, rdfTriple2, rdfTriple3, rdfTriple4, rdfTriple5, rdfTriple6, rdfTriple7)
@@ -89,13 +96,14 @@ class TransformerTest
 
                 val iri1 = IRI.from("http://example.org/stuff/1.0/p")
 
-                val literal1 = DefaultLiteral("w", IRI.from(XSDDatatype.XSDstring.uri))
-                val literal2 = DefaultLiteral("1", IRI.from(XSDDatatype.XSDinteger.uri))
+                val literal1 = DefaultLiteral("w", IRI.from(XSDDatatype.XSDstring.uri), "w")
+                val literal2 = DefaultLiteral("1", IRI.from(XSDDatatype.XSDinteger.uri), 1)
                 val literal3 = DefaultLiteral(
                     XSDDatatype.XSDdecimal.parse("2.0").toString(),
-                    IRI.from(XSDDatatype.XSDdecimal.uri)
+                    IRI.from(XSDDatatype.XSDdecimal.uri),
+                    2.0
                 )
-                val literal4 = DefaultLiteral("3E1", IRI.from(XSDDatatype.XSDdouble.uri))
+                val literal4 = DefaultLiteral("3E1", IRI.from(XSDDatatype.XSDdouble.uri), 0.31)
 
 
                 val collection1 =
@@ -103,7 +111,7 @@ class TransformerTest
 
                 val rdfTriple1 = RdfTriple(collection1, iri1, literal1)
 
-                val result = RdfSurfaceModelToTPTPModelUseCase(
+                val result = RdfSurfaceModelToTPTPModelUseCase().invoke(
                     PositiveSurface(
                         listOf(), listOf(rdfTriple1)
                     )
@@ -140,7 +148,7 @@ class TransformerTest
                         NegativeSurface(listOf(bnS), listOf(rdfTriple3, negativeSurface21, negativeSurface22))
                     val querySurface = QuerySurface(listOf(bnS, bnC), listOf(rdfTriple6))
 
-                    val result = RdfSurfaceModelToTPTPModelUseCase(
+                    val result = RdfSurfaceModelToTPTPModelUseCase().invoke(
                         PositiveSurface(
                             listOf(),
                             listOf(rdfTriple1, negativeSurface1, negativeSurface2, querySurface)
@@ -190,7 +198,7 @@ class TransformerTest
                     val querySurface = QuerySurface(listOf(bnS, bnC), listOf(rdfTriple8))
 
 
-                    val result = RdfSurfaceModelToTPTPModelUseCase(
+                    val result = RdfSurfaceModelToTPTPModelUseCase().invoke(
                         PositiveSurface(
                             listOf(),
                             listOf(rdfTriple1, negativeSurface1, negativeSurface2, negativeSurface3, querySurface)
@@ -201,67 +209,6 @@ class TransformerTest
                         .replace("\n", " ") shouldBeEqualComparingTo solutionFile.readText().replace("\n", " ")
 
                 }
-            }
-        }
-
-        context("decode and encode to TPTP Literal compatible CHAR Set") {
-            should("encode and decode 1") {
-                val testStr = "The first line\n" +
-                        "The second line\n" +
-                        "  more"
-                val encoded = FOLCoderService.encodeLiteral(testStr)
-//                println(encoded)
-//                println(DecodeStringToValidTPTPLiteralUseCase()(encoded))
-                testStr shouldBe FOLCoderService.decodeLiteral(encoded)
-            }
-
-            should("encode and decode 2") {
-                val testStr = "The first line\\nThe second line\\n  more"
-                val encoded = FOLCoderService.encodeLiteral(testStr)
-                testStr shouldBe FOLCoderService.decodeLiteral(encoded)
-            }
-
-            should("encode and decode 3") {
-                val testStr = "The first line\\nThe second line\\n  more"
-                val encoded = FOLCoderService.encodeLiteral(testStr)
-                testStr shouldBe FOLCoderService.decodeLiteral(encoded)
-            }
-            should("encode and decode 4") {
-                val testStr =
-                    "This is a multi-line                        # literal with embedded new lines and quotes\n" +
-                            "\uD800\uDC00 literal with many quotes (\"\"\"\"\")\n" +
-                            "and up to two sequential apostrophes ('')."
-                val encoded = FOLCoderService.encodeLiteral(testStr)
-                testStr shouldBe FOLCoderService.decodeLiteral(encoded)
-            }
-        }
-        context("decode and encode to TPTP Variable compatible CHAR Set") {
-            should("encode and decode 1") {
-                val testStr = "BN_1"
-                val encoded = FOLCoderService.encodeVariable(testStr)
-                testStr shouldBe FOLCoderService.decodeVariable(encoded)
-            }
-
-            should("encode and decode 2") {
-                val testStr = "bn_1"
-                val encoded = FOLCoderService.encodeVariable(testStr)
-                testStr shouldBe FOLCoderService.decodeVariable(encoded)
-            }
-
-            should("encode and decode 3") {
-                val testStr = "jiUd_.a\uD800\uDC00"
-                val encoded = FOLCoderService.encodeVariable(testStr)
-                testStr shouldBe FOLCoderService.decodeVariable(encoded)
-            }
-            should("encode and decode 4") {
-                val testStr = "Ox3A23n_3"
-                val encoded = FOLCoderService.encodeVariable(testStr)
-                testStr shouldBe FOLCoderService.decodeVariable(encoded)
-            }
-            should("encode and decode 5") {
-                val testStr = "Ox3A2P3n_3"
-                val encoded = FOLCoderService.encodeVariable(testStr)
-                testStr shouldBe FOLCoderService.decodeVariable(encoded)
             }
         }
     })

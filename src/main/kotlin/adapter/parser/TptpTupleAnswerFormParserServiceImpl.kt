@@ -17,6 +17,8 @@ import entities.fol.GeneralTerm
 import entities.fol.tptp.AnswerTuple
 import entities.fol.tptp.TPTPTupleAnswerFormAnswer
 import util.commandResult.Result
+import util.commandResult.RootError
+import util.commandResult.error
 import util.commandResult.success
 
 class TptpTupleAnswerFormToModelServiceImpl : Grammar<TPTPTupleAnswerFormAnswer>(), TptpTupleAnswerFormParserService {
@@ -90,7 +92,7 @@ class TptpTupleAnswerFormToModelServiceImpl : Grammar<TPTPTupleAnswerFormAnswer>
                 .map { TPTPTupleAnswerFormAnswer(results.toList(), orResults.toList()) }
         }
 
-    override fun parseToEnd(answerTuple: String): Result<TptpTupleAnswerFormParserResult.Success.Parsed, TptpTupleAnswerFormParserResult.Error> {
+    override fun parseToEnd(answerTuple: String): Result<TptpTupleAnswerFormParserResult.Success.Parsed, RootError> {
         return try {
             success(TptpTupleAnswerFormParserResult.Success.Parsed(rootParser.parseToEnd(tokenizer.tokenize(answerTuple))))
         } catch (exc: Throwable) {

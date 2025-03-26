@@ -6,11 +6,13 @@ import entities.fol.FOLConstant
 import entities.fol.FOLFunction
 import entities.fol.FOLVariable
 import entities.fol.GeneralTerm
-import entities.rdfsurfaces.rdf_term.*
+import entities.rdfsurfaces.rdf_term.BlankNode
 import entities.rdfsurfaces.rdf_term.Collection
+import entities.rdfsurfaces.rdf_term.IRI
+import entities.rdfsurfaces.rdf_term.RdfTerm
 import util.commandResult.*
 
-class FOLGeneralTermToRDFTermUseCase(val literalService: LiteralService) {
+class FOLGeneralTermToRDFTermUseCase(private val literalService: LiteralService) {
 
     operator fun invoke(generalTerm: GeneralTerm): Result<RdfTerm, RootError> {
         return when (generalTerm) {
@@ -18,7 +20,7 @@ class FOLGeneralTermToRDFTermUseCase(val literalService: LiteralService) {
             is FOLFunction -> {
                 val functionName = generalTerm.name
                 when {
-                    functionName.startsWith("sk") -> {
+                    functionName.startsWith("sk", ignoreCase = true) -> {
                         success(
                             BlankNode(
                                 generalTerm.name + "-" + generalTerm.arguments.hashCode()
@@ -42,7 +44,7 @@ class FOLGeneralTermToRDFTermUseCase(val literalService: LiteralService) {
             is FOLConstant -> {
                 val constantName = generalTerm.name
                 when {
-                    constantName.startsWith("sk") -> success(BlankNode(constantName))
+                    constantName.startsWith("sk",ignoreCase = true) -> success(BlankNode(constantName))
                     constantName.startsWith("list") -> success(Collection(emptyList()))
                     else -> {
                         (getLiteralFromStringOrNull(constantName)

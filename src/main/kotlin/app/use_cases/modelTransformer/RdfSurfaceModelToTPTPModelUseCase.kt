@@ -125,13 +125,13 @@ class RdfSurfaceModelToTPTPModelUseCase {
 
         val fofVariableList = transform(defaultPositiveSurface.graffiti)
 
-        val (querySurfaces, otherHayesGraphElements) = defaultPositiveSurface.hayesGraph.fold(
-            Pair<List<QuerySurface>, List<HayesGraphElement>>(
+        val (qSurfaces, otherHayesGraphElements) = defaultPositiveSurface.hayesGraph.fold(
+            Pair<List<QSurface>, List<HayesGraphElement>>(
                 emptyList(), emptyList()
             )
         ) { acc, hayesGraphElement ->
             when (hayesGraphElement) {
-                is QuerySurface -> acc.copy(first = acc.first.plus(hayesGraphElement))
+                is QSurface -> acc.copy(first = acc.first.plus(hayesGraphElement))
                 else -> acc.copy(second = acc.second.plus(hayesGraphElement))
             }
         }
@@ -159,7 +159,7 @@ class RdfSurfaceModelToTPTPModelUseCase {
                 )
             }
 
-            val fofQuantifiedFormulaQuery = querySurfaces.mapIndexed { index, surface ->
+            val fofQuantifiedFormulaQuery = qSurfaces.mapIndexed { index, surface ->
                 val folFormula = run {
                     val expression =
                         when {
@@ -172,7 +172,6 @@ class RdfSurfaceModelToTPTPModelUseCase {
                         variables = transform(surface.graffiti),
                         expression = expression
                     )
-
                 }
 
                 AnnotatedFormula(

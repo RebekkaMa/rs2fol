@@ -1,5 +1,6 @@
 package app.use_cases.commands
 
+import app.interfaces.services.SZSParserService
 import app.interfaces.services.TheoremProverRunnerService
 import app.use_cases.commands.subUseCase.GetTheoremProverCommandUseCase
 import app.use_cases.results.CheckResult
@@ -17,7 +18,7 @@ import java.nio.file.Path
 
 class CheckUseCase(
     private val theoremProverRunnerService: TheoremProverRunnerService,
-    private val szsParserService: app.interfaces.services.SZSParserService,
+    private val szsParserService: SZSParserService,
     private val transformUseCase: TransformUseCase,
     private val getTheoremProverCommandUseCase: GetTheoremProverCommandUseCase
 ) {
@@ -88,7 +89,7 @@ class CheckUseCase(
             }
 
             when (szsParseResult) {
-                is SZSStatus, is SZSOutputModel -> send(infoSuccess(mapSZSStatusToCheckSucess(szsParseResult.statusType)))
+                is SZSStatus, is SZSOutputModel -> send(infoSuccess(mapSZSStatusToCheckSuccess(szsParseResult.statusType)))
                 is SZSAnswerTupleFormModel -> send(infoError(CheckResult.Error.UnknownTheoremProverOutput))
             }
         }
@@ -96,7 +97,7 @@ class CheckUseCase(
 
 }
 
-private fun mapSZSStatusToCheckSucess(status: SZSStatusType): CheckResult.Success {
+private fun mapSZSStatusToCheckSuccess(status: SZSStatusType): CheckResult.Success {
     return when (status) {
         THEOREM,
         SATISFIABLE_THEOREM,

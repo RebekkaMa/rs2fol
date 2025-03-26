@@ -18,7 +18,7 @@ import app.interfaces.services.presenter.TextStylerService
 import app.use_cases.commands.*
 import app.use_cases.commands.subUseCase.GetTheoremProverCommandUseCase
 import app.use_cases.commands.subUseCase.QuestionAnsweringOutputToRdfSurfacesCascUseCase
-import app.use_cases.commands.subUseCase.TPTPTupleAnswerModelToRdfSurfaceUseCase
+import app.use_cases.commands.subUseCase.TPTPTupleAnswerModelToN3SUseCase
 import app.use_cases.modelToString.FOLModelToStringUseCase
 import app.use_cases.modelToString.RdfSurfaceModelToN3UseCase
 import app.use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
@@ -48,7 +48,7 @@ object Application {
     fun createRawQaAnswerToRsUseCase(): RawQaAnswerToRsUseCase {
         return RawQaAnswerToRsUseCase(
             rdfSurfaceParseService = createRDFSurfaceParseService(),
-            tPTPTupleAnswerModelToRdfSurfaceUseCase = createTptpTupleAnswerModelToRdfSurfaceUseCase(),
+            tPTPTupleAnswerModelToN3SUseCase = createTptpTupleAnswerModelToRdfSurfaceUseCase(),
             fileService = createFileService(),
             tptpTupleAnswerFormParserService = createTptpTupleAnswerFormParserService(),
         )
@@ -76,13 +76,13 @@ object Application {
 
     private fun createQuestionAnsweringOutputToRdfSurfacesCascUseCase(): QuestionAnsweringOutputToRdfSurfacesCascUseCase {
         return QuestionAnsweringOutputToRdfSurfacesCascUseCase(
-            tptpTupleAnswerModelToRdfSurfaceUseCase = createTptpTupleAnswerModelToRdfSurfaceUseCase(),
+            tptpTupleAnswerModelToN3SUseCase = createTptpTupleAnswerModelToRdfSurfaceUseCase(),
             szsParserService = createSzsParserService()
         )
     }
 
-    private fun createTptpTupleAnswerModelToRdfSurfaceUseCase(): TPTPTupleAnswerModelToRdfSurfaceUseCase {
-        return TPTPTupleAnswerModelToRdfSurfaceUseCase(
+    private fun createTptpTupleAnswerModelToRdfSurfaceUseCase(): TPTPTupleAnswerModelToN3SUseCase {
+        return TPTPTupleAnswerModelToN3SUseCase(
             rdfSurfaceModelToN3UseCase = createRdfSurfaceModelToN3UseCase(),
             fOLGeneralTermToRDFTermUseCase = createFolGeneralTermToRdfTermUseCase()
         )

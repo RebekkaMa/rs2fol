@@ -1,11 +1,12 @@
-package services.parser
+package adapter.services.parser
 
+import adapter.parser.SZSParserServiceImpl
+import adapter.parser.TptpTupleAnswerFormToModelServiceImpl
+import app.interfaces.results.SZSParserServiceResult
 import entities.SZSOutputModel
 import entities.SZSOutputType
 import entities.SZSStatus
 import entities.SZSStatusType
-import interface_adapters.services.parser.SZSParserServiceError
-import adapter.parser.SZSParserServiceImpl
 import io.kotest.core.spec.style.ShouldSpec
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.first
@@ -18,7 +19,9 @@ import util.commandResult.getSuccessOrNull
 import kotlin.test.assertTrue
 
 class SZSParserServiceTest : ShouldSpec({
-    val parser = SZSParserServiceImpl()
+    val parser = SZSParserServiceImpl(
+        tptpTupleAnswerFormToModelService = TptpTupleAnswerFormToModelServiceImpl()
+    )
 
     should("test valid SZS status parsing") {
         val input = """
@@ -31,7 +34,7 @@ class SZSParserServiceTest : ShouldSpec({
         val result = parser.parse(input.byteInputStream().bufferedReader()).first()
 
         assertTrue(result.isSuccess)
-        val szsOutputModel = result.getSuccessOrNull() as? SZSOutputModel
+        val szsOutputModel = result.getSuccessOrNull()?.szsModel as? SZSOutputModel
         assertInstanceOf(SZSOutputModel::class.java, szsOutputModel)
 
         assertEquals(SZSStatusType.SuccessOntology.THEOREM, szsOutputModel?.statusType)
@@ -53,7 +56,7 @@ class SZSParserServiceTest : ShouldSpec({
         val result = parser.parse(input.byteInputStream().bufferedReader()).single()
 
         assertTrue(result.isSuccess)
-        val szsOutputModel = result.getSuccessOrNull() as? SZSOutputModel
+        val szsOutputModel = result.getSuccessOrNull()?.szsModel as? SZSOutputModel
         assertInstanceOf(SZSOutputModel::class.java, szsOutputModel)
 
 
@@ -75,7 +78,7 @@ class SZSParserServiceTest : ShouldSpec({
         val result = parser.parse(input.byteInputStream().bufferedReader()).single()
 
         assertTrue(result.isSuccess)
-        val szsOutputModel = result.getSuccessOrNull() as? SZSOutputModel
+        val szsOutputModel = result.getSuccessOrNull()?.szsModel as? SZSOutputModel
         assertInstanceOf(SZSOutputModel::class.java, szsOutputModel)
 
 
@@ -94,7 +97,7 @@ class SZSParserServiceTest : ShouldSpec({
         val result = parser.parse(input.byteInputStream().bufferedReader()).single()
 
         assertTrue(result.isSuccess)
-        val szsStatus = result.getSuccessOrNull() as? SZSStatus
+        val szsStatus = result.getSuccessOrNull()?.szsModel as? SZSStatus
         assertInstanceOf(SZSStatus::class.java, szsStatus)
 
         assertEquals(SZSStatusType.NoSuccessOntology.UNKNOWN, szsStatus?.statusType)
@@ -112,7 +115,7 @@ class SZSParserServiceTest : ShouldSpec({
         val result = parser.parse(input.byteInputStream().bufferedReader()).single()
 
         assertTrue(result.isSuccess)
-        val szsOutputModel = result.getSuccessOrNull() as? SZSOutputModel
+        val szsOutputModel = result.getSuccessOrNull()?.szsModel as? SZSOutputModel
         assertInstanceOf(SZSOutputModel::class.java, szsOutputModel)
 
         assertEquals(SZSStatusType.SuccessOntology.THEOREM, szsOutputModel?.status?.statusType)
@@ -141,8 +144,8 @@ class SZSParserServiceTest : ShouldSpec({
         assertInstanceOf(SZSOutputModel::class.java, result[0].getSuccessOrNull())
         assertInstanceOf(SZSOutputModel::class.java, result[1].getSuccessOrNull())
 
-        val firstSzsOutputModel = result[0].getSuccessOrNull() as? SZSOutputModel
-        val secondSzsOutputModel = result[1].getSuccessOrNull() as? SZSOutputModel
+        val firstSzsOutputModel = result[0].getSuccessOrNull()?.szsModel as? SZSOutputModel
+        val secondSzsOutputModel = result[1].getSuccessOrNull()?.szsModel as? SZSOutputModel
 
         assertEquals(SZSStatusType.SuccessOntology.THEOREM, firstSzsOutputModel?.status?.statusType)
         assertEquals("problem6", firstSzsOutputModel?.identifier)
@@ -175,7 +178,7 @@ class SZSParserServiceTest : ShouldSpec({
 
         val result = parser.parse(input.byteInputStream().bufferedReader()).single()
 
-        assertEquals(SZSParserServiceError.OutputStartBeforeEndAndStatus, result.getErrorOrNull())
+        assertEquals(SZSParserServiceResult.Error.OutputStartBeforeEndAndStatus, result.getErrorOrNull())
     }
 
     should("test block without end marker") {
@@ -188,7 +191,7 @@ class SZSParserServiceTest : ShouldSpec({
         val result = parser.parse(input.byteInputStream().bufferedReader()).single()
 
         assertTrue(result.isSuccess)
-        val szsStatus = result.getSuccessOrNull() as? SZSStatus
+        val szsStatus = result.getSuccessOrNull()?.szsModel as? SZSStatus
         assertInstanceOf(SZSStatus::class.java, szsStatus)
 
         assertEquals(SZSStatusType.SuccessOntology.THEOREM, szsStatus?.statusType)
@@ -206,7 +209,7 @@ class SZSParserServiceTest : ShouldSpec({
         val result = parser.parse(input.byteInputStream().bufferedReader()).single()
 
         assertTrue(result.isSuccess)
-        val szsOutputModel = result.getSuccessOrNull() as? SZSOutputModel
+        val szsOutputModel = result.getSuccessOrNull()?.szsModel as? SZSOutputModel
         assertInstanceOf(SZSOutputModel::class.java, szsOutputModel)
 
         assertEquals(SZSStatusType.SuccessOntology.THEOREM, szsOutputModel?.status?.statusType)

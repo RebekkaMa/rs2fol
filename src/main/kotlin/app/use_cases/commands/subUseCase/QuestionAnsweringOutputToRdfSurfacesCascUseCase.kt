@@ -14,7 +14,7 @@ import util.commandResult.*
 import java.io.BufferedReader
 
 class QuestionAnsweringOutputToRdfSurfacesCascUseCase(
-    private val tptpTupleAnswerModelToRdfSurfaceUseCase: TPTPTupleAnswerModelToRdfSurfaceUseCase,
+    private val tptpTupleAnswerModelToN3SUseCase: TPTPTupleAnswerModelToN3SUseCase,
     private val szsParserService: SZSParserService
 ) {
 
@@ -61,7 +61,7 @@ class QuestionAnsweringOutputToRdfSurfacesCascUseCase(
 
         if (refutationFound) {
             if (qSurface.graffiti.isEmpty()) {
-                return tptpTupleAnswerModelToRdfSurfaceUseCase(
+                return tptpTupleAnswerModelToN3SUseCase(
                     answerTuples = answerTuples.toList(),
                     qSurface = qSurface
                 ).map { QuestionAnsweringOutputToRdfSurfacesCascResult.Success.Answer(it) }
@@ -74,7 +74,7 @@ class QuestionAnsweringOutputToRdfSurfacesCascUseCase(
         return if (answerTuples.isEmpty()) {
             Result.Success(QuestionAnsweringOutputToRdfSurfacesCascResult.Success.NothingFound)
         } else {
-            tptpTupleAnswerModelToRdfSurfaceUseCase(
+            tptpTupleAnswerModelToN3SUseCase(
                 answerTuples = answerTuples.toList(),
                 qSurface = qSurface
             ).map {
