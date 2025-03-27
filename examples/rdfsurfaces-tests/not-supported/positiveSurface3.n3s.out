@@ -1,6 +1,0 @@
-@prefix : <urn:example:>.
-
-:Bob :isKnowable true.
-:Charly :isKnowable true.
-:Alice :isKnowable true.
-:test :is true.

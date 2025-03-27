@@ -1,0 +1,46 @@
+@prefix : <urn:example:> .
+@prefix log: <http://www.w3.org/2000/10/swap/log#> .
+
+:PolicyA 
+    a :Policy ;
+    :prohibition _:A.
+ 
+_:A :action :TalkLoudly.
+
+# Prohibition action X = Duty NOT (action X)
+(_:X _:Y _:Z) log:onNegativeSurface {
+    _:X 
+        a :Policy ;
+        :prohibition _:Y .
+    _:Y :action _:Z .
+
+    (_:New) log:onNegativeSurface {
+        _:X :duty _:New .
+        () log:onNegativeSurface {
+            _:New :action _:Z .
+        } .
+    } .
+} .
+
+# Test NOT prohibition X 
+(_:Pol _:X) log:onNegativeSurface {
+
+    () log:onNegativeSurface {
+        _:Pol
+            a :Policy ;
+            :prohibition _:X .
+        _:X :action :TalkLoudly . # Change this to a double negation to see the body of this negative surface is false
+    } .
+
+    () log:onNegativeSurface {
+        :test :is true .
+    } .
+} .
+
+# Query
+() log:onNegativeSurface {
+    :test :is true.
+    () log:onNegativeAnswerSurface {
+        :test :is true.
+    }
+}.

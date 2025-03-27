@@ -1,6 +1,0 @@
-** ERROR ** eam ** inference_fuse({
-    :Alice a :Person.
-    () log:onNegativeSurface {
-        :Alice a :Person.
-    }.
-} => false)

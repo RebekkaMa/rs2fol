@@ -1,4 +1,0 @@
-** ERROR ** eam ** inference_fuse({
-    :Test rdf:value 101 .
-    101 math:greaterThan 100.
-} => false)

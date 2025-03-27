@@ -1,0 +1,37 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <urn:example:>.
+
+:T1 a :Test .
+
+# Generate an endless loop...
+# _:B is an existential quantified variable
+(_:A) log:onNegativeSurface {
+    _:A a :Test .
+
+    (_:B) log:onNegativeSurface {
+        _:B a :Test .
+        _:A :child _:B .
+    }.
+}.
+
+# But provide a condition when the loop could generate a result
+(_:S0 _:S1 _:S2 _:S3 _:S4 _:S5 _:S6 _:S7 _:S8 _:S9) log:onNegativeSurface {
+    _:S0 a :Test .
+    _:S0 :child _:S1 .
+    _:S1 :child _:S2 .
+    _:S2 :child _:S3 .
+    _:S3 :child _:S4 .
+    _:S4 :child _:S5 .
+    _:S6 :child _:S7 .
+    _:S7 :child _:S8 .
+    _:S8 :child _:S9 .  
+    _:S9 a :Test .
+    () log:onNegativeSurface {
+        :test :is true.
+    }.
+}.
+
+(_:B1) log:onNegativeAnswerSurface {
+    _:B1 :is true .
+} .

@@ -1,6 +1,0 @@
-@prefix : <urn:example:>.
-
-:Ghent a :City.
-:Ghent a :HumanCommunity.
-:Ghent a :Settlement.
-:test :is true.

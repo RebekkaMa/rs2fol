@@ -1,4 +1,0 @@
-** ERROR ** eam ** inference_fuse({
-    true.
-    () log:onNegativeSurface true.
-} => false)

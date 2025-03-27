@@ -1,0 +1,50 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+
+# example stems from https://iccl.inf.tu-dresden.de/w/images/0/0f/TheoLog24-Uebung-10.pdf
+
+# ∀ x : ( ∀ y : ( child(x,y) => fly(y) ) => happy(x) )
+( _:x) log:onNegativeSurface {
+    ( _:y) log:onNegativeSurface {
+       _:x :hasChild _:y .
+       () log:onNegativeSurface { 
+          _:y :can :fly .
+       } .
+    } .
+    () log:onNegativeSurface { 
+       _:x :is :happy .
+    } .
+} .
+
+# ∀ x : ( green(x) => fly(x) )
+( _:x) log:onNegativeSurface {
+   _:x :is :green.
+    () log:onNegativeSurface { 
+       _:x :can :fly .
+    } .
+} .
+
+# ∀ x : ( ∃ y : ( child(y,x) & green(y) ) => green(x) ) { correct one }
+# ∀ x : ( ∀ y : ( child(y,x) & green(y) ) => green(x) ) { changed one here below }
+( _:x) log:onNegativeSurface {
+    # The _:y should not be here ...
+    (_:y) log:onNegativeSurface { 
+       # ... but here
+       () log:onNegativeSurface { 
+          _:y :hasChild _:x.
+          _:y :is :green .
+       } .
+    } .
+   
+    () log:onNegativeSurface { 
+       _:x :is :green .
+    } .
+} .
+
+# ~( ∀ x : ( green(x) => happy(x) ) )
+() log:onNegativeSurface {
+   (_:x) log:onNegativeSurface {
+      _:x :is :green.
+      () log:onNegativeSurface {_:x :is :happy} .
+   } .
+} .

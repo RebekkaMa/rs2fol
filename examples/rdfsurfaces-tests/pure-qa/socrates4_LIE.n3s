@@ -1,0 +1,17 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <urn:example:>.
+
+:Socrates a :Man.
+:Man rdfs:subClassOf :Mortal.
+
+(_:S) log:onNegativeSurface {
+    _:S a :Mortal.
+    () log:onNegativeSurface {
+        :test :is true.
+    }.
+}.
+
+(_:B1) log:onNegativeAnswerSurface {
+    _:B1 :is true .
+} .

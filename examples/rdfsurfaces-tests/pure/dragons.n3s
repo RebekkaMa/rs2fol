@@ -1,0 +1,39 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <urn:example:>.
+
+() log:onNegativeSurface {
+    () log:onNegativeSurface { 
+        :dragon1 :is :green_eyed .
+    } .
+    () log:onNegativeSurface { 
+        :dragon2 :is :green_eyed .
+    } .
+    () log:onNegativeSurface { 
+        :dragon3 :is :green_eyed .
+    } .
+} .
+
+(_:x) log:onNegativeSurface {
+    _:x :is :green_eyed .
+    () log:onNegativeSurface {
+        _:x :becomes :sparrow .
+    } .
+} .
+
+# query
+(_:x _:y _:z) log:onNegativeSurface {
+    () log:onNegativeSurface {
+        () log:onNegativeSurface {
+            _:x :becomes :sparrow .
+        } .
+        () log:onNegativeSurface {
+            _:y :becomes :sparrow .
+        } .
+        () log:onNegativeSurface {
+            _:z :becomes :sparrow .
+        } .
+    } .
+    () log:onNegativeAnswerSurface {
+        :test :is true .
+    } .
+} .

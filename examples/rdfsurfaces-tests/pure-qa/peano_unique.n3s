@@ -1,0 +1,104 @@
+# ----------------
+# Peano arithmetic
+# ----------------
+#
+# See https://en.wikipedia.org/wiki/Peano_axioms
+
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <urn:example:>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+
+# declare components
+:add a log:Component.
+:multiply a log:Component.
+:factorial a log:Component.
+:fac a log:Component.
+
+# add
+(_:A) log:onNegativeSurface {
+    () log:onNegativeSurface {
+        (_:A 0) :add _:A.
+    }.
+}.
+
+(_:A _:B _:C) log:onNegativeSurface {
+    () log:onNegativeSurface {
+        (_:A (:s _:B)) :add (:s _:C).
+    }.
+    (_:A _:B) :add _:C.
+}.
+
+# multiply
+(_:A) log:onNegativeSurface {
+    () log:onNegativeSurface {
+        (_:A 0) :multiply 0.
+    }.
+}.
+
+(_:A _:B _:C _:D) log:onNegativeSurface {
+    () log:onNegativeSurface {
+        (_:A (:s _:B)) :multiply _:C.
+    }.
+    (_:A _:B) :multiply _:D.
+    (_:A _:D) :add _:C.
+}.
+
+# factorial
+(_:A _:B) log:onNegativeSurface {
+    () log:onNegativeSurface {
+        _:A :factorial _:B.
+    }.
+    (_:A (:s 0)) :fac _:B.
+}.
+
+(_:A) log:onNegativeSurface {
+    () log:onNegativeSurface {
+        (0 _:A) :fac _:A.
+    }.
+}.
+
+(_:A _:B _:C _:D) log:onNegativeSurface {
+    () log:onNegativeSurface {
+        ((:s _:A) _:B) :fac _:C.
+    }.
+    (_:B (:s _:A)) :multiply _:D.
+    (_:A _:D) :fac _:C.
+}.
+
+# Uniqueness of lists
+## list as Subject
+(_:A _:B _:First _:Rest _:P _:O) log:onNegativeSurface {
+    () log:onNegativeSurface {
+    _:B _:P _:O.
+    }.
+    _:A _:P _:O.
+
+    _:A rdf:first _:First; rdf:rest _:Rest.
+    _:B rdf:first _:First; rdf:rest _:Rest.
+}.
+
+## list as object
+(_:A _:B _:First _:Rest _:P _:S) log:onNegativeSurface {
+    () log:onNegativeSurface {
+    _:S _:P _:B.
+    }.
+    _:S _:P _:A.
+
+    _:A rdf:first _:First; rdf:rest _:Rest.
+    _:B rdf:first _:First; rdf:rest _:Rest.
+}.
+
+# question
+(_:A _:B _:C) log:onNegativeSurface {
+    ((:s 0) (:s (:s 0))) :add _:A.
+    (_:A (:s (:s 0))) :multiply _:B.
+    _:B :factorial (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s (:s 0)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))).
+    () log:onNegativeAnswerSurface {
+        :test :is true.
+    }.
+}.
+
+(_:B1) log:onNegativeAnswerSurface {
+    _:B1 :is true .
+} .

@@ -1,6 +1,0 @@
-@prefix : <urn:example:>.
-
-:Prog1 :result {
-    :a a :c.
-}.
-:test :is true.

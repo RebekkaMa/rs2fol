@@ -1,0 +1,33 @@
+@prefix : <urn:example.org:> .
+@prefix log: <http://www.w3.org/2000/10/swap/log#> .
+
+##############################################################################
+# Researcher preferences                                                     #
+##############################################################################
+
+(_:X) log:onNegativeSurface {
+
+  # Disjunction of options
+  () log:onNegativeSurface {
+
+
+
+    ## Pref 3 . Publications by a publisher that is in WOS
+    () log:onNegativeSurface {
+        _:X a :Journal .
+        :WOS :indexed _:X .
+    } .    
+
+  } .
+
+  () log:onNegativeSurface {
+     :test :is true .
+  } .
+} .
+
+:ABC a :Journal .
+:WOS :indexed :ABC .
+
+(_:B1) log:onNegativeAnswerSurface {
+    _:B1 :is true .
+} .

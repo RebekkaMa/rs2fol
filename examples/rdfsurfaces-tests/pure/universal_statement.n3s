@@ -1,0 +1,23 @@
+@prefix : <urn:example:> .
+@prefix log: <http://www.w3.org/2000/10/swap/log#> .
+
+# From 
+#  \forall x: ~(x is Perfect) & ( bob is Perfect v test is true )
+# Follows:
+#  test is true 
+
+(_:X) log:onNegativeSurface {
+    _:X :is :Perfect .
+} .
+
+() log:onNegativeSurface {
+    () log:onNegativeSurface {
+       :bob :is :Perfect .
+    } .
+
+    () log:onNegativeSurface {
+        :test :is true .
+    } .
+} .
+
+() log:onNegativeSurface { :test :is true. () log:onNegativeAnswerSurface { :test :is true } } .

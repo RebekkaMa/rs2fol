@@ -1,0 +1,23 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+
+# From
+#  \forall x, y: (This is working) & ( (x is working) -> ( y is workingToo ) )
+# Follows:
+#  \forall y : (y is workingToo)
+# Which contradicts:
+#  ~(This is workingToo)
+
+:This :is :working.
+
+(_:x _:y) log:onNegativeSurface {
+   _:x :is :working .
+
+   () log:onNegativeSurface { 
+      _:y :is :workingToo .
+   } .
+} .
+
+() log:onNegativeSurface { 
+   :This :is :workingToo .
+} .

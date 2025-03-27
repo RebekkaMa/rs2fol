@@ -1,0 +1,43 @@
+@prefix : <urn:example:> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix log: <http://www.w3.org/2000/10/swap/log#> .
+
+:YoutubeEmployee rdfs:subClassOf  :GoogleEmployee .
+:GoogleEmployee rdfs:subClassOf :Employee .
+
+:Mary a :YoutubeEmployee .
+
+(_:X) log:onNegativeSurface {
+    _:X a :Employee .
+
+    () log:onNegativeSurface {
+        _:X :has :Employer .
+    } .
+} .
+
+() log:onNegativeSurface {
+    :Mary :has :Employer .
+
+    () log:onNegativeSurface {
+        :test :is true .
+    } .
+} .
+
+(_:X _:Y) log:onNegativeSurface {
+
+    _:X rdfs:subClassOf _:Y .
+
+    () log:onNegativeSurface {
+        (_:U) log:onNegativeSurface {
+
+            _:U rdf:type _:X .
+
+            () log:onNegativeSurface {
+                _:U rdf:type _:Y .
+            } .
+        } .
+    } .
+} .
+
+() log:onNegativeSurface { :test :is true. () log:onNegativeAnswerSurface { :test :is true } } .

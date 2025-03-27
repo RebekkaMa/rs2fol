@@ -1,0 +1,35 @@
+@prefix : <urn:example:> .
+@prefix log: <http://www.w3.org/2000/10/swap/log#> .
+
+# ( (p -> r) & (q -> s) ) -> ( (p & q ) -> ( r & s ) )
+
+() log:onNegativeSurface {
+    :P a :Subject .
+    () log:onNegativeSurface {
+        :R a :Subject .
+    } .
+} .
+
+() log:onNegativeSurface {
+    :Q a :Subject .
+    () log:onNegativeSurface {
+        :S a :Subject .
+    } .
+} .
+
+() log:onNegativeSurface {
+    () log:onNegativeSurface {
+        :P a :Subject .
+        :Q a :Subject .
+        () log:onNegativeSurface {
+            :R a :Subject .
+            :S a :Subject .
+        }
+    } .
+
+    () log:onNegativeSurface {
+        :test :is true .
+    } .
+} .
+
+() log:onNegativeSurface { :test :is true. () log:onNegativeAnswerSurface { :test :is true } } .

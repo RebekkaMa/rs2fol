@@ -1,0 +1,81 @@
+# --------------------------
+# RDF surfaces water example
+# --------------------------
+#
+# See https://en.wikipedia.org/wiki/Disjunction_elimination
+
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <urn:example:>.
+
+# water is an inorganic compound
+:water a :InorganicCompound.
+
+# water is solid or liquid
+(_:A) log:onNegativeSurface {
+    _:A a :InorganicCompound.
+    () log:onNegativeSurface {
+        _:A :is :solid.
+    }.
+    () log:onNegativeSurface {
+        _:A :is :liquid.
+    }.
+}.
+
+# water is packaged or gas
+(_:A) log:onNegativeSurface {
+    _:A a :InorganicCompound.
+    () log:onNegativeSurface {
+        _:A :is :packaged.
+    }.
+    () log:onNegativeSurface {
+        _:A :is :gas.
+    }.
+}.
+
+# solid things are observable
+(_:A) log:onNegativeSurface {
+    _:A :is :solid.
+    () log:onNegativeSurface {
+        _:A :is :observable.
+    }.
+}.
+
+# liquid things are observable
+(_:A) log:onNegativeSurface {
+    _:A :is :liquid.
+    () log:onNegativeSurface {
+        _:A :is :observable.
+    }.
+}.
+
+# packaged things are not observable
+(_:A) log:onNegativeSurface {
+    _:A :is :packaged.
+    () log:onNegativeSurface {
+        () log:onNegativeSurface {
+            _:A :is :observable.
+        }.
+    }.
+}.
+
+# gas things are not observable
+(_:A) log:onNegativeSurface {
+    _:A :is :gas.
+    () log:onNegativeSurface {
+        () log:onNegativeSurface {
+            _:A :is :observable.
+        }.
+    }.
+}.
+
+# query
+() log:onNegativeSurface {
+    :water :is :observable.
+    () log:onNegativeAnswerSurface {
+        :test :is true.
+    }.
+}.
+
+(_:B1) log:onNegativeAnswerSurface {
+    _:B1 :is true .
+} .

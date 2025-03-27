@@ -1,0 +1,15 @@
+@prefix : <urn:example:> .
+@prefix log: <http://www.w3.org/2000/10/swap/log#> .
+
+() log:onNegativeSurface {
+    () log:onNegativeSurface {
+        :A :is true .
+    } .
+    () log:onNegativeSurface {
+        :B :is true .
+    } .
+} .
+
+(_:B1) log:onNegativeAnswerSurface {
+    _:B1 :is true .
+} .
