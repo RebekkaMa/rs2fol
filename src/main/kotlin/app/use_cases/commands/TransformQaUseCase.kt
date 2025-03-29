@@ -6,6 +6,7 @@ import app.interfaces.services.TheoremProverRunnerService
 import app.use_cases.commands.subUseCase.GetTheoremProverCommandUseCase
 import app.use_cases.commands.subUseCase.QuestionAnsweringOutputToRdfSurfacesCascUseCase
 import app.use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
+import app.use_cases.modelTransformer.CanoncicalizeRDFSurfaceLiteralsUseCase
 import app.use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
 import app.use_cases.results.TransformQaResult
 import app.use_cases.results.subUseCaseResults.QuestionAnsweringOutputToRdfSurfacesCascResult
@@ -25,7 +26,8 @@ class TransformQaUseCase(
     private val tPTPAnnotatedFormulaModelToStringUseCase: TPTPAnnotatedFormulaModelToStringUseCase,
     private val rdfSurfaceModelToTPTPModelUseCase: RdfSurfaceModelToTPTPModelUseCase,
     private val getTheoremProverCommandUseCase: GetTheoremProverCommandUseCase,
-    private val questionAnsweringOutputToRdfSurfacesCascUseCase: QuestionAnsweringOutputToRdfSurfacesCascUseCase
+    private val questionAnsweringOutputToRdfSurfacesCascUseCase: QuestionAnsweringOutputToRdfSurfacesCascUseCase,
+    private val canoncicalizeRDFSurfaceLiteralsUseCase: CanoncicalizeRDFSurfaceLiteralsUseCase,
 ) {
 
     operator fun invoke(
@@ -38,23 +40,29 @@ class TransformQaUseCase(
         baseIri: IRI,
         configFile: Path,
         dEntailment: Boolean,
+        encode: Boolean
         ): Flow<InfoResult<Success, RootError>> = channelFlow {
 
         val rdfSurface = inputStream.reader().use { it.readText() }
         val parseResult = rdfSurfaceParseService.parseToEnd(rdfSurface, baseIri, useRdfLists)
         val folFormula = parseResult
             .runOnSuccess { successResult ->
+                val surface = if (dEntailment) {
+                    canoncicalizeRDFSurfaceLiteralsUseCase.invoke(successResult.positiveSurface).getOrElse { err ->
+                        send(infoError(err))
+                        return@channelFlow
+                    }
+                } else successResult.positiveSurface
                 rdfSurfaceModelToTPTPModelUseCase.invoke(
-                    defaultPositiveSurface = successResult.positiveSurface,
+                    defaultPositiveSurface = surface,
                     ignoreQuerySurfaces = false,
-                    dEntailment = dEntailment
                 )
             }
             .getOrElse {
                 send(infoError(it))
                 return@channelFlow
             }
-            .joinToString(separator = System.lineSeparator()) { tPTPAnnotatedFormulaModelToStringUseCase.invoke(it) }
+            .joinToString(separator = System.lineSeparator()) { tPTPAnnotatedFormulaModelToStringUseCase.invoke(it, encode = encode) }
 
         val qSurfaces = parseResult.getSuccessOrNull()?.positiveSurface?.getQSurfaces() ?: emptyList()
         val qSurface = when {

@@ -1,13 +1,15 @@
 package adapter.services.parser
 
-import adapter.jena.LiteralServiceImpl
+import adapter.jena.XSDLiteralServiceImpl
 import adapter.parser.RDFSurfaceParseServiceImpl
 import app.interfaces.results.RdfSurfaceParserResult
 import entities.rdfsurfaces.NegativeSurface
 import entities.rdfsurfaces.PositiveSurface
 import entities.rdfsurfaces.QuerySurface
 import entities.rdfsurfaces.RdfTriple
-import entities.rdfsurfaces.rdf_term.*
+import entities.rdfsurfaces.rdf_term.BlankNode
+import entities.rdfsurfaces.rdf_term.Collection
+import entities.rdfsurfaces.rdf_term.IRI
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
@@ -25,7 +27,7 @@ import kotlin.test.assertEquals
 
 class RDFSurfacesParserTest : ShouldSpec(
     {
-        val literalService = LiteralServiceImpl()
+        val literalService = XSDLiteralServiceImpl()
         
         context("selected Turtle examples") {
             should("transform example2.n3 without exception") {

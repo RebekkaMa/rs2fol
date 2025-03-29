@@ -17,7 +17,6 @@ class RdfSurfaceModelToTPTPModelUseCase {
         ignoreQuerySurfaces: Boolean = false,
         formulaRole: FormulaRole = FormulaRole.Axiom,
         tptpName: String = formulaRole.name.lowercase(),
-        dEntailment: Boolean = false,
         listType: ListType = ListType.FUNCTION
     ): Result<List<AnnotatedFormula>, RdfSurfaceModelToTPTPModelResult.Error> {
 
@@ -28,13 +27,11 @@ class RdfSurfaceModelToTPTPModelUseCase {
         fun transform(literal: Literal) = FOLConstant(
             when (literal) {
                 is LanguageTaggedString -> {
-                    if (dEntailment) "\"${literal.lexicalValue}\"@${literal.normalizedLangTag}"
-                    else "\"${literal.lexicalValue}\"@${literal.langTag}"
+                    "\"${literal.lexicalValue}\"@${literal.langTag}"
                 }
 
                 else -> {
-                    if (dEntailment) "\"${literal.literalValue}\"^^${literal.datatypeIRI.iri}"
-                    else "\"${literal.lexicalValue}\"^^${literal.datatypeIRI.iri}"
+                    "\"${literal.lexicalValue}\"^^${literal.datatypeIRI.iri}"
                 }
             }
         )

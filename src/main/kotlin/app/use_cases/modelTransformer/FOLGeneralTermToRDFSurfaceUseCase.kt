@@ -1,18 +1,15 @@
 package app.use_cases.modelTransformer
 
-import app.interfaces.services.LiteralService
 import app.use_cases.results.modelTransformerResults.FOLGeneralTermToRDFSurfaceResult
 import entities.fol.FOLConstant
 import entities.fol.FOLFunction
 import entities.fol.FOLVariable
 import entities.fol.GeneralTerm
-import entities.rdfsurfaces.rdf_term.BlankNode
+import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
-import entities.rdfsurfaces.rdf_term.IRI
-import entities.rdfsurfaces.rdf_term.RdfTerm
 import util.commandResult.*
 
-class FOLGeneralTermToRDFTermUseCase(private val literalService: LiteralService) {
+class FOLGeneralTermToRDFTermUseCase {
 
     operator fun invoke(generalTerm: GeneralTerm): Result<RdfTerm, RootError> {
         return when (generalTerm) {
@@ -63,14 +60,14 @@ class FOLGeneralTermToRDFTermUseCase(private val literalService: LiteralService)
     private fun getLiteralFromStringOrNull(literal: String) =
         ("\"(.*)\"\\^\\^(.+)".toRegex()).matchEntire(literal)?.let {
             val (lexicalValue, datatypeIri) = it.destructured
-            literalService.createDefaultLiteral(lexicalValue, IRI.from(datatypeIri))
+            DefaultLiteral(lexicalValue, IRI.from(datatypeIri))
         }
 
 
     private fun getLangLiteralFromStringOrNull(literal: String) =
         ("\"(.*)\"@(.+)".toRegex()).matchEntire(literal)?.let {
             val (literalValue, languageTag) = it.destructured
-            literalService.createLanguageTaggedString(
+            LanguageTaggedString(
                 lexicalValue = literalValue,
                 langTag = languageTag
             )

@@ -51,15 +51,19 @@ class TptpTupleAnswerFormToModelServiceImpl : Grammar<TPTPTupleAnswerFormAnswer>
         }
     } or term.map { listOf(it) }
 
-    private val nonLogicalSymbol: Parser<GeneralTerm> by (atomicWord and -lpar and arguments and -rpar).map { (atomicWord, arguments) ->
-        FOLFunction(atomicWord.text, arguments)
-    } or atomicWord.map { atomicWord ->
+    private val nonLogicalSymbol: Parser<GeneralTerm> by
+    (atomicWord and -lpar and term and -rpar).map { FOLFunction(it.t1.text, listOf(it.t2)) } or
+            (atomicWord and -lpar and arguments and -rpar).map { (atomicWord, arguments) ->
+                FOLFunction(atomicWord.text, arguments)
+            } or atomicWord.map { atomicWord ->
         FOLConstant(atomicWord.text.removeSurrounding("'"))
     }
 
     private val variableList by
-    -lparBracket and optional((nonLogicalSymbol or variable) and zeroOrMore(-comma and (nonLogicalSymbol or variable))) and -rparBracket use {
-        this?.let { listOf(this.t1).plus(this.t2) } ?: listOf()
+    (-lparBracket and (nonLogicalSymbol or variable) and zeroOrMore(-comma and (nonLogicalSymbol or variable)) and -rparBracket).use {
+        listOf(this.t1).plus(this.t2)
+    } or (lparBracket and rparBracket).use {
+        emptyList()
     }
 
     private val multipleVariableList by (-lpar and (variableList and oneOrMore(-verticalBar and variableList)) and -rpar) use {
@@ -68,11 +72,11 @@ class TptpTupleAnswerFormToModelServiceImpl : Grammar<TPTPTupleAnswerFormAnswer>
 
     private val resultValue by
     (-lparBracket
-            and (variableList.map { results.add(AnswerTuple(it)) } or multipleVariableList.map {
-        orResults.add(it.map {
-            AnswerTuple(
-                it
-            )
+            and (variableList.map {
+        results.add(AnswerTuple(it))
+    } or multipleVariableList.map { orRes ->
+        orResults.add(orRes.map {
+            AnswerTuple(it)
         })
     })
             and zeroOrMore(-comma and (variableList.map { results.add(AnswerTuple(it)) } or multipleVariableList.map {

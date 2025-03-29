@@ -10,5 +10,6 @@ interface TextStylerService {
     fun underline(message: String): String
     fun boldRed(message: String): String
     fun boldGreen(message: String): String
+    fun boldYellow(message: String): String
     fun underlineBlue(message: String): String
 }

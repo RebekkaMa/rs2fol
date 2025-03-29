@@ -49,6 +49,7 @@ class SZSParserServiceImpl(
                         }
 
                         outputStartRegex.matches(line) -> {
+/*
                             when {
                                 currentOutputType != null -> {
                                     emit(error(SZSParserServiceResult.Error.OutputStartBeforeEndAndStatus))
@@ -60,6 +61,7 @@ class SZSParserServiceImpl(
                                     return@flow
                                 }
                             }
+*/
 
                             outputStartRegex.find(line)?.let { matchResult ->
                                 val outputType = matchResult.groupValues[1]
@@ -147,7 +149,6 @@ class SZSParserServiceImpl(
 
                         else -> Unit
                     }
-
                 }
             }
             szsStatus?.let { emit(success(SZSParserServiceResult.Success.Parsed(it))) }

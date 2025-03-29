@@ -39,6 +39,12 @@ class TheoremProverRunnerServiceImpl : TheoremProverRunnerService {
             return error(TheoremProverRunnerResult.Error.CouldNotWriteInput(it))
         }
 
+        val inputReader = try {
+            theoremProverProcess.inputReader()
+        } catch (e: IOException) {
+            return error(TheoremProverRunnerResult.Error.CouldNotBeStarted(e))
+        }
+
         val timeout = CoroutineScope(Dispatchers.IO).async {
             val startTime = System.currentTimeMillis()
             while (System.currentTimeMillis() - startTime < timeLimit * 1000) {
@@ -50,6 +56,6 @@ class TheoremProverRunnerServiceImpl : TheoremProverRunnerService {
             return@async true
         }
 
-        return success(TheoremProverRunnerResult.Success.Ran(theoremProverProcess.inputReader() to timeout))
+        return success(TheoremProverRunnerResult.Success.Ran(inputReader to timeout))
     }
 }

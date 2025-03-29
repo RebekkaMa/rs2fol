@@ -23,4 +23,6 @@ class FileTextStylerServiceImpl : TextStylerService {
     override fun boldGreen(message: String) = message
 
     override fun underlineBlue(message: String) = message
+
+    override fun boldYellow(message: String): String = message
 }

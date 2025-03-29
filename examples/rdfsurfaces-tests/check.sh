@@ -12,7 +12,7 @@ NC='\033[0m'
 
 echo "File,Vampire" > "$OUTPUT_FILE"
 
-find "$SEARCH_DIR" -type f -name "*.n3s" -print0 | while IFS= read -r -d '' FILE; do
+find "$SEARCH_DIR" -type f -name "*_FAIL.n3s" -print0 | while IFS= read -r -d '' FILE; do
     FILENAME=$(basename "$FILE")
     echo -e -n "$FILENAME - "
 

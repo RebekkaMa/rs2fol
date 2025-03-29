@@ -10,7 +10,10 @@ import entities.fol.tptp.AnswerTuple
 import entities.rdfsurfaces.QSurface
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.transformWhile
-import util.commandResult.*
+import util.commandResult.Result
+import util.commandResult.RootError
+import util.commandResult.fold
+import util.commandResult.map
 import java.io.BufferedReader
 
 class QuestionAnsweringOutputToRdfSurfacesCascUseCase(

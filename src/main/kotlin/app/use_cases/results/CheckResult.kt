@@ -12,6 +12,7 @@ sealed interface CheckResult {
     sealed interface Success : CheckResult, util.commandResult.Success {
         data object Consequence : Success
         data object NoConsequence : Success
+        data object Contradiction : Success
         data class NotKnown(val szsStatusType: SZSStatusType) : Success
         data object Timeout : Success
     }

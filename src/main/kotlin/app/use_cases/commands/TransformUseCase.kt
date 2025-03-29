@@ -3,6 +3,7 @@ package app.use_cases.commands
 import app.interfaces.services.FileService
 import app.interfaces.services.RDFSurfaceParseService
 import app.use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
+import app.use_cases.modelTransformer.CanoncicalizeRDFSurfaceLiteralsUseCase
 import app.use_cases.modelTransformer.FormulaRole
 import app.use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
 import app.use_cases.results.TransformResult
@@ -17,7 +18,8 @@ class TransformUseCase(
     private val fileService: FileService,
     private val rdfSurfaceParseService: RDFSurfaceParseService,
     private val tPTPAnnotatedFormulaModelToStringUseCase : TPTPAnnotatedFormulaModelToStringUseCase,
-    private val rdfSurfaceModelToTPTPModelUseCase: RdfSurfaceModelToTPTPModelUseCase
+    private val rdfSurfaceModelToTPTPModelUseCase: RdfSurfaceModelToTPTPModelUseCase,
+    private val canoncicalizeRDFSurfaceLiteralsUseCase: CanoncicalizeRDFSurfaceLiteralsUseCase
 ) {
 
     operator fun invoke(
@@ -28,32 +30,43 @@ class TransformUseCase(
         baseIri: IRI,
         dEntailment: Boolean,
         outputPath: Path?,
+        encode: Boolean,
     ): Flow<InfoResult<TransformResult.Success, RootError>> = flow {
 
         val parseResult = rdfSurfaceParseService.parseToEnd(rdfSurface, baseIri, useRdfLists)
         val axiomFormula = parseResult
             .runOnSuccess { successResult ->
+                val surface = if (dEntailment) {
+                    canoncicalizeRDFSurfaceLiteralsUseCase.invoke(successResult.positiveSurface).getOrElse {  err ->
+                        emit(infoError(err))
+                        return@flow
+                    }
+                } else successResult.positiveSurface
                 rdfSurfaceModelToTPTPModelUseCase.invoke(
-                    defaultPositiveSurface = successResult.positiveSurface,
+                    defaultPositiveSurface = surface,
                     ignoreQuerySurfaces = ignoreQuerySurface,
-                    dEntailment = dEntailment
                 )
             }
             .getOrElse {
                 emit(infoError(it))
                 return@flow
             }
-            .joinToString(separator = System.lineSeparator()) { tPTPAnnotatedFormulaModelToStringUseCase.invoke(it) }
+            .joinToString(separator = System.lineSeparator()) { tPTPAnnotatedFormulaModelToStringUseCase.invoke(it, encode) }
 
         val consequenceFormula = consequenceSurface?.let {
             val consequenceParseResult = rdfSurfaceParseService.parseToEnd(it, baseIri, useRdfLists)
             consequenceParseResult
                 .runOnSuccess { successResult ->
+                    val surface = if (dEntailment) {
+                        canoncicalizeRDFSurfaceLiteralsUseCase.invoke(successResult.positiveSurface).getOrElse {  err ->
+                            emit(infoError(err))
+                            return@flow
+                        }
+                    } else successResult.positiveSurface
                     rdfSurfaceModelToTPTPModelUseCase.invoke(
-                        defaultPositiveSurface = successResult.positiveSurface,
+                        defaultPositiveSurface = surface,
                         ignoreQuerySurfaces = ignoreQuerySurface,
                         formulaRole = FormulaRole.Conjecture,
-                        dEntailment = dEntailment
                     )
                 }
                 .getOrElse { err ->
@@ -61,7 +74,7 @@ class TransformUseCase(
                     return@flow
                 }
                 .joinToString(separator = System.lineSeparator()) { formula ->
-                    tPTPAnnotatedFormulaModelToStringUseCase.invoke(formula)
+                    tPTPAnnotatedFormulaModelToStringUseCase.invoke(formula, encode)
                 }
         }
 

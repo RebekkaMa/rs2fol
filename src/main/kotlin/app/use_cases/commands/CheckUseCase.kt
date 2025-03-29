@@ -34,6 +34,7 @@ class CheckUseCase(
         baseIri: IRI,
         configFile: Path,
         dEntailment: Boolean,
+        encode: Boolean,
     ): Flow<InfoResult<CheckResult.Success, Error>?> = channelFlow {
 
         val tptpFormula = transformUseCase.invoke(
@@ -44,6 +45,7 @@ class CheckUseCase(
             baseIri = baseIri,
             dEntailment = dEntailment,
             outputPath = outputPath,
+            encode = encode,
         ).onEach { result ->
             result.fold(
                 onInfo = { send(infoInfo(it)) },
@@ -98,6 +100,7 @@ class CheckUseCase(
 }
 
 private fun mapSZSStatusToCheckSuccess(status: SZSStatusType): CheckResult.Success {
+    println(status)
     return when (status) {
         THEOREM,
         SATISFIABLE_THEOREM,
@@ -108,8 +111,9 @@ private fun mapSZSStatusToCheckSuccess(status: SZSStatusType): CheckResult.Succe
         TAUTOLOGY,
         WEAKER_TAUTOLOGOUS_CONCLUSION,
         WEAKER_THEOREM,
-        CONTRADICTORY_AXIOMS,
         TAUTOLOGOUS_CONCLUSION_CONTRADICTORY_AXIOMS -> CheckResult.Success.Consequence
+
+        CONTRADICTORY_AXIOMS -> CheckResult.Success.Contradiction
 
         SATISFIABLE,
         FINITELY_SATISFIABLE,

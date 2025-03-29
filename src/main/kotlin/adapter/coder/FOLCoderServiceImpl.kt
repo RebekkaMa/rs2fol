@@ -1,10 +1,11 @@
 package adapter.coder
 
+import app.interfaces.services.coder.FOLCoderService
 import entities.fol.*
 
-class FOLCoderService {
+class FOLCoderServiceImpl : FOLCoderService {
 
-    fun encode(folModel: FOLExpression): FOLExpression {
+    override fun encode(folModel: FOLExpression): FOLExpression {
 
         fun transformToValidTerm(folTerm: GeneralTerm): GeneralTerm {
             return when (folTerm) {
@@ -38,7 +39,7 @@ class FOLCoderService {
         }
     }
 
-    fun decode(folModel: FOLExpression): FOLExpression {
+    override fun decode(folModel: FOLExpression): FOLExpression {
 
         fun decode(folTerm: GeneralTerm): GeneralTerm {
             return when (folTerm) {
@@ -72,15 +73,15 @@ class FOLCoderService {
         }
     }
 
-    fun decodeLiteral(string: String) = string.replace("\\\\\\\\u[0-9A-Fa-f]{4}".toRegex()) {
+    private fun decodeLiteral(string: String) = string.replace("\\\\\\\\u[0-9A-Fa-f]{4}".toRegex()) {
         Integer.parseInt(it.value.drop(3), 16).toChar().toString()
     }
 
-    fun decodeVariable(string: String) = string.replace("Ox[0-9A-Fa-f]{4}".toRegex()) {
+    private fun decodeVariable(string: String) = string.replace("Ox[0-9A-Fa-f]{4}".toRegex()) {
         Integer.parseInt(it.value.drop(2), 16).toChar().toString()
     }
 
-    fun encodeLiteral(string: String) = buildString {
+    private fun encodeLiteral(string: String) = buildString {
         string.toCharArray().forEach { c ->
             if (isPrintableAscii(c) && c != '\\' && c != '\'') {
                 this.append(c)
@@ -91,7 +92,7 @@ class FOLCoderService {
         }
     }
 
-    fun encodeVariable(string: String) = buildString {
+    private fun encodeVariable(string: String) = buildString {
         val hexValueForO = Integer.toHexString('O'.code).uppercase().padStart(4, '0')
         val hexValueForx = Integer.toHexString('x'.code).uppercase().padStart(4, '0')
         val strWithoutOx = string.replace("Ox([0-9A-Fa-f]{4})".toRegex()) {
@@ -107,6 +108,6 @@ class FOLCoderService {
         }
     }
 
-    fun isPrintableAscii(char: Char) = char.code in 32..127
+    private fun isPrintableAscii(char: Char) = char.code in 32..127
 
 }

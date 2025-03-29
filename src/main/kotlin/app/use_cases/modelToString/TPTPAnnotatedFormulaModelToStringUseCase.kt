@@ -1,6 +1,6 @@
 package app.use_cases.modelToString
 
-import adapter.coder.FOLCoderService
+import app.interfaces.services.coder.FOLCoderService
 import entities.fol.tptp.AnnotatedFormula
 import entities.fol.tptp.FormulaType
 
@@ -10,9 +10,10 @@ class TPTPAnnotatedFormulaModelToStringUseCase(
 ) {
 
     operator fun invoke(
-        annotatedFormula: AnnotatedFormula
+        annotatedFormula: AnnotatedFormula,
+        encode: Boolean
     ): String {
-        val encodedFOLModel = fOLCoderService.encode(annotatedFormula.expression)
+        val encodedFOLModel = if (encode) fOLCoderService.encode(annotatedFormula.expression) else annotatedFormula.expression
         val transformedFormula = fOLModelToStringUseCase.invoke(encodedFOLModel)
         when (annotatedFormula.type) {
             FormulaType.Axiom -> {

@@ -16,6 +16,7 @@ class SuccessToStringTransformerServiceImpl(private val textStyler: TextStylerSe
                     CheckResult.Success.Consequence -> textStyler.boldGreen("Consequence")
                     CheckResult.Success.NoConsequence -> textStyler.boldRed("No consequence")
                     CheckResult.Success.Timeout -> textStyler.info("Timeout")
+                    CheckResult.Success.Contradiction -> textStyler.bold("Contradiction")
                     is CheckResult.Success.NotKnown -> textStyler.info("Not known: ${success.szsStatusType}")
                 }
             }

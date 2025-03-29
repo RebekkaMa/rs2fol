@@ -1,6 +1,5 @@
-package useCaseTest
+package app.use_cases.modelTransformer
 
-import app.use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
 import app.use_cases.results.modelTransformerResults.RdfSurfaceModelToTPTPModelResult
 import entities.fol.*
 import entities.rdfsurfaces.*

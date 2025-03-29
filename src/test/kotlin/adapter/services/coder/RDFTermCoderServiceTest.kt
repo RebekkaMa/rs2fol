@@ -1,23 +1,12 @@
 package adapter.services.coder
 
-import adapter.coder.N3SRDFTermCoderService
+import adapter.coder.N3SRDFTermCoderServiceImpl
 import entities.rdfsurfaces.rdf_term.BlankNode
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.shouldBe
 
 class RDFTermCoderServiceTest : ShouldSpec({
-    val coderService = N3SRDFTermCoderService()
-
-    should("validate a correct blank node ID") {
-        val blankNode = BlankNode("validBlankNodeID")
-        println(coderService.encode(blankNode))
-        coderService.isValid(blankNode) shouldBe true
-    }
-
-    should("invalidate an incorrect blank node ID") {
-        val blankNode = BlankNode("invalidBlankNodeID!")
-        coderService.isValid(blankNode) shouldBe false
-    }
+    val coderService = N3SRDFTermCoderServiceImpl()
 
     should("encode a blank node ID with special characters") {
         val blankNode = BlankNode("blankNodeID!")

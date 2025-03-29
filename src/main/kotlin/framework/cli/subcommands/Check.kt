@@ -6,10 +6,7 @@ import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
-import com.github.ajalt.clikt.parameters.options.default
-import com.github.ajalt.clikt.parameters.options.flag
-import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.validate
+import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.long
 import com.github.ajalt.clikt.parameters.types.path
@@ -57,11 +54,16 @@ class Check : SuspendingCliktCommand() {
         "--config-file",
         "-cf",
         help = "Path to the configuration file"
-    ).path(mustExist = true, mustBeReadable = true).default(Path(workingDir.path + "/config.json"))
+    ).path(mustExist = true, mustBeReadable = true).required()
+
+    private val disEnc by option(
+        "--disEnc",
+        help = "Disable encoding. If this option is deactivated, values that correspond to the N3S or TPTP syntax will be encoded."
+    ).flag(default = false)
 
     private val dEntailment by option(
         "--d-entailment",
-        help = "If this option is activated, literals with different lexical values but the same value in the value space are mapped to one literal with a canonical lexical value. This only applies to values of one data type. It is presumed here that the value space of the data types is disjoint."
+        help = "If this option is activated, literals with different lexical values but the same value in the value space are mapped to one literal with a canonical lexical value and datatype. This is only supported for XSD datatypes."
     ).flag(default = false)
 
     override fun help(context: Context) =
@@ -158,6 +160,7 @@ class Check : SuspendingCliktCommand() {
                 programName = programName,
                 configFile = configFile,
                 dEntailment = dEntailment,
+                encode = !disEnc,
             )
 
             val infoToStringTransformerService = Application.createInfoToStringTransformerService()

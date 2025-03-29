@@ -25,10 +25,16 @@ class Rewrite : SuspendingCliktCommand() {
     private val quiet by option("--quiet", "-q", help = "Display less output")
         .flag(default = false)
 
+    private val disEnc by option(
+        "--disEnc",
+        help = "Disable encoding. If this option is deactivated, values that correspond to the N3S or TPTP syntax will be encoded."
+    ).flag(default = false)
+
     private val dEntailment by option(
         "--d-entailment",
-        help = "If this option is activated, literals with different lexical values but the same value in the value space are mapped to one literal with a canonical lexical value. This only applies to values of one data type. It is presumed here that the value space of the data types is disjoint."
+        help = "If this option is activated, literals with different lexical values but the same value in the value space are mapped to one literal with a canonical lexical value and datatype. This is only supported for XSD datatypes."
     ).flag(default = false)
+
 
     override fun help(context: Context) = "Parses and returns an RDF surface using a sublanguage of Notation 3"
 
@@ -61,6 +67,7 @@ class Rewrite : SuspendingCliktCommand() {
                 baseIRI = baseIRI,
                 output = output,
                 dEntailment = dEntailment,
+                encode = !disEnc
             )
 
             val infoToStringTransformerService = Application.createInfoToStringTransformerService()

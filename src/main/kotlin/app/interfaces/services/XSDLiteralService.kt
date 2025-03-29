@@ -1,0 +1,14 @@
+package app.interfaces.services
+
+import app.interfaces.results.XSDLiteralServiceResult
+import entities.rdfsurfaces.rdf_term.IRI
+import entities.rdfsurfaces.rdf_term.Literal
+import util.commandResult.Result
+import util.commandResult.RootError
+
+
+interface XSDLiteralService {
+    fun createDefaultLiteral(lexicalValue: String, datatypeIRI: IRI): Result<XSDLiteralServiceResult.Success.Literal, RootError>
+    fun createLanguageTaggedString(lexicalValue: String, langTag: String): Literal
+    fun createGeneralizedLiteral(literal: Literal): Result<XSDLiteralServiceResult.Success.Literal, RootError>
+}

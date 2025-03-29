@@ -2,39 +2,23 @@ package adapter.coder
 
 import adapter.parser.util.pnChars
 import adapter.parser.util.pnCharsU
+import app.interfaces.services.coder.N3SRDFTermCoderService
 import entities.rdfsurfaces.rdf_term.BlankNode
 import entities.rdfsurfaces.rdf_term.RdfTerm
 
-class N3SRDFTermCoderService {
+class N3SRDFTermCoderServiceImpl : N3SRDFTermCoderService {
 
-    fun isValid(blankNode: BlankNode): Boolean {
-        val id = blankNode.blankNodeId
-
-        id.toCharArray()
-            .forEachIndexed { index, char ->
-                if (
-                    !isValidBlankNodeChar(
-                        charPosition = index,
-                        char = char,
-                        idLength = id.length
-                    )
-                ) return false
-            }
-        return true
-    }
-
-
-    fun <T : RdfTerm> encode(rdfTerm: T): T {
+    override fun <T : RdfTerm> encode(rdfTerm: T): T {
         return when (rdfTerm) {
             is BlankNode -> {
-                return rdfTerm.copy(encodeBlankNode(rdfTerm.blankNodeId)) as T
+                return BlankNode(encodeBlankNodeId(rdfTerm.blankNodeId)) as T
             }
 
             else -> rdfTerm
         }
     }
 
-    private fun encodeBlankNode(string: String): String {
+    private fun encodeBlankNodeId(string: String): String {
         val hexValueForO = Integer.toHexString('O'.code).uppercase().padStart(4, '0')
         val hexValueForx = Integer.toHexString('x'.code).uppercase().padStart(4, '0')
         val strWithoutOx = string.replace("Ox([0-9A-Fa-f]{4})".toRegex()) {

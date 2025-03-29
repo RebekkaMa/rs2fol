@@ -1,10 +1,10 @@
 package app.use_cases.modelToString
 
-import adapter.coder.N3SRDFTermCoderService
 import adapter.parser.util.stringLiteralLongQuote
 import adapter.parser.util.stringLiteralLongSingleQuote
 import adapter.parser.util.stringLiteralQuote
 import adapter.parser.util.stringLiteralSingleQuote
+import app.interfaces.services.coder.N3SRDFTermCoderService
 import app.use_cases.results.modelToString.RdfSurfaceModelToN3sResult
 import entities.rdfsurfaces.*
 import entities.rdfsurfaces.rdf_term.*
@@ -18,7 +18,7 @@ class RdfSurfaceModelToN3UseCase(
 
     operator fun invoke(
         defaultPositiveSurface: PositiveSurface,
-        dEntailment: Boolean = false
+        encode: Boolean
     ): Result<String, RdfSurfaceModelToN3sResult.Error> {
         val spaceBase = "   "
 
@@ -27,7 +27,7 @@ class RdfSurfaceModelToN3UseCase(
 
         fun transform(blankNode: BlankNode): String {
             val blankNodeId =
-                if (n3SRDFTermCoderService.isValid(blankNode)) blankNode.blankNodeId else n3SRDFTermCoderService.encode(
+                if (!encode) blankNode.blankNodeId else n3SRDFTermCoderService.encode(
                     blankNode
                 ).blankNodeId
             return "_:${blankNodeId}"
@@ -73,8 +73,7 @@ class RdfSurfaceModelToN3UseCase(
 
         fun transform(literal: Literal): String {
             if (literal is LanguageTaggedString) {
-                if (dEntailment) return "\"${literal.lexicalValue}\"@${literal.normalizedLangTag}"
-                return "\"${literal.lexicalValue}\"@${literal.langTag}"
+                "\"${literal.lexicalValue}\"@${literal.langTag}"
             }
             return when (literal.datatypeIRI.iri) {
                 IRIConstants.XSD_STRING_IRI -> {
@@ -89,7 +88,6 @@ class RdfSurfaceModelToN3UseCase(
                 }
 
                 else -> {
-                    if (dEntailment) return "\"${literal.literalValue}\"^^${transform(literal.datatypeIRI)}"
                     "\"${literal.lexicalValue}\"^^${transform(literal.datatypeIRI)}"
                 }
             }

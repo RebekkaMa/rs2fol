@@ -1,6 +1,5 @@
-package useCaseTest
+package app.use_cases.modelToString
 
-import app.use_cases.modelToString.FOLModelToStringUseCase
 import entities.fol.*
 import io.kotest.core.spec.style.ShouldSpec
 import kotlin.test.assertEquals

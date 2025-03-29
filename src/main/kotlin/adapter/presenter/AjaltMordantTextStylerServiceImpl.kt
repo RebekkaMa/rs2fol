@@ -24,6 +24,8 @@ class AjaltMordantTextStylerServiceImpl : TextStylerService {
 
     override fun boldGreen(message: String) = TextStyle(color = TextColors.green, bold = true)(message)
 
+    override fun boldYellow(message: String) = TextStyle(color = TextColors.brightYellow, bold = true)(message)
+
     override fun underlineBlue(message: String) = TextStyle(color = TextColors.blue, underline = true)(message)
 
 }
