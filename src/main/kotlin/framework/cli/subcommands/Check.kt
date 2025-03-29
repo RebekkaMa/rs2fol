@@ -15,7 +15,6 @@ import entities.rdfsurfaces.rdf_term.IRI
 import framework.cli.CommonOptions
 import util.commandResult.fold
 import util.workingDir
-import java.nio.file.Path
 import kotlin.io.path.*
 
 class Check : SuspendingCliktCommand() {
@@ -33,8 +32,8 @@ class Check : SuspendingCliktCommand() {
     private val consequence by option(
         "--consequence",
         "-c",
-        help = "Path to the consequence (given as RDF surface) (default: <input>.out)"
-    ).path()
+        help = "Path to the consequence (given as RDF surface)"
+    ).path(mustExist = true, mustBeReadable = true)
 
     private val quiet by option("--quiet", "-q", help = "Display less output")
         .flag(default = false)
@@ -72,33 +71,8 @@ class Check : SuspendingCliktCommand() {
     override suspend fun run() {
         try {
 
-            val computedConsequence: Path
-
             val (inputStream, baseIri) = when {
                 input.pathString == "-" -> {
-                    computedConsequence = when {
-                        consequence == null -> throw BadParameterValue(
-                            currentContext.localization.missingOption(
-                                "The option 'consequence' must not be null if the RDF surface is entered as a stream."
-                            )
-                        )
-
-                        consequence!!.notExists() -> throw BadParameterValue(
-                            currentContext.localization.pathDoesNotExist(
-                                "file",
-                                consequence!!.pathString
-                            )
-                        )
-
-                        consequence!!.isReadable().not() -> throw BadParameterValue(
-                            currentContext.localization.pathIsNotReadable(
-                                "file",
-                                consequence!!.pathString
-                            )
-                        )
-
-                        else -> consequence!!
-                    }
                     System.`in` to workingDir
                 }
 
@@ -117,37 +91,12 @@ class Check : SuspendingCliktCommand() {
                 )
 
                 else -> {
-                    computedConsequence = when {
-                        consequence == null -> Path(input.pathString + ".out").takeIf { it.exists() }
-                            ?: throw BadParameterValue(
-                                currentContext.localization.pathDoesNotExist(
-                                    "file",
-                                    input.pathString + ".out"
-                                )
-                            )
-
-                        consequence!!.notExists() -> throw BadParameterValue(
-                            currentContext.localization.pathDoesNotExist(
-                                "file",
-                                consequence!!.pathString
-                            )
-                        )
-
-                        consequence!!.isReadable().not() -> throw BadParameterValue(
-                            currentContext.localization.pathIsNotReadable(
-                                "file",
-                                consequence!!.pathString
-                            )
-                        )
-
-                        else -> consequence!!
-                    }
                     input.inputStream() to IRI.from("file://" + input.absolute().parent.invariantSeparatorsPathString + "/")
                 }
             }
 
             val rdfSurface = inputStream.bufferedReader().use { it.readText() }
-            val rdfSurfaceConsequence = computedConsequence.readText()
+            val rdfSurfaceConsequence = consequence?.readText()
 
             val result = Application.createCheckUseCase().invoke(
                 antecedent = rdfSurface,

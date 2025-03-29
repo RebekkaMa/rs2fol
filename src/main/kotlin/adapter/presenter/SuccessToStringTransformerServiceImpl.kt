@@ -18,6 +18,8 @@ class SuccessToStringTransformerServiceImpl(private val textStyler: TextStylerSe
                     CheckResult.Success.Timeout -> textStyler.info("Timeout")
                     CheckResult.Success.Contradiction -> textStyler.bold("Contradiction")
                     is CheckResult.Success.NotKnown -> textStyler.info("Not known: ${success.szsStatusType}")
+                    CheckResult.Success.Satisfiable -> textStyler.boldGreen("Satisfiable")
+                    CheckResult.Success.Unsatisfiable -> textStyler.boldRed("Unsatisfiable")
                 }
             }
 

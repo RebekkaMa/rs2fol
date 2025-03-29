@@ -25,7 +25,7 @@ class CheckUseCase(
 
     operator fun invoke(
         antecedent: String,
-        consequent: String,
+        consequent: String?,
         outputPath: Path?,
         reasoningTimeLimit: Long,
         optionId: Int,
@@ -91,7 +91,15 @@ class CheckUseCase(
             }
 
             when (szsParseResult) {
-                is SZSStatus, is SZSOutputModel -> send(infoSuccess(mapSZSStatusToCheckSuccess(szsParseResult.statusType)))
+                is SZSStatus, is SZSOutputModel -> send(
+                    infoSuccess(
+                        mapSZSStatusToCheckSuccess(
+                            existingConsequent = consequent != null,
+                            szsParseResult.statusType
+                        )
+                    )
+                )
+
                 is SZSAnswerTupleFormModel -> send(infoError(CheckResult.Error.UnknownTheoremProverOutput))
             }
         }
@@ -99,9 +107,24 @@ class CheckUseCase(
 
 }
 
-private fun mapSZSStatusToCheckSuccess(status: SZSStatusType): CheckResult.Success {
-    println(status)
+private fun mapSZSStatusToCheckSuccess(existingConsequent: Boolean, status: SZSStatusType): CheckResult.Success {
     return when (status) {
+        SATISFIABLE -> {
+            if (existingConsequent) {
+                CheckResult.Success.NoConsequence
+            } else {
+                CheckResult.Success.Satisfiable
+            }
+        }
+
+        UNSATISFIABLE -> {
+            if (existingConsequent) {
+                CheckResult.Success.NoConsequence
+            } else {
+                CheckResult.Success.Unsatisfiable
+            }
+        }
+
         THEOREM,
         SATISFIABLE_THEOREM,
         EQUIVALENT,
@@ -115,7 +138,6 @@ private fun mapSZSStatusToCheckSuccess(status: SZSStatusType): CheckResult.Succe
 
         CONTRADICTORY_AXIOMS -> CheckResult.Success.Contradiction
 
-        SATISFIABLE,
         FINITELY_SATISFIABLE,
         COUNTER_SATISFIABLE,
         FINITELY_COUNTER_SATISFIABLE,
@@ -130,8 +152,7 @@ private fun mapSZSStatusToCheckSuccess(status: SZSStatusType): CheckResult.Succe
         WEAKER_CONCLUSION_CONTRADICTORY_AXIOMS,
         WEAKER_UNSATISFIABLE_CONCLUSION,
         SATISFIABLE_COUNTER_CONCLUSION_CONTRADICTORY_AXIOMS,
-        UNSATISFIABLE_CONCLUSION_CONTRADICTORY_AXIOMS,
-        UNSATISFIABLE -> CheckResult.Success.NoConsequence
+        UNSATISFIABLE_CONCLUSION_CONTRADICTORY_AXIOMS -> CheckResult.Success.NoConsequence
 
         else -> CheckResult.Success.NotKnown(status)
     }

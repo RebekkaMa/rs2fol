@@ -12,11 +12,18 @@ NC='\033[0m'
 
 echo "File,Vampire" > "$OUTPUT_FILE"
 
-find "$SEARCH_DIR" -type f -name "*_FAIL.n3s" -print0 | while IFS= read -r -d '' FILE; do
-    FILENAME=$(basename "$FILE")
+run_check() {
+    local FILE="$1"
+    local FILENAME=$(basename "$FILE")
+    local USE_C="$2"
+
     echo -e -n "$FILENAME - "
 
-    RESULT=$($RS2FOL_PATH check --program vampire --option-id 2 -q -i "$FILE" -c "${PROJECT_PATH}rs2fol/examples/rdfsurfaces-tests/answer.n3s" -cf "${PROJECT_PATH}/rs2fol/bin/config.json" -r 2>&1 | tr -d '\n')
+    if [[ "$USE_C" == "yes" ]]; then
+        RESULT=$($RS2FOL_PATH check --program vampire --option-id 2 -q -i "$FILE" -c "${PROJECT_PATH}rs2fol/examples/rdfsurfaces-tests/answer.n3s" -cf "${PROJECT_PATH}/rs2fol/bin/config.json" 2>&1 | tr -d '\n')
+    else
+        RESULT=$($RS2FOL_PATH check --program vampire --option-id 2 -q -i "$FILE" -cf "${PROJECT_PATH}/rs2fol/bin/config.json" 2>&1 | tr -d '\n')
+    fi
 
     echo "$FILENAME,$RESULT" >> "$OUTPUT_FILE"
 
@@ -29,4 +36,19 @@ find "$SEARCH_DIR" -type f -name "*_FAIL.n3s" -print0 | while IFS= read -r -d ''
     else
         echo -e "$RESULT"
     fi
+}
+
+# Zuerst alle *_FAIL.n3s-Dateien
+find "$SEARCH_DIR" -type f -name "*_FAIL.n3s" -print0 | while IFS= read -r -d '' FILE; do
+    run_check "$FILE" "no"
+done
+
+# Dann alle *_LIE.n3s-Dateien
+find "$SEARCH_DIR" -type f -name "*_LIE.n3s" -print0 | while IFS= read -r -d '' FILE; do
+    run_check "$FILE" "yes"
+done
+
+# Dann alle übrigen .n3s-Dateien (nicht *_FAIL.n3s und nicht *_LIE.n3s)
+find "$SEARCH_DIR" -type f -name "*.n3s" ! -name "*_FAIL.n3s" ! -name "*_LIE.n3s" -print0 | while IFS= read -r -d '' FILE; do
+    run_check "$FILE" "yes"
 done

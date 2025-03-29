@@ -13,6 +13,8 @@ sealed interface CheckResult {
         data object Consequence : Success
         data object NoConsequence : Success
         data object Contradiction : Success
+        data object Satisfiable : Success
+        data object Unsatisfiable : Success
         data class NotKnown(val szsStatusType: SZSStatusType) : Success
         data object Timeout : Success
     }
