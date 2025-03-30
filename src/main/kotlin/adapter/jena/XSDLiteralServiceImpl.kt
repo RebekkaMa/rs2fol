@@ -3,7 +3,6 @@ package adapter.jena
 import app.interfaces.results.XSDLiteralServiceResult
 import app.interfaces.services.XSDLiteralService
 import entities.rdfsurfaces.rdf_term.DefaultLiteral
-import entities.rdfsurfaces.rdf_term.IRI
 import entities.rdfsurfaces.rdf_term.IRI.Companion.from
 import entities.rdfsurfaces.rdf_term.LanguageTaggedString
 import entities.rdfsurfaces.rdf_term.Literal
@@ -17,37 +16,6 @@ import util.commandResult.success
 
 class XSDLiteralServiceImpl : XSDLiteralService {
     private val model = ModelFactory.createDefaultModel()
-
-    override fun createDefaultLiteral(
-        lexicalValue: String,
-        datatypeIRI: IRI
-    ): util.commandResult.Result<XSDLiteralServiceResult.Success.Literal, RootError> {
-        val jenaLiteral = kotlin.runCatching {
-            model.createTypedLiteral(lexicalValue, datatypeIRI.iri)
-        }.getOrElse {
-            return util.commandResult.error(
-                XSDLiteralServiceResult.Error.InvalidLexicalValue(
-                    lexicalValue,
-                    datatypeIRI.iri
-                )
-            )
-        }
-        return success(
-            XSDLiteralServiceResult.Success.Literal(
-                literal = DefaultLiteral(
-                    lexicalValue = lexicalValue,
-                    datatypeIRI = datatypeIRI,
-                )
-            )
-        )
-    }
-
-    override fun createLanguageTaggedString(lexicalValue: String, langTag: String): LanguageTaggedString {
-        return LanguageTaggedString(
-            lexicalValue = lexicalValue,
-            langTag = langTag,
-        )
-    }
 
     override fun createGeneralizedLiteral(literal: Literal): util.commandResult.Result<XSDLiteralServiceResult.Success.Literal, RootError> {
         try {

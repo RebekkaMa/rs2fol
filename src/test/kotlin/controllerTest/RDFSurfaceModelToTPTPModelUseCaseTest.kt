@@ -17,7 +17,6 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.nulls.shouldNotBeNull
 import org.apache.jena.datatypes.xsd.XSDDatatype
-import org.apache.jena.graph.langtag.LangTags
 import util.commandResult.getSuccessOrNull
 import java.io.File
 
@@ -69,23 +68,21 @@ class RDFSurfaceModelToTPTPModelUseCaseTest
                     DefaultLiteral(
                         lexicalValue = "That Seventies Show",
                         datatypeIRI = IRI.from(XSDDatatype.XSDstring.uri),
-                        literalValue = "That Seventies Show"
                     )
                 val literal2 =
                     LanguageTaggedString(
                         "That Seventies Show",
                         "en",
-                        LangTags.formatLangtag("en")
                     )
                 val literal3 =
-                    LanguageTaggedString("Cette Série des Années Soixante-dix", "fr", LangTags.formatLangtag("fr"))
+                    LanguageTaggedString("Cette Série des Années Soixante-dix", "fr")
                 val literal4 =
-                    LanguageTaggedString("Cette Série des Années Septante", "fr-be", LangTags.formatLangtag("fr-be"))
+                    LanguageTaggedString("Cette Série des Années Septante", "fr-be")
                 val literal5Value =
                     "This is a multi-line                        # literal with embedded new lines and quotes\n" +
                             "literal with many quotes (\"\"\"\"\")\n" +
                             "and up to two sequential apostrophes ('')."
-                val literal5 = DefaultLiteral(literal5Value, IRI.from(XSDDatatype.XSDstring.uri), literal5Value)
+                val literal5 = DefaultLiteral(literal5Value, IRI.from(XSDDatatype.XSDstring.uri))
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
                 val rdfTriple2 = RdfTriple(iri1, iri2, literal1)
@@ -182,14 +179,13 @@ class RDFSurfaceModelToTPTPModelUseCaseTest
 
                 val iri1 = IRI.from("http://example.org/stuff/1.0/p")
 
-                val literal1 = DefaultLiteral("w", IRI.from(XSDDatatype.XSDstring.uri), "w")
-                val literal2 = DefaultLiteral("1", IRI.from(XSDDatatype.XSDinteger.uri), 1)
+                val literal1 = DefaultLiteral("w", IRI.from(XSDDatatype.XSDstring.uri))
+                val literal2 = DefaultLiteral("1", IRI.from(XSDDatatype.XSDinteger.uri))
                 val literal3 = DefaultLiteral(
                     XSDDatatype.XSDdecimal.parse("2.0").toString(),
                     IRI.from(XSDDatatype.XSDdecimal.uri),
-                    2.0
                 )
-                val literal4 = DefaultLiteral("3E1", IRI.from(XSDDatatype.XSDdouble.uri), 30.0)
+                val literal4 = DefaultLiteral("3E1", IRI.from(XSDDatatype.XSDdouble.uri))
 
 
                 val collection1 =
@@ -222,7 +218,6 @@ class RDFSurfaceModelToTPTPModelUseCaseTest
                     PositiveSurface(
                         listOf(), listOf(rdfTriple1)
                     ),
-                    dEntailment = false
                 ).getSuccessOrNull()
                 result.shouldNotBeNull()
                 result.shouldBeSingleton()
@@ -234,14 +229,13 @@ class RDFSurfaceModelToTPTPModelUseCaseTest
 
                 val iri1 = IRI.from("http://example.org/stuff/1.0/p")
 
-                val literal1 = DefaultLiteral("w", IRI.from(XSDDatatype.XSDstring.uri), "w")
-                val literal2 = DefaultLiteral("1", IRI.from(XSDDatatype.XSDinteger.uri), 1)
+                val literal1 = DefaultLiteral("w", IRI.from(XSDDatatype.XSDstring.uri))
+                val literal2 = DefaultLiteral("1", IRI.from(XSDDatatype.XSDinteger.uri))
                 val literal3 = DefaultLiteral(
                     XSDDatatype.XSDdecimal.parse("2.0").toString(),
                     IRI.from(XSDDatatype.XSDdecimal.uri),
-                    2.0
                 )
-                val literal4 = DefaultLiteral("3E1", IRI.from(XSDDatatype.XSDdouble.uri), 30.0)
+                val literal4 = DefaultLiteral("3E1", IRI.from(XSDDatatype.XSDdouble.uri))
 
 
                 val collection1 =
@@ -273,7 +267,6 @@ class RDFSurfaceModelToTPTPModelUseCaseTest
                     PositiveSurface(
                         listOf(), listOf(rdfTriple1)
                     ),
-                    dEntailment = true
                 ).getSuccessOrNull()
                 result.shouldNotBeNull()
                 result.shouldBeSingleton()
@@ -670,12 +663,12 @@ class RDFSurfaceModelToTPTPModelUseCaseTest
             val bnS = BlankNode("S")
             val bnC = BlankNode("C")
 
-            val literal1 = DefaultLiteral("1", IRI.from(XSDDatatype.XSDinteger.uri), 1)
-            val literal2 = DefaultLiteral("2", IRI.from(XSDDatatype.XSDinteger.uri), 2)
-            val literal3 = DefaultLiteral("3", IRI.from(XSDDatatype.XSDinteger.uri), 3)
+            val literal1 = DefaultLiteral("1", IRI.from(XSDDatatype.XSDinteger.uri))
+            val literal2 = DefaultLiteral("2", IRI.from(XSDDatatype.XSDinteger.uri))
+            val literal3 = DefaultLiteral("3", IRI.from(XSDDatatype.XSDinteger.uri))
 
-            val literal4 = DefaultLiteral("4", IRI.from(XSDDatatype.XSDinteger.uri), 4)
-            val literal5 = DefaultLiteral("5", IRI.from(XSDDatatype.XSDinteger.uri), 5)
+            val literal4 = DefaultLiteral("4", IRI.from(XSDDatatype.XSDinteger.uri))
+            val literal5 = DefaultLiteral("5", IRI.from(XSDDatatype.XSDinteger.uri))
 
             val collection1 = Collection(listOf(literal1, literal2, literal3))
             val collection2 = Collection(listOf(collection1, literal4, literal5))

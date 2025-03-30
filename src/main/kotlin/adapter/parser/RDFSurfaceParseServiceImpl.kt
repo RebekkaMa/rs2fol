@@ -17,6 +17,8 @@ import entities.rdfsurfaces.rdf_term.Collection
 import entities.rdfsurfaces.rdf_term.IRI.Companion.from
 import util.*
 import util.commandResult.Result
+import util.commandResult.RootError
+import util.commandResult.error
 import util.commandResult.success
 
 typealias HayesGraph = List<HayesGraphElement>
@@ -409,14 +411,14 @@ class RDFSurfaceParseServiceImpl : Grammar<PositiveSurface>(), RDFSurfaceParseSe
     }
 
 
-    override fun parseToEnd(input: String, baseIRI: IRI, useRDFLists: Boolean): Result<RdfSurfaceParserResult.Success.Parsed, RdfSurfaceParserResult.Error> {
+    override fun parseToEnd(input: String, baseIRI: IRI, useRDFLists: Boolean): Result<RdfSurfaceParserResult.Success.Parsed, RootError> {
         this.useRDFLists = useRDFLists
         var bnLabel = "BN_"
         var i = 0
         while (input.contains("_:$bnLabel\\d+".toRegex()) && i++ in 0..10) {
             bnLabel += '0'
         }
-        if (i > 10) return Result.Error(RdfSurfaceParserResult.Error.BlankNodeLabelCollision) //("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
+        if (i > 10) return error(RdfSurfaceParserResult.Error.BlankNodeLabelCollision)  //("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
         this.bnLabel = bnLabel
         this.baseIri = baseIRI
         return try {

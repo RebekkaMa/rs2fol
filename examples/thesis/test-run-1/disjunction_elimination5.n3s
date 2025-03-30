@@ -1,0 +1,42 @@
+@prefix : <urn:example:> .
+@prefix log: <http://www.w3.org/2000/10/swap/log#> .
+
+# (A & B) v (C & D)
+# leads to (B v D)
+
+## If (A & B) , then B , thus also (B v D) is true
+## If (C & D) , then D , thus also (B v D) is true
+## Eliminate the disjunction because each option makes (B v D) true
+
+() log:onNegativeSurface {
+
+    () log:onNegativeSurface {
+        :A a :Test .
+        :B a :Test .
+    } .
+
+    () log:onNegativeSurface {
+        :C a :Test .
+        :D a :Test .
+    } .
+} .
+
+# Test
+() log:onNegativeSurface {
+
+    () log:onNegativeSurface {
+        () log:onNegativeSurface {
+            :B a :Test .
+        } .
+
+        () log:onNegativeSurface {
+            :D a :Test .
+        } .
+    } .
+
+    () log:onNegativeSurface {
+        :test :is true .
+    } .
+} .
+
+() log:onNegativeSurface { :test :is true. () log:onNegativeAnswerSurface { :test :is true } } .

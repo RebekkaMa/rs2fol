@@ -1,0 +1,72 @@
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://example.org/ns#>.
+
+# A & B -> C
+() log:onNegativeSurface {
+	:Mona a :Cow.
+    :Mona :color :purple.
+    () log:onNegativeSurface {
+    	:Mona :has :acrophobia.
+    }.
+}.
+
+
+# A & ~B -> C
+() log:onNegativeSurface {
+    :Mona a :Cow.
+    () log:onNegativeSurface {
+    	:Mona :color :purple.
+    }.
+        
+    () log:onNegativeSurface {
+        :Mona :has :acrophobia.
+    }.
+}.
+
+## Thus we could conclude A -> C
+
+# (A -> C) -> D
+() log:onNegativeSurface {
+    () log:onNegativeSurface {
+        :Mona a :Cow.        
+        () log:onNegativeSurface {
+            :Mona :has :acrophobia.
+        }.
+    }.
+
+	() log:onNegativeSurface {
+     	:this :test :works1.
+	}.
+}.
+
+# (D & E) -> F
+() log:onNegativeSurface {
+    :this :test :works1.
+    :this :test :works2.
+
+    () log:onNegativeSurface {
+    	:this :test :works.
+    }.
+}.
+
+# (D & ~E) -> F
+() log:onNegativeSurface {
+    :this :test :works1.
+
+    () log:onNegativeSurface {
+    	:this :test :works2.
+    }.
+        
+    () log:onNegativeSurface {
+        :this :test :works.
+    }.
+}.
+
+## Thus we could conclude D -> F
+
+### But if (A -> C) and (A -> C) -> D and D -> F , then F should be the case
+
+## Test with a negative query, this should lead to a contradiction 
+() log:onNegativeSurface {
+    :this :test :works.
+}.

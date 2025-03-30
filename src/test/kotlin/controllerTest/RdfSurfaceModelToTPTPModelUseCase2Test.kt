@@ -1,6 +1,5 @@
 package controllerTest
 
-import adapter.jena.XSDLiteralServiceImpl
 import adapter.parser.RDFSurfaceParseServiceImpl
 import app.use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
 import entities.fol.*
@@ -21,9 +20,7 @@ import kotlin.io.path.readText
 
 class RdfSurfaceModelToTPTPModelUseCase2Test : ShouldSpec(
     {
-        val rdfSurfaceParseService = RDFSurfaceParseServiceImpl(
-            XSDLiteralService = XSDLiteralServiceImpl()
-        )
+        val rdfSurfaceParseService = RDFSurfaceParseServiceImpl()
 
         should("transform example2.n3 without exception") {
             val file = Path("src/test/resources/turtle/example2.n3")
@@ -1248,7 +1245,7 @@ class RdfSurfaceModelToTPTPModelUseCase2Test : ShouldSpec(
                 val file = Path("src/test/resources/turtle/lists.n3")
                 val solutionFile = Path("src/test/resources/turtle/lists-rdf.p")
                 val result = RdfSurfaceModelToTPTPModelUseCase().invoke(
-                    RDFSurfaceParseServiceImpl(XSDLiteralServiceImpl()).parseToEnd(
+                    RDFSurfaceParseServiceImpl().parseToEnd(
                         file.readText(),
                         IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                         useRDFLists = true

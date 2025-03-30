@@ -1,0 +1,26 @@
+@prefix : <urn:example:> .
+@prefix log: <http://www.w3.org/2000/10/swap/log#> .
+
+# When A is true then ( A v B ) is also true thus:
+# A & ( ( A V B ) => C ) 
+# requires C to be true
+:Alice a :Person .
+
+() log:onNegativeSurface {
+    
+    () log:onNegativeSurface {
+        () log:onNegativeSurface {
+            :Alice a :Person .
+        } .
+
+        () log:onNegativeSurface {
+            :Moon a :Cheese .
+        } .
+    } .
+
+    () log:onNegativeSurface {
+        :test :is true .
+    } .
+} .
+
+() log:onNegativeSurface { :test :is true. () log:onNegativeAnswerSurface { :test :is true } } .

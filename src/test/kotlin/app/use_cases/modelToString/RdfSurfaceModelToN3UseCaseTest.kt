@@ -30,7 +30,6 @@ class RdfSurfaceModelToN3UseCaseTest : ShouldSpec({
         val result = RdfSurfaceModelToN3UseCase(N3SRDFTermCoderServiceImpl()).invoke(
             positiveSurface,
             false,
-            false
         ).getSuccessOrNull()
         assertEquals(expected, result)
     }
@@ -80,7 +79,6 @@ class RdfSurfaceModelToN3UseCaseTest : ShouldSpec({
 """.trimIndent()
         val result = RdfSurfaceModelToN3UseCase(N3SRDFTermCoderServiceImpl()).invoke(
             positiveSurface,
-            dEntailment = false,
             encode = false
         ).getSuccessOrNull()
         assertEquals(expected, result)
@@ -91,7 +89,6 @@ class RdfSurfaceModelToN3UseCaseTest : ShouldSpec({
         val expected = ""
         val result = RdfSurfaceModelToN3UseCase(N3SRDFTermCoderServiceImpl()).invoke(
             positiveSurface,
-            dEntailment = false,
             encode = false
         ).getSuccessOrNull()
         assertEquals(expected, result?.trim())
