@@ -12,7 +12,7 @@ import app.use_cases.results.RawQaAnswerToRsResult
 import app.use_cases.results.TransformQaResult
 import app.use_cases.results.modelToString.RdfSurfaceModelToN3sResult
 import app.use_cases.results.modelTransformerResults.FOLGeneralTermToRDFSurfaceResult
-import app.use_cases.results.modelTransformerResults.RdfSurfaceModelToTPTPModelResult
+import app.use_cases.results.modelTransformerResults.RDFSurfaceModelToFOLModelResult
 import app.use_cases.results.subUseCaseResults.GetTheoremProverCommandResult
 import app.use_cases.results.subUseCaseResults.QuestionAnsweringOutputToRdfSurfacesCascResult
 import app.use_cases.results.subUseCaseResults.TPTPTupleAnswerModelToN3SResult
@@ -23,9 +23,9 @@ class ErrorToStringTransformerServiceImpl(private val textStylerService: TextSty
 
      override operator fun invoke(error: RootError): String {
         return textStylerService.error("Error: ") + when (error) {
-            is RdfSurfaceModelToTPTPModelResult.Error -> {
+            is RDFSurfaceModelToFOLModelResult.Error -> {
                 when (error) {
-                    is RdfSurfaceModelToTPTPModelResult.Error.SurfaceNotSupported -> "Surface '${error.surface}' is not supported"
+                    is RDFSurfaceModelToFOLModelResult.Error.SurfaceNotSupported -> "Surface '${error.surface}' is not supported"
                 }
             }
 

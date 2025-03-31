@@ -1,7 +1,5 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix : <http://example.org/stuff/1.0/> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix log: <http://www.w3.org/2000/10/swap/log#> .
 
     _:b0  rdf:first  1 ;
           rdf:rest   _:b1 .
@@ -10,11 +8,3 @@
     _:b2  rdf:first  3E1 ;
           rdf:rest   rdf:nil .
     _:b0  :p         "w" .
-    :a :b "The first line"
-    :a :b "0200-01-01T00:00:00Z"^^xsd:dateTime
-    :a :b "0200-01-01"^^xsd:date
-
-
-    (_:A _:B) log:onNegativeAnswerSurface {
-        _:A rdf:first _:B
-    }

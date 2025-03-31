@@ -1,24 +1,20 @@
 package app.use_cases.modelTransformer
 
-import app.use_cases.results.modelTransformerResults.RdfSurfaceModelToTPTPModelResult
+import app.use_cases.results.modelTransformerResults.RDFSurfaceModelToFOLModelResult
 import entities.fol.*
-import entities.fol.tptp.AnnotatedFormula
-import entities.fol.tptp.FormulaType
 import entities.rdfsurfaces.*
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
 import util.IRIConstants
 import util.SurfaceNotSupportedException
 import util.commandResult.Result
+import util.commandResult.success
 
-class RdfSurfaceModelToTPTPModelUseCase {
+class RDFSurfaceModelToFOLModelUseCase {
     operator fun invoke(
         defaultPositiveSurface: PositiveSurface,
-        ignoreQuerySurfaces: Boolean = false,
-        formulaRole: FormulaRole = FormulaRole.Axiom,
-        tptpName: String = formulaRole.name.lowercase(),
         listType: ListType = ListType.FUNCTION
-    ): Result<List<AnnotatedFormula>, RdfSurfaceModelToTPTPModelResult.Error> {
+    ): Result<RDFSurfaceModelToFOLModelResult.Success.Formulas, RDFSurfaceModelToFOLModelResult.Error> {
 
         fun transform(blankNode: BlankNode) = FOLVariable(blankNode.blankNodeId)
 
@@ -134,81 +130,49 @@ class RdfSurfaceModelToTPTPModelUseCase {
         }
 
         return try {
-
             val fofQuantifiedFormula = otherHayesGraphElements.let {
-                val fofFormula = run {
                     val expression =
                         when {
-                            it.isEmpty() -> return@run FOLTrue
+                            it.isEmpty() -> return@let FOLTrue
                             otherHayesGraphElements.size == 1 -> transform(otherHayesGraphElements.single())
                             else -> FOLAnd(otherHayesGraphElements.map { transform(it) })
                         }
-                    if (fofVariableList.isEmpty()) return@run expression
+                    if (fofVariableList.isEmpty()) return@let expression
                     FOLExists(
                         variables = fofVariableList,
                         expression = expression
                     )
-                }
-                AnnotatedFormula(
-                    name = tptpName,
-                    type = formulaRole.toFormulaType(),
-                    expression = fofFormula
-                )
             }
 
             val fofQuantifiedFormulaQuery = qSurfaces.mapIndexed { index, surface ->
-                val folFormula = run {
                     val expression =
                         when {
-                            surface.hayesGraph.isEmpty() -> return@run FOLTrue
+                            surface.hayesGraph.isEmpty() -> return@mapIndexed FOLTrue
                             surface.hayesGraph.size == 1 -> transform(surface.hayesGraph.single())
                             else -> FOLAnd(surface.hayesGraph.map { transform(it) })
                         }
-                    if (surface.graffiti.isEmpty()) return@run expression
+                    if (surface.graffiti.isEmpty()) return@mapIndexed expression
                     FOLExists(
                         variables = transform(surface.graffiti),
                         expression = expression
                     )
                 }
 
-                AnnotatedFormula(
-                    name = "query_$index",
-                    type = FormulaType.Question,
-                    expression = folFormula
+            success(
+                RDFSurfaceModelToFOLModelResult.Success.Formulas(
+                    formula = fofQuantifiedFormula,
+                    queryFormulas = fofQuantifiedFormulaQuery
                 )
-            }
-
-            Result.Success(
-                buildList {
-                    add(fofQuantifiedFormula)
-                    if (ignoreQuerySurfaces) return@buildList
-                    addAll(fofQuantifiedFormulaQuery)
-                }
             )
+
         } catch (exception: SurfaceNotSupportedException) {
-            return Result.Error(RdfSurfaceModelToTPTPModelResult.Error.SurfaceNotSupported(surface = exception.surface))
+            return Result.Error(RDFSurfaceModelToFOLModelResult.Error.SurfaceNotSupported(surface = exception.surface))
         }
     }
 
 }
 
-enum class FormulaRole {
-    Axiom,
-    Conjecture,
-    Hypothesis,
-    Lemma,
-    Question
-}
-
 enum class ListType {
     NESTED_FUNCTIONS,
     FUNCTION
-}
-
-private fun FormulaRole.toFormulaType() = when (this) {
-    FormulaRole.Axiom -> FormulaType.Axiom
-    FormulaRole.Conjecture -> FormulaType.Conjecture
-    FormulaRole.Hypothesis -> FormulaType.Hypothesis
-    FormulaRole.Lemma -> FormulaType.Lemma
-    FormulaRole.Question -> FormulaType.Question
 }

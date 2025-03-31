@@ -1,6 +1,7 @@
-package app.use_cases.modelToString
+package unit.app.use_cases.modelToString
 
 import adapter.coder.N3SRDFTermCoderServiceImpl
+import app.use_cases.modelToString.RdfSurfaceModelToN3UseCase
 import entities.rdfsurfaces.PositiveSurface
 import entities.rdfsurfaces.RdfTriple
 import entities.rdfsurfaces.rdf_term.BlankNode

@@ -1,7 +1,7 @@
 package adapter.jena
 
 import app.interfaces.results.XSDLiteralServiceResult
-import app.interfaces.services.XSDLiteralService
+import app.interfaces.services.jena.XSDLiteralService
 import entities.rdfsurfaces.rdf_term.DefaultLiteral
 import entities.rdfsurfaces.rdf_term.IRI.Companion.from
 import entities.rdfsurfaces.rdf_term.LanguageTaggedString

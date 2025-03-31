@@ -5,7 +5,7 @@ import app.interfaces.services.RDFSurfaceParseService
 import app.use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
 import app.use_cases.modelTransformer.CanoncicalizeRDFSurfaceLiteralsUseCase
 import app.use_cases.modelTransformer.FormulaRole
-import app.use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
+import app.use_cases.modelTransformer.RDFSurfaceModelToTPTPModelUseCase
 import app.use_cases.results.TransformResult
 import entities.rdfsurfaces.rdf_term.IRI
 import kotlinx.coroutines.flow.Flow
@@ -18,7 +18,7 @@ class TransformUseCase(
     private val fileService: FileService,
     private val rdfSurfaceParseService: RDFSurfaceParseService,
     private val tPTPAnnotatedFormulaModelToStringUseCase : TPTPAnnotatedFormulaModelToStringUseCase,
-    private val rdfSurfaceModelToTPTPModelUseCase: RdfSurfaceModelToTPTPModelUseCase,
+    private val rdfSurfaceModelToTPTPModelUseCase: RDFSurfaceModelToTPTPModelUseCase,
     private val canoncicalizeRDFSurfaceLiteralsUseCase: CanoncicalizeRDFSurfaceLiteralsUseCase
 ) {
 

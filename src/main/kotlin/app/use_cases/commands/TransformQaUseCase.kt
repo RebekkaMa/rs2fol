@@ -7,7 +7,7 @@ import app.use_cases.commands.subUseCase.GetTheoremProverCommandUseCase
 import app.use_cases.commands.subUseCase.QuestionAnsweringOutputToRdfSurfacesCascUseCase
 import app.use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
 import app.use_cases.modelTransformer.CanoncicalizeRDFSurfaceLiteralsUseCase
-import app.use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
+import app.use_cases.modelTransformer.RDFSurfaceModelToTPTPModelUseCase
 import app.use_cases.results.TransformQaResult
 import app.use_cases.results.subUseCaseResults.QuestionAnsweringOutputToRdfSurfacesCascResult
 import entities.rdfsurfaces.rdf_term.IRI
@@ -24,7 +24,7 @@ class TransformQaUseCase(
     private val theoremProverRunnerService: TheoremProverRunnerService,
     private val fileService: FileService,
     private val tPTPAnnotatedFormulaModelToStringUseCase: TPTPAnnotatedFormulaModelToStringUseCase,
-    private val rdfSurfaceModelToTPTPModelUseCase: RdfSurfaceModelToTPTPModelUseCase,
+    private val rdfSurfaceModelToTPTPModelUseCase: RDFSurfaceModelToTPTPModelUseCase,
     private val getTheoremProverCommandUseCase: GetTheoremProverCommandUseCase,
     private val questionAnsweringOutputToRdfSurfacesCascUseCase: QuestionAnsweringOutputToRdfSurfacesCascUseCase,
     private val canoncicalizeRDFSurfaceLiteralsUseCase: CanoncicalizeRDFSurfaceLiteralsUseCase,

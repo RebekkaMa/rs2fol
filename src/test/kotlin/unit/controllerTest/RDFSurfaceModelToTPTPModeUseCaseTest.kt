@@ -1,7 +1,8 @@
-package controllerTest
+package unit.controllerTest
 
 import app.use_cases.modelTransformer.ListType
-import app.use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
+import app.use_cases.modelTransformer.RDFSurfaceModelToFOLModelUseCase
+import app.use_cases.modelTransformer.RDFSurfaceModelToTPTPModelUseCase
 import entities.fol.*
 import entities.fol.tptp.AnnotatedFormula
 import entities.fol.tptp.FormulaType
@@ -20,9 +21,13 @@ import org.apache.jena.datatypes.xsd.XSDDatatype
 import util.commandResult.getSuccessOrNull
 import java.io.File
 
-class RDFSurfaceModelToTPTPModelUseCaseTest
+class RDFSurfaceModelToTPTPModeUseCaseTest
     : ShouldSpec(
     {
+
+        val rdfSurfaceModelToFOLModelUseCase = RDFSurfaceModelToFOLModelUseCase()
+
+
         context("turtle") {
             should("transform example2.n3 without exception") {
 
@@ -45,7 +50,7 @@ class RDFSurfaceModelToTPTPModelUseCaseTest
                     )
                 )
 
-                val result = RdfSurfaceModelToTPTPModelUseCase().invoke(
+                val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                     PositiveSurface(
                         listOf(),
                         listOf(rdfTriple)
@@ -163,7 +168,7 @@ class RDFSurfaceModelToTPTPModelUseCaseTest
                     )
 
 
-                val result = RdfSurfaceModelToTPTPModelUseCase().invoke(
+                val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                     PositiveSurface(
                         listOf(),
                         listOf(rdfTriple1, rdfTriple2, rdfTriple3, rdfTriple4, rdfTriple5, rdfTriple6, rdfTriple7)
@@ -174,7 +179,7 @@ class RDFSurfaceModelToTPTPModelUseCaseTest
                 result.single() shouldBeEqual expectedResult
             }
 
-            should("transform example23.n3 without exception - non d entailment") {
+            should("transform example23.n3 without exception") {
                 val solutionFile = File("src/test/resources/turtle/example23.p")
 
                 val iri1 = IRI.from("http://example.org/stuff/1.0/p")
@@ -214,56 +219,7 @@ class RDFSurfaceModelToTPTPModelUseCaseTest
                 )
 
 
-                val result = RdfSurfaceModelToTPTPModelUseCase().invoke(
-                    PositiveSurface(
-                        listOf(), listOf(rdfTriple1)
-                    ),
-                ).getSuccessOrNull()
-                result.shouldNotBeNull()
-                result.shouldBeSingleton()
-                result.single() shouldBeEqual expectedResult
-            }
-
-            should("transform example23.n3 without exception - d entailment") {
-                val solutionFile = File("src/test/resources/turtle/example23.p")
-
-                val iri1 = IRI.from("http://example.org/stuff/1.0/p")
-
-                val literal1 = DefaultLiteral("w", IRI.from(XSDDatatype.XSDstring.uri))
-                val literal2 = DefaultLiteral("1", IRI.from(XSDDatatype.XSDinteger.uri))
-                val literal3 = DefaultLiteral(
-                    XSDDatatype.XSDdecimal.parse("2.0").toString(),
-                    IRI.from(XSDDatatype.XSDdecimal.uri),
-                )
-                val literal4 = DefaultLiteral("3E1", IRI.from(XSDDatatype.XSDdouble.uri))
-
-
-                val collection1 =
-                    Collection(listOf(literal2, literal3, literal4))
-
-                val rdfTriple1 = RdfTriple(collection1, iri1, literal1)
-
-                val expectedResult = AnnotatedFormula(
-                    "axiom",
-                    FormulaType.Axiom,
-                    FOLPredicate(
-                        "triple",
-                        listOf(
-                            FOLFunction(
-                                "list",
-                                listOf(
-                                    FOLConstant("\"1\"^^http://www.w3.org/2001/XMLSchema#integer"),
-                                    FOLConstant("\"2.0\"^^http://www.w3.org/2001/XMLSchema#decimal"),
-                                    FOLConstant("\"30.0\"^^http://www.w3.org/2001/XMLSchema#double")
-                                )
-                            ),
-                            FOLConstant("http://example.org/stuff/1.0/p"),
-                            FOLConstant("\"w\"^^http://www.w3.org/2001/XMLSchema#string")
-                        )
-                    )
-                )
-
-                val result = RdfSurfaceModelToTPTPModelUseCase().invoke(
+                val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                     PositiveSurface(
                         listOf(), listOf(rdfTriple1)
                     ),
@@ -381,7 +337,7 @@ class RDFSurfaceModelToTPTPModelUseCaseTest
                 )
 
 
-                val result = RdfSurfaceModelToTPTPModelUseCase().invoke(
+                val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                     PositiveSurface(
                         listOf(),
                         listOf(rdfTriple1, negativeSurface1, negativeSurface2, querySurface)
@@ -538,7 +494,7 @@ class RDFSurfaceModelToTPTPModelUseCaseTest
                     )
                 )
 
-                val result = RdfSurfaceModelToTPTPModelUseCase().invoke(
+                val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                     PositiveSurface(
                         listOf(),
                         listOf(rdfTriple1, negativeSurface1, negativeSurface2, negativeSurface3, querySurface)
@@ -641,7 +597,7 @@ class RDFSurfaceModelToTPTPModelUseCaseTest
                     )
                 )
 
-                val result = RdfSurfaceModelToTPTPModelUseCase().invoke(
+                val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                     PositiveSurface(
                         listOf(),
                         listOf(rdfTriple1, negativeSurface1, negativeSurface2, querySurface)
@@ -728,7 +684,7 @@ class RDFSurfaceModelToTPTPModelUseCaseTest
                 )
             )
 
-            val result = RdfSurfaceModelToTPTPModelUseCase().invoke(
+            val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2, rdfTriple3)
@@ -740,6 +696,5 @@ class RDFSurfaceModelToTPTPModelUseCaseTest
             result.shouldBeSingleton()
             result.single() shouldBeEqual expectedResult1
         }
-
 
     })

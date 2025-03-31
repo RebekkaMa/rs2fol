@@ -1,9 +1,10 @@
-package adapter.services.coder
+package unit.adapter.services.coder
 
 import adapter.coder.FOLCoderServiceImpl
 import entities.fol.*
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.Assertions.assertEquals
 
 class FOLCoderServiceTest : ShouldSpec({
@@ -14,59 +15,59 @@ class FOLCoderServiceTest : ShouldSpec({
             val testStr = "The first line\n" +
                     "The second line\n" +
                     "  more"
-            val encoded = folCoderServiceImpl.encode(FOLConstant(testStr))
-//                println(encoded)
-//                println(DecodeStringToValidTPTPLiteralUseCase()(encoded))
-            testStr shouldBe folCoderServiceImpl.decode(encoded)
+            val encodeStr = "The first line\\\\u000AThe second line\\\\u000A  more"
+            val encoded = folCoderServiceImpl.encode(FOLConstant(testStr)).shouldBeInstanceOf<FOLConstant>()
+            FOLConstant(encodeStr) shouldBe encoded
+            FOLConstant(testStr) shouldBe folCoderServiceImpl.decode(encoded)
         }
 
         should("encode and decode 2") {
             val testStr = "The first line\\nThe second line\\n  more"
-            val encoded = folCoderServiceImpl.encode(FOLConstant(testStr))
-            testStr shouldBe folCoderServiceImpl.decode(encoded)
+            val encoded = folCoderServiceImpl.encode(FOLConstant(testStr)).shouldBeInstanceOf<FOLConstant>()
+            FOLConstant(testStr) shouldBe folCoderServiceImpl.decode(encoded)
         }
 
         should("encode and decode 3") {
             val testStr = "The first line\\nThe second line\\n  more"
-            val encoded = folCoderServiceImpl.encode(FOLConstant(testStr))
-            testStr shouldBe folCoderServiceImpl.decode(encoded)
+            val encoded = folCoderServiceImpl.encode(FOLConstant(testStr)).shouldBeInstanceOf<FOLConstant>()
+            FOLConstant(testStr) shouldBe folCoderServiceImpl.decode(encoded)
         }
         should("encode and decode 4") {
             val testStr =
                 "This is a multi-line                        # literal with embedded new lines and quotes\n" +
                         "\uD800\uDC00 literal with many quotes (\"\"\"\"\")\n" +
                         "and up to two sequential apostrophes ('')."
-            val encoded = folCoderServiceImpl.encode(FOLConstant(testStr))
-            testStr shouldBe folCoderServiceImpl.decode(encoded)
+            val encoded = folCoderServiceImpl.encode(FOLConstant(testStr)).shouldBeInstanceOf<FOLConstant>()
+            FOLConstant(testStr) shouldBe folCoderServiceImpl.decode(encoded)
         }
     }
     context("decode and encode to TPTP Variable compatible CHAR Set") {
         should("encode and decode 1") {
             val testStr = "BN_1"
-            val encoded = folCoderServiceImpl.encode(FOLVariable(testStr))
-            testStr shouldBe folCoderServiceImpl.decode(encoded)
+            val encoded = folCoderServiceImpl.encode(FOLVariable(testStr)).shouldBeInstanceOf<FOLVariable>()
+            FOLVariable(testStr) shouldBe folCoderServiceImpl.decode(encoded)
         }
 
         should("encode and decode 2") {
             val testStr = "bn_1"
-            val encoded = folCoderServiceImpl.encode(FOLVariable(testStr))
-            testStr shouldBe folCoderServiceImpl.decode(encoded)
+            val encoded = folCoderServiceImpl.encode(FOLVariable(testStr)).shouldBeInstanceOf<FOLVariable>()
+            FOLVariable(testStr) shouldBe folCoderServiceImpl.decode(encoded)
         }
 
         should("encode and decode 3") {
             val testStr = "jiUd_.a\uD800\uDC00"
-            val encoded = folCoderServiceImpl.encode(FOLVariable(testStr))
-            testStr shouldBe folCoderServiceImpl.decode(encoded)
+            val encoded = folCoderServiceImpl.encode(FOLVariable(testStr)).shouldBeInstanceOf<FOLVariable>()
+            FOLVariable(testStr) shouldBe folCoderServiceImpl.decode(encoded)
         }
         should("encode and decode 4") {
             val testStr = "Ox3A23n_3"
-            val encoded = folCoderServiceImpl.encode(FOLVariable(testStr))
-            testStr shouldBe folCoderServiceImpl.decode(encoded)
+            val encoded = folCoderServiceImpl.encode(FOLVariable(testStr)).shouldBeInstanceOf<FOLVariable>()
+            FOLVariable(testStr) shouldBe folCoderServiceImpl.decode(encoded)
         }
         should("encode and decode 5") {
             val testStr = "Ox3A2P3n_3"
-            val encoded = folCoderServiceImpl.encode(FOLVariable(testStr))
-            testStr shouldBe folCoderServiceImpl.decode(encoded)
+            val encoded = folCoderServiceImpl.encode(FOLVariable(testStr)).shouldBeInstanceOf<FOLVariable>()
+            FOLVariable(testStr) shouldBe folCoderServiceImpl.decode(encoded)
         }
         should("encode FOLConstant to valid TPTP literal") {
             val folConstant = FOLConstant("testConstant")
@@ -79,13 +80,13 @@ class FOLCoderServiceTest : ShouldSpec({
 
         should("encode FOLVariable to valid TPTP variable") {
             val folVariable = FOLVariable("testVariable")
-            val result = folCoderServiceImpl.encode(folVariable)
+            val result = folCoderServiceImpl.encode(folVariable).shouldBeInstanceOf<FOLVariable>()
             assertEquals(FOLVariable("Ox0074estVariable"), result)
         }
 
         should("encode FOLFunction with arguments") {
             val folFunction = FOLFunction("testFunction", listOf(FOLConstant("arg1"), FOLConstant("arg2")))
-            val result = folCoderServiceImpl.encode(folFunction)
+            val result = folCoderServiceImpl.encode(folFunction).shouldBeInstanceOf<FOLFunction>()
             assertEquals(
                 FOLFunction(
                     "testFunction",
@@ -99,7 +100,7 @@ class FOLCoderServiceTest : ShouldSpec({
 
         should("encode FOLAnd with expressions") {
             val folAnd = FOLAnd(listOf(FOLConstant("expr1"), FOLConstant("expr2")))
-            val result = folCoderServiceImpl.encode(folAnd)
+            val result = folCoderServiceImpl.encode(folAnd).shouldBeInstanceOf<FOLAnd>()
             assertEquals(
                 FOLAnd(
                     listOf(
@@ -112,7 +113,7 @@ class FOLCoderServiceTest : ShouldSpec({
 
         should("encode FOLExists with variables and expression") {
             val folExists = FOLExists(listOf(FOLVariable("var1")), FOLConstant("expr"))
-            val result = folCoderServiceImpl.encode(folExists)
+            val result = folCoderServiceImpl.encode(folExists).shouldBeInstanceOf<FOLExists>()
             assertEquals(
                 FOLExists(
                     listOf(FOLVariable("Ox0076ar1")),
@@ -123,12 +124,14 @@ class FOLCoderServiceTest : ShouldSpec({
 
         should("decode valid TPTP literal") {
             val result = folCoderServiceImpl.decode(FOLConstant("\\\\u0074\\\\u0065\\\\u0073\\\\u0074"))
-            assertEquals("test", result)
+                .shouldBeInstanceOf<FOLConstant>()
+            assertEquals(FOLConstant("test"), result)
         }
 
         should("decode valid TPTP variable") {
-            val result = folCoderServiceImpl.decode(FOLConstant("Ox0074Ox0065Ox0073Ox0074"))
-            assertEquals("test", result)
+            val result =
+                folCoderServiceImpl.decode(FOLVariable("Ox0074Ox0065Ox0073Ox0074")).shouldBeInstanceOf<FOLVariable>()
+            assertEquals(FOLVariable("test"), result)
         }
     }
 })

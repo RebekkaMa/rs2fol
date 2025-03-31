@@ -1,6 +1,8 @@
-package app.use_cases.modelToString
+package unit.app.use_cases.modelToString
 
 import adapter.coder.FOLCoderServiceImpl
+import app.use_cases.modelToString.FOLModelToStringUseCase
+import app.use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
 import entities.fol.FOLConstant
 import entities.fol.tptp.AnnotatedFormula
 import entities.fol.tptp.FormulaType

@@ -1,16 +1,13 @@
-package adapter.services.parser
+package unit.adapter.services.parser
 
-import adapter.jena.XSDLiteralServiceImpl
 import adapter.parser.RDFSurfaceParseServiceImpl
 import app.interfaces.results.RdfSurfaceParserResult
 import entities.rdfsurfaces.NegativeSurface
 import entities.rdfsurfaces.PositiveSurface
 import entities.rdfsurfaces.QuerySurface
 import entities.rdfsurfaces.RdfTriple
-import entities.rdfsurfaces.rdf_term.BlankNode
+import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
-import entities.rdfsurfaces.rdf_term.DefaultLiteral
-import entities.rdfsurfaces.rdf_term.IRI
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
@@ -28,8 +25,6 @@ import kotlin.test.assertEquals
 
 class RDFSurfacesParserTest : ShouldSpec(
     {
-        val literalService = XSDLiteralServiceImpl()
-        
         context("selected Turtle examples") {
             should("transform example2.n3 without exception") {
                 val file = Path("src/test/resources/turtle/example2.n3")
@@ -100,7 +95,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val iri2 = IRI.from("http://xmlns.com/foaf/0.1/name")
 
                 val literal1 = DefaultLiteral("Spiderman", IRI.from(XSDDatatype.XSDstring.uri))
-                val literal2 = literalService.createLanguageTaggedString("Человек-паук", "ru")
+                val literal2 = LanguageTaggedString("Человек-паук", "ru")
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
                 val rdfTriple2 = RdfTriple(iri1, iri2, literal2)
@@ -120,7 +115,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val iri1 = IRI.from("http://example.org/#spiderman")
                 val iri2 = IRI.from("http://xmlns.com/foaf/0.1/name")
                 val literal1 = DefaultLiteral("Spiderman", IRI.from(XSDDatatype.XSDstring.uri))
-                val literal2 = literalService.createLanguageTaggedString("Человек-паук", "ru")
+                val literal2 = LanguageTaggedString("Человек-паук", "ru")
 
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
@@ -261,11 +256,11 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val literal1 =
                     DefaultLiteral("That Seventies Show", IRI.from(XSDDatatype.XSDstring.uri))
                 val literal2 =
-                    literalService.createLanguageTaggedString("That Seventies Show", "en")
+                    LanguageTaggedString("That Seventies Show", "en")
                 val literal3 =
-                    literalService.createLanguageTaggedString("Cette Série des Années Soixante-dix", "fr")
+                    LanguageTaggedString("Cette Série des Années Soixante-dix", "fr")
                 val literal4 =
-                    literalService.createLanguageTaggedString("Cette Série des Années Septante", "fr-be")
+                    LanguageTaggedString("Cette Série des Années Septante", "fr-be")
                 val literal5 = DefaultLiteral(
                     "This is a multi-line                        # literal with embedded new lines and quotes\n" +
                             "literal with many quotes (\"\"\"\"\")\n" +
@@ -485,7 +480,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
-                    useRDFLists = true
+                    useRDFLists = false
                 ).getSuccessOrNull().shouldNotBeNull().positiveSurface shouldBeEqualToComparingFields PositiveSurface(
                     listOf(), listOf(rdfTriple1)
                 )
@@ -517,7 +512,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
-                    useRDFLists = true
+                    useRDFLists = false
                 ).getSuccessOrNull().shouldNotBeNull().positiveSurface shouldBeEqualToComparingFields PositiveSurface(
                     listOf(bn1, bn2), listOf(rdfTriple1, rdfTriple2, rdfTriple3, rdfTriple4, rdfTriple5)
                 )
@@ -539,7 +534,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
-                    useRDFLists = true
+                    useRDFLists = false
                 ).getSuccessOrNull().shouldNotBeNull().positiveSurface shouldBeEqualToComparingFields PositiveSurface(
                     listOf(), listOf(rdfTriple1, rdfTriple1)
                 )
@@ -568,7 +563,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
-                    useRDFLists = true
+                    useRDFLists = false
                 ).getSuccessOrNull().shouldNotBeNull().positiveSurface shouldBeEqualToComparingFields PositiveSurface(
                     listOf(), listOf(rdfTriple1)
                 )
@@ -604,7 +599,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
-                    useRDFLists = true
+                    useRDFLists = false
                 ).getSuccessOrNull().shouldNotBeNull().positiveSurface shouldBeEqualToComparingFields PositiveSurface(
                     listOf(bn0, bn1, bn2),
                     listOf(rdfTriple1, rdfTriple2, rdfTriple3, rdfTriple4, rdfTriple5, rdfTriple6, rdfTriple7)
@@ -633,7 +628,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 RDFSurfaceParseServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
-                    useRDFLists = true
+                    useRDFLists = false
                 ).getSuccessOrNull().shouldNotBeNull().positiveSurface shouldBeEqualToComparingFields PositiveSurface(
                     listOf(bn0),
                     listOf(rdfTriple1, rdfTriple2)

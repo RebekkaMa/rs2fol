@@ -1,4 +1,4 @@
-package adapter.services.parser
+package unit.adapter.services.parser
 
 import adapter.parser.TptpTupleAnswerFormToModelServiceImpl
 import entities.fol.FOLConstant

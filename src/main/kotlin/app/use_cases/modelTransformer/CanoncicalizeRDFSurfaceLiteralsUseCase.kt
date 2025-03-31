@@ -1,6 +1,6 @@
 package app.use_cases.modelTransformer
 
-import app.interfaces.services.XSDLiteralService
+import app.interfaces.services.jena.XSDLiteralService
 import entities.rdfsurfaces.*
 import entities.rdfsurfaces.rdf_term.Literal
 import util.commandResult.*

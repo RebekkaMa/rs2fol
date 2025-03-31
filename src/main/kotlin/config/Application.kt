@@ -13,6 +13,7 @@ import adapter.theoremProver.TheoremProverRunnerServiceImpl
 import app.interfaces.services.*
 import app.interfaces.services.coder.FOLCoderService
 import app.interfaces.services.coder.N3SRDFTermCoderService
+import app.interfaces.services.jena.XSDLiteralService
 import app.interfaces.services.presenter.ErrorToStringTransformerService
 import app.interfaces.services.presenter.InfoToStringTransformerService
 import app.interfaces.services.presenter.SuccessToStringTransformerService
@@ -26,7 +27,8 @@ import app.use_cases.modelToString.RdfSurfaceModelToN3UseCase
 import app.use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
 import app.use_cases.modelTransformer.CanoncicalizeRDFSurfaceLiteralsUseCase
 import app.use_cases.modelTransformer.FOLGeneralTermToRDFTermUseCase
-import app.use_cases.modelTransformer.RdfSurfaceModelToTPTPModelUseCase
+import app.use_cases.modelTransformer.RDFSurfaceModelToFOLModelUseCase
+import app.use_cases.modelTransformer.RDFSurfaceModelToTPTPModelUseCase
 
 
 object Application {
@@ -133,12 +135,16 @@ object Application {
         return FOLModelToStringUseCase()
     }
 
-    private fun createRdfSurfaceModelToTPTPModelUseCase(): RdfSurfaceModelToTPTPModelUseCase {
-        return RdfSurfaceModelToTPTPModelUseCase()
+    private fun createRdfSurfaceModelToTPTPModelUseCase(): RDFSurfaceModelToTPTPModelUseCase {
+        return RDFSurfaceModelToTPTPModelUseCase(createRdfSurfaceModelToFOLModelUseCase())
     }
 
     private fun createCanonicalizeRDFSurfaceLiteralsUseCase(): CanoncicalizeRDFSurfaceLiteralsUseCase {
         return CanoncicalizeRDFSurfaceLiteralsUseCase(createLiteralService())
+    }
+
+    private fun createRdfSurfaceModelToFOLModelUseCase(): RDFSurfaceModelToFOLModelUseCase {
+        return RDFSurfaceModelToFOLModelUseCase()
     }
 
     private fun createFileService(): FileService {

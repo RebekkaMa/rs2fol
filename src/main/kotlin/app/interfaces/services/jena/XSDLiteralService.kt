@@ -1,4 +1,4 @@
-package app.interfaces.services
+package app.interfaces.services.jena
 
 import app.interfaces.results.XSDLiteralServiceResult
 import entities.rdfsurfaces.rdf_term.Literal

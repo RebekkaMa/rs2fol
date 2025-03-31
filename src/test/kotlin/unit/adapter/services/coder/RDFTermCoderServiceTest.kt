@@ -1,4 +1,4 @@
-package adapter.services.coder
+package unit.adapter.services.coder
 
 import adapter.coder.N3SRDFTermCoderServiceImpl
 import entities.rdfsurfaces.rdf_term.BlankNode

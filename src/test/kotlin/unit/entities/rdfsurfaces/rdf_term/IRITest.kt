@@ -1,5 +1,6 @@
-package entities.rdfsurfaces.rdf_term
+package unit.entities.rdfsurfaces.rdf_term
 
+import entities.rdfsurfaces.rdf_term.IRI
 import entities.rdfsurfaces.rdf_term.IRI.Companion.transformReference
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.shouldBe
