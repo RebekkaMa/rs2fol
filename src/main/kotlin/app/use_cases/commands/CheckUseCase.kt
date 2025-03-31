@@ -4,7 +4,6 @@ import app.interfaces.services.SZSParserService
 import app.interfaces.services.TheoremProverRunnerService
 import app.use_cases.commands.subUseCase.GetTheoremProverCommandUseCase
 import app.use_cases.results.CheckResult
-import app.use_cases.results.TransformResult
 import entities.SZSAnswerTupleFormModel
 import entities.SZSOutputModel
 import entities.SZSStatus
@@ -52,9 +51,11 @@ class CheckUseCase(
                 onSuccess = { },
                 onFailure = { send(infoError(it)); close() }
             )
-        }.mapNotNull { it.getSuccessOrNull() as TransformResult.Success }
-            .first()
-            .res
+        }.mapNotNull { it.getSuccessOrNull() }
+            .firstOrNull()
+            ?.res
+
+        if (tptpFormula == null) return@channelFlow
 
         val command = getTheoremProverCommandUseCase(
             programName,

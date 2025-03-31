@@ -54,6 +54,15 @@
           "flags": [
             "--mode",
             "casc",
+            "-t",
+            "${timeLimit}s"
+          ]
+        },
+        {
+          "optionId": 3,
+          "flags": [
+            "--mode",
+            "casc",
             "--cores",
             "0",
             "-t",

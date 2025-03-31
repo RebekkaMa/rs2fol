@@ -431,7 +431,7 @@ class RDFSurfaceParseServiceImpl : Grammar<PositiveSurface>(), RDFSurfaceParseSe
                     value = exc.value,
                     iri = exc.iri
                 )
-                is ParseException -> RdfSurfaceParserResult.Error.GenericInvalidInput(throwable = exc)
+                is ParseException -> RdfSurfaceParserResult.Error.GenericInvalidInput(cause = exc.toString() + System.lineSeparator() + (exc.stackTrace.firstOrNull() ?: ""))
                 else -> throw exc
             }.let { error(it) }
         }

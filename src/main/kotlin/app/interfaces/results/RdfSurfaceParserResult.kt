@@ -11,7 +11,7 @@ sealed interface RdfSurfaceParserResult {
         data object BlankNodeLabelCollision : Error
         data class UndefinedPrefix(val prefix: String) : Error
         data class LiteralNotValid(val value: String, val iri: String) : Error
-        data class GenericInvalidInput(val throwable: Throwable) : Error
+        data class GenericInvalidInput(val cause: String) : Error
         data class SurfaceNotSupported(val surface: String) : Error
     }
 }

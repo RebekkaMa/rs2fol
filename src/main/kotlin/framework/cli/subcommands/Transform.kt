@@ -25,7 +25,7 @@ class Transform : SuspendingCliktCommand() {
 
     private val consequence by option("--consequence", "-c", help = "Path to the consequence RDF surface").path()
 
-    private val ignoreQuerySurface by option("--ignoreQuerySurface").flag(default = false, defaultForHelp = "false")
+    private val ignoreNegativeAnswerSurface by option("--ignoreQuerySurface").flag(default = false, defaultForHelp = "false")
 
     private val quiet by option("--quiet", "-q", help = "Display less output")
         .flag(default = false)
@@ -72,7 +72,7 @@ class Transform : SuspendingCliktCommand() {
                 consequenceSurface = consequenceSurface,
                 baseIri = baseIri,
                 useRdfLists = commonOptions.rdfList,
-                ignoreQuerySurface = ignoreQuerySurface,
+                ignoreQuerySurface = ignoreNegativeAnswerSurface,
                 outputPath = output,
                 dEntailment = dEntailment,
                 encode = !disEnc

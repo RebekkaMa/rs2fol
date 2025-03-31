@@ -41,11 +41,11 @@ disjunction.n3s,Consequence
 modusTollens.n3s,Consequence
 negativeSurface3.n3s,Consequence
 aor_impliesa.n3s,Consequence
-peano.n3s,Consequence
+peano.n3s,Timeout
 ikl_planes.n3s,Consequence
 erasure3.n3s,Consequence
 disjunction_elimination.n3s,Consequence
-peano_unique.n3s,Consequence
+peano_unique.n3s,Timeout
 dragons.n3s,Consequence
 conjunction_in_implicatum.n3s,Consequence
 negativeSurface2.n3s,Consequence
@@ -82,7 +82,7 @@ real_programmer.n3s,Consequence
 halting3.n3s,Consequence
 derived.n3s,Consequence
 prenex.n3s,Consequence
-firstRest.n3s,Error: Invalid Input. Please check the syntax!com.github.h0tk3y.betterParse.parser.ParseException: Could not parse input: ErrorResultjava.lang.NullPointerException: null cannot be cast to non-null type app.use_cases.results.TransformResult.Success
+firstRest.n3s,Error: Invalid Input. Please check the syntax!Cause: com.github.h0tk3y.betterParse.parser.ParseException: Could not parse input: ErrorResultadapter.parser.RDFSurfaceParseServiceImpl.predicate_delegate$lambda$28(RDFSurfaceParseServiceImpl.kt:228)
 reduction_ad_absurdum.n3s,Consequence
 publishing2.n3s,Consequence
 biconditional.n3s,Consequence

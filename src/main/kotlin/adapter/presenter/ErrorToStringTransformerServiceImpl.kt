@@ -62,7 +62,7 @@ class ErrorToStringTransformerServiceImpl(private val textStylerService: TextSty
                     is RdfSurfaceParserResult.Error.BlankNodeLabelCollision -> "Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'."
                     is RdfSurfaceParserResult.Error.UndefinedPrefix -> "Undefined prefix: " + error.prefix
                     is RdfSurfaceParserResult.Error.LiteralNotValid -> "Not valid literal with value ${error.value} and iri ${error.iri}"
-                    is RdfSurfaceParserResult.Error.GenericInvalidInput -> "Invalid Input. Please check the syntax!" + error.throwable.toString()
+                    is RdfSurfaceParserResult.Error.GenericInvalidInput -> "Invalid Input. Please check the syntax!" + System.lineSeparator() + textStylerService.bold("Cause: ") + error.cause
                     is RdfSurfaceParserResult.Error.SurfaceNotSupported -> "Surface '${error.surface}' is not supported"
 
                 }

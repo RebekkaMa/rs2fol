@@ -2,8 +2,8 @@
 
 source ../../.env
 
-SEARCH_DIR="${PROJECT_PATH}rs2fol/examples/thesis/test-run-1"
-OUTPUT_FILE="${PROJECT_PATH}rs2fol/examples/thesis/test-run-1.csv"
+SEARCH_DIR="${PROJECT_PATH}rs2fol/examples/thesis/test-run-2"
+OUTPUT_FILE="${PROJECT_PATH}rs2fol/examples/thesis/test-run-2.csv"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -20,9 +20,9 @@ run_check() {
     echo -e -n "$FILENAME - "
 
     if [[ "$USE_C" == "yes" ]]; then
-        RESULT=$($RS2FOL_PATH check --program vampire --option-id 2 -q -i "$FILE" -c "${PROJECT_PATH}rs2fol/examples/thesis/answer.n3s" -cf "${PROJECT_PATH}/rs2fol/examples/thesis/config.json" -r 2>&1 | tr -d '\n')
+        RESULT=$($RS2FOL_PATH check --program vampire --option-id 3 -q -i "$FILE" -c "${PROJECT_PATH}rs2fol/examples/thesis/answer.n3s" -cf "${PROJECT_PATH}/rs2fol/examples/thesis/config.json" -r 2>&1 | tr -d '\n')
     else
-        RESULT=$($RS2FOL_PATH check --program vampire --option-id 2 -q -i "$FILE" -cf "${PROJECT_PATH}/rs2fol/examples/thesis/config.json" -r 2>&1 | tr -d '\n')
+        RESULT=$($RS2FOL_PATH check --program vampire --option-id 3 -q -i "$FILE" -cf "${PROJECT_PATH}/rs2fol/examples/thesis/config.json" -r 2>&1 | tr -d '\n')
     fi
 
     echo "$FILENAME,$RESULT" >> "$OUTPUT_FILE"
