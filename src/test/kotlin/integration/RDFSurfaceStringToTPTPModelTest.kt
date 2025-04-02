@@ -1,14 +1,14 @@
 package integration
 
-import adapter.parser.RDFSurfaceParseServiceImpl
+import adapter.parser.RDFSurfaceParserServiceImpl
 import app.use_cases.modelTransformer.RDFSurfaceModelToFOLModelUseCase
-import app.use_cases.modelTransformer.RDFSurfaceModelToTPTPModelUseCase
+import app.use_cases.modelTransformer.RDFSurfaceModelToTPTPAnnotatedFormulaUseCase
 import entities.fol.*
 import entities.fol.tptp.AnnotatedFormula
 import entities.fol.tptp.FormulaType
 import entities.rdfsurfaces.NegativeSurface
 import entities.rdfsurfaces.QuerySurface
-import entities.rdfsurfaces.RdfTriple
+import entities.rdfsurfaces.RDFTriple
 import entities.rdfsurfaces.rdf_term.BlankNode
 import entities.rdfsurfaces.rdf_term.IRI
 import io.kotest.assertions.asClue
@@ -25,12 +25,12 @@ import kotlin.io.path.readText
 
 class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
     {
-        val rdfSurfaceParseService = RDFSurfaceParseServiceImpl()
+        val rdfSurfaceParseService = RDFSurfaceParserServiceImpl()
         val rdfSurfaceModelToFOLModelUseCase = RDFSurfaceModelToFOLModelUseCase()
 
         should("transform example2.n3 without exception") {
             val file = Path("src/test/resources/turtle/example2.n3")
-            val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -57,7 +57,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
 
         should("transform example3.n3 without exception") {
             val file = Path("src/test/resources/turtle/example3.n3")
-            val result = (RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = (RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -97,7 +97,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
 
         should("transform example4.n3 without exception") {
             val file = Path("src/test/resources/turtle/example4.n3")
-            val result = (RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = (RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -134,7 +134,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
         }
         should("transform example5.n3 without exception") {
             val file = Path("src/test/resources/turtle/example5.n3")
-            val result = (RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = (RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -173,7 +173,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
 
         should("transform example6.n3 without exception") {
             val file = Path("src/test/resources/turtle/example6.n3")
-            val result = (RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = (RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -213,7 +213,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
         should("transform example7.n3 without exception") {
             val file = Path("src/test/resources/turtle/example7.n3")
             val solutionFile = Path("src/test/resources/turtle/example7.p")
-            val result = (RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = (RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -241,7 +241,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
         should("transform example8.n3 without exception") {
             val file = Path("src/test/resources/turtle/example8.n3")
             val solutionFile = Path("src/test/resources/turtle/example8.p")
-            val result = (RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = (RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -269,7 +269,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
         should("transform example9.n3 without exception") {
             val file = Path("src/test/resources/turtle/example9.n3")
             val solutionFile = Path("src/test/resources/turtle/example9.p")
-            val result = (RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = (RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -365,7 +365,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
         should("transform example10.n3 without exception") {
             val file = Path("src/test/resources/turtle/example10.n3")
 
-            val result = (RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = (RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -405,7 +405,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
         should("transform example11.n3 without exception") {
             val file = Path("src/test/resources/turtle/example11.n3")
 
-            val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -494,7 +494,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
         should("transform example12.n3 without exception") {
             val file = Path("src/test/resources/turtle/example12.n3")
             val solutionFile = Path("src/test/resources/turtle/example12.p")
-            val result = (RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = (RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -542,7 +542,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
 
         should("transform example13.n3 without exception") {
             val file = Path("src/test/resources/turtle/example13.n3")
-            val result = (RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = (RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -569,7 +569,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
 
         should("transform example14.n3 without exception") {
             val file = Path("src/test/resources/turtle/example14.n3")
-            val result = (RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = (RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -617,7 +617,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
         should("transform example15.n3 without exception") {
             val file = Path("src/test/resources/turtle/example15.n3")
             val solutionFile = Path("src/test/resources/turtle/example15.p")
-            val result = (RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = (RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -660,7 +660,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
         }
         should("transform example16.n3 without exception") {
             val file = Path("src/test/resources/turtle/example16.n3")
-            val result = (RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = (RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -738,7 +738,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
 
         should("transform example17.n3 without exception") {
             val file = Path("src/test/resources/turtle/example17.n3")
-            val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -816,7 +816,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
 
         should("transform example20.n3 without exception - list as functions") {
             val file = Path("src/test/resources/turtle/example20.n3")
-            val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -849,7 +849,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
 
         should("transform example20.n3 without exception - list as RDF collections") {
             val file = Path("src/test/resources/turtle/example20.n3")
-            val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -919,7 +919,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
 
         should("transform example21.n3 without exception") {
             val file = Path("src/test/resources/turtle/example21.n3")
-            val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -988,7 +988,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
 
         should("transform example22.n3 without exception") {
             val file = Path("src/test/resources/turtle/example22.n3")
-            val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -1027,7 +1027,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
 
         should("transform example23.n3 without exception") {
             val file = Path("src/test/resources/turtle/example23.n3")
-            val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -1060,7 +1060,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
         }
         should("transform example24.n3 without exception") {
             val file = Path("src/test/resources/turtle/example24.n3")
-            val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -1146,7 +1146,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
 
         should("transform example25.n3 without exception") {
             val file = Path("src/test/resources/turtle/example25.n3")
-            val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -1201,7 +1201,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
         }
         should("transform example26.n3 without exception") {
             val file = Path("src/test/resources/turtle/example26.n3")
-            val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 rdfSurfaceParseService.parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -1317,12 +1317,12 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
                 val bnS = BlankNode("S")
                 val bnC = BlankNode("C")
 
-                val rdfTriple1 = RdfTriple(iri1, iri5, iri2)
-                val rdfTriple2 = RdfTriple(iri1, iri5, iri4)
-                val rdfTriple3 = RdfTriple(bnS, iri5, iri2)
-                val rdfTriple4 = RdfTriple(bnS, iri5, iri3)
-                val rdfTriple5 = RdfTriple(bnS, iri5, iri4)
-                val rdfTriple6 = RdfTriple(bnS, iri5, bnC)
+                val rdfTriple1 = RDFTriple(iri1, iri5, iri2)
+                val rdfTriple2 = RDFTriple(iri1, iri5, iri4)
+                val rdfTriple3 = RDFTriple(bnS, iri5, iri2)
+                val rdfTriple4 = RDFTriple(bnS, iri5, iri3)
+                val rdfTriple5 = RDFTriple(bnS, iri5, iri4)
+                val rdfTriple6 = RDFTriple(bnS, iri5, bnC)
 
                 val negativeSurface1 = NegativeSurface(listOf(), listOf(rdfTriple2))
                 val negativeSurface21 = NegativeSurface(listOf(), listOf(rdfTriple4))
@@ -1332,7 +1332,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
                 val querySurface = QuerySurface(listOf(bnS, bnC), listOf(rdfTriple6))
 
 
-                val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+                val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                     rdfSurfaceParseService.parseToEnd(
                         file.readText(),
                         IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -1440,14 +1440,14 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
                 val bnS = BlankNode("S")
                 val bnC = BlankNode("C")
 
-                val rdfTriple1 = RdfTriple(iri1, iri6, iri2)
-                val rdfTriple2 = RdfTriple(iri1, iri6, iri4)
-                val rdfTriple3 = RdfTriple(iri1, iri6, iri5)
-                val rdfTriple4 = RdfTriple(bnS, iri6, iri2)
-                val rdfTriple5 = RdfTriple(bnS, iri6, iri3)
-                val rdfTriple6 = RdfTriple(bnS, iri6, iri4)
-                val rdfTriple7 = RdfTriple(bnS, iri6, iri5)
-                val rdfTriple8 = RdfTriple(bnS, iri6, bnC)
+                val rdfTriple1 = RDFTriple(iri1, iri6, iri2)
+                val rdfTriple2 = RDFTriple(iri1, iri6, iri4)
+                val rdfTriple3 = RDFTriple(iri1, iri6, iri5)
+                val rdfTriple4 = RDFTriple(bnS, iri6, iri2)
+                val rdfTriple5 = RDFTriple(bnS, iri6, iri3)
+                val rdfTriple6 = RDFTriple(bnS, iri6, iri4)
+                val rdfTriple7 = RDFTriple(bnS, iri6, iri5)
+                val rdfTriple8 = RDFTriple(bnS, iri6, bnC)
 
                 val negativeSurface1 = NegativeSurface(listOf(), listOf(rdfTriple2))
                 val negativeSurface211 = NegativeSurface(listOf(), listOf(rdfTriple3))
@@ -1569,7 +1569,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
                     )
                 )
 
-                val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+                val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                     rdfSurfaceParseService.parseToEnd(
                         file.readText(),
                         IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -1808,7 +1808,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
                 )
 
 
-                val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+                val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                     rdfSurfaceParseService.parseToEnd(
                         file.readText(),
                         IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
@@ -1914,7 +1914,7 @@ class RdfSurfaceStringlToTPTPModelTest : ShouldSpec(
                 )
 
 
-                val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+                val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                     rdfSurfaceParseService.parseToEnd(
                         file.readText(),
                         IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),

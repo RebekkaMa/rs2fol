@@ -1,7 +1,7 @@
 package adapter.parser
 
-import app.interfaces.results.TptpTupleAnswerFormParserResult
-import app.interfaces.services.TptpTupleAnswerFormParserService
+import app.interfaces.results.TPTPTupleAnswerFormParserResult
+import app.interfaces.services.TPTPTupleAnswerFormParserService
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parser
@@ -21,7 +21,7 @@ import util.commandResult.RootError
 import util.commandResult.error
 import util.commandResult.success
 
-class TptpTupleAnswerFormToModelServiceImpl : Grammar<TPTPTupleAnswerFormAnswer>(), TptpTupleAnswerFormParserService {
+class TPTPTupleAnswerFormToModelServiceImpl : Grammar<TPTPTupleAnswerFormAnswer>(), TPTPTupleAnswerFormParserService {
 
     private val results = mutableListOf<AnswerTuple>()
     private val orResults = mutableListOf<List<AnswerTuple>>()
@@ -96,12 +96,12 @@ class TptpTupleAnswerFormToModelServiceImpl : Grammar<TPTPTupleAnswerFormAnswer>
                 .map { TPTPTupleAnswerFormAnswer(results.toList(), orResults.toList()) }
         }
 
-    override fun parseToEnd(answerTuple: String): Result<TptpTupleAnswerFormParserResult.Success.Parsed, RootError> {
+    override fun parseToEnd(answerTuple: String): Result<TPTPTupleAnswerFormParserResult.Success.Parsed, RootError> {
         return try {
-            success(TptpTupleAnswerFormParserResult.Success.Parsed(rootParser.parseToEnd(tokenizer.tokenize(answerTuple))))
+            success(TPTPTupleAnswerFormParserResult.Success.Parsed(rootParser.parseToEnd(tokenizer.tokenize(answerTuple))))
         } catch (exc: Throwable) {
             val parseError = when (exc) {
-                is ParseException -> TptpTupleAnswerFormParserResult.Error.GenericInvalidInput(
+                is ParseException -> TPTPTupleAnswerFormParserResult.Error.GenericInvalidInput(
                     tptpTuple = answerTuple,
                     throwable = exc
                 )

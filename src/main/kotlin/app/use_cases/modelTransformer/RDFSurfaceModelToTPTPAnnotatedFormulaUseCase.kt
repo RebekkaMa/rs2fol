@@ -7,7 +7,7 @@ import util.commandResult.Result
 import util.commandResult.RootError
 import util.commandResult.getOrElse
 
-class RDFSurfaceModelToTPTPModelUseCase(private val rdfSurfaceModelToFOLModelUseCase: RDFSurfaceModelToFOLModelUseCase) {
+class RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(private val rdfSurfaceModelToFOLModelUseCase: RDFSurfaceModelToFOLModelUseCase) {
     operator fun invoke(
         defaultPositiveSurface: PositiveSurface,
         ignoreQuerySurfaces: Boolean = false,

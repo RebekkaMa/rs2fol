@@ -13,7 +13,7 @@ class CanoncicalizeRDFSurfaceLiteralsUseCase(private val xsdLiteralService: XSDL
 
     private fun canonicalizeHayesGraphElement(hayesGraphElement: HayesGraphElement): Result<HayesGraphElement, RootError> {
         val canonicalized = when (hayesGraphElement) {
-            is RdfTriple -> {
+            is RDFTriple -> {
                 val subject = if (hayesGraphElement.rdfSubject is Literal) {
                     xsdLiteralService.createGeneralizedLiteral(hayesGraphElement.rdfSubject)
                         .getOrElse { return error(it) }.literal

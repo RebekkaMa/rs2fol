@@ -1,7 +1,7 @@
 package app.interfaces.services.coder
 
-import entities.rdfsurfaces.rdf_term.RdfTerm
+import entities.rdfsurfaces.rdf_term.RDFTerm
 
 interface N3SRDFTermCoderService {
-    fun <T : RdfTerm> encode(rdfTerm: T): T
+    fun <T : RDFTerm> encode(rdfTerm: T): T
 }

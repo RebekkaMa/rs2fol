@@ -1,8 +1,7 @@
 package unit.adapter.services.parser
 
 import adapter.parser.SZSParserServiceImpl
-import adapter.parser.TptpTupleAnswerFormToModelServiceImpl
-import app.interfaces.results.SZSParserServiceResult
+import adapter.parser.TPTPTupleAnswerFormToModelServiceImpl
 import entities.SZSOutputModel
 import entities.SZSOutputType
 import entities.SZSStatus
@@ -11,16 +10,14 @@ import io.kotest.core.spec.style.ShouldSpec
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.single
-import kotlinx.coroutines.flow.toList
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
-import util.commandResult.getErrorOrNull
 import util.commandResult.getSuccessOrNull
 import kotlin.test.assertTrue
 
 class SZSParserServiceTest : ShouldSpec({
     val parser = SZSParserServiceImpl(
-        tptpTupleAnswerFormToModelService = TptpTupleAnswerFormToModelServiceImpl()
+        tptpTupleAnswerFormToModelService = TPTPTupleAnswerFormToModelServiceImpl()
     )
 
     should("test valid SZS status parsing") {

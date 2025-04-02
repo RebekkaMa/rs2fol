@@ -2,8 +2,8 @@ package adapter.presenter
 
 import app.interfaces.services.presenter.SuccessToStringTransformerService
 import app.interfaces.services.presenter.TextStylerService
-import app.use_cases.results.*
-import app.use_cases.results.subUseCaseResults.QuestionAnsweringOutputToRdfSurfacesCascResult
+import app.use_cases.results.commands.*
+import app.use_cases.results.subUseCaseResults.QuestionAnsweringOutputToRDFSurfacesCascResult
 import util.commandResult.Success
 
 class SuccessToStringTransformerServiceImpl(private val textStyler: TextStylerService) : SuccessToStringTransformerService {
@@ -29,17 +29,17 @@ class SuccessToStringTransformerServiceImpl(private val textStyler: TextStylerSe
                 }
             }
 
-            is CascQaAnswerToRsResult.Success -> {
+            is CascQaAnswerToRSResult.Success -> {
                 when (success) {
-                    is CascQaAnswerToRsResult.Success.WriteToLine -> success.res
-                    is CascQaAnswerToRsResult.Success.WriteToFile -> ""
+                    is CascQaAnswerToRSResult.Success.WriteToLine -> success.res
+                    is CascQaAnswerToRSResult.Success.WriteToFile -> ""
                 }
             }
 
-            is RawQaAnswerToRsResult.Success -> {
+            is RawQaAnswerToRSResult.Success -> {
                 when (success) {
-                    is RawQaAnswerToRsResult.Success.WriteToLine -> success.res
-                    is RawQaAnswerToRsResult.Success.WriteToFile -> ""
+                    is RawQaAnswerToRSResult.Success.WriteToLine -> success.res
+                    is RawQaAnswerToRSResult.Success.WriteToFile -> ""
                 }
             }
 
@@ -55,10 +55,10 @@ class SuccessToStringTransformerServiceImpl(private val textStyler: TextStylerSe
                 is TransformResult.Success.WriteToFile -> ""
             }
 
-            is QuestionAnsweringOutputToRdfSurfacesCascResult.Success -> when (success) {
-                is QuestionAnsweringOutputToRdfSurfacesCascResult.Success.Refutation -> "Refutation found"
-                is QuestionAnsweringOutputToRdfSurfacesCascResult.Success.NothingFound -> "No answer found"
-                is QuestionAnsweringOutputToRdfSurfacesCascResult.Success.Answer -> success.data
+            is QuestionAnsweringOutputToRDFSurfacesCascResult.Success -> when (success) {
+                is QuestionAnsweringOutputToRDFSurfacesCascResult.Success.Refutation -> "Refutation found"
+                is QuestionAnsweringOutputToRDFSurfacesCascResult.Success.NothingFound -> "No answer found"
+                is QuestionAnsweringOutputToRDFSurfacesCascResult.Success.Answer -> success.data
             }
 
             else -> null

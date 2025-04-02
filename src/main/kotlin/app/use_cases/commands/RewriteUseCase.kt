@@ -1,10 +1,10 @@
 package app.use_cases.commands
 
 import app.interfaces.services.FileService
-import app.interfaces.services.RDFSurfaceParseService
+import app.interfaces.services.RDFSurfaceParserService
 import app.use_cases.modelToString.RdfSurfaceModelToN3UseCase
 import app.use_cases.modelTransformer.CanoncicalizeRDFSurfaceLiteralsUseCase
-import app.use_cases.results.RewriteResult
+import app.use_cases.results.commands.RewriteResult
 import entities.rdfsurfaces.rdf_term.IRI
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -14,7 +14,7 @@ import kotlin.io.path.pathString
 
 class RewriteUseCase(
     private val fileService: FileService,
-    private val rdfSurfaceParseService: RDFSurfaceParseService,
+    private val rdfSurfaceParserService: RDFSurfaceParserService,
     private val rdfSurfaceModelToN3UseCase : RdfSurfaceModelToN3UseCase,
     private val canoncicalizeRDFSurfaceLiteralsUseCase: CanoncicalizeRDFSurfaceLiteralsUseCase
 ) {
@@ -28,7 +28,7 @@ class RewriteUseCase(
         encode: Boolean
     ): Flow<InfoResult<RewriteResult.Success, RootError>> = flow {
 
-        val parserResult = rdfSurfaceParseService.parseToEnd(rdfSurface, baseIRI, rdfList)
+        val parserResult = rdfSurfaceParserService.parseToEnd(rdfSurface, baseIRI, rdfList)
         val result = parserResult.runOnSuccess { successResult ->
             val surface = if (dEntailment) {
                 canoncicalizeRDFSurfaceLiteralsUseCase.invoke(successResult.positiveSurface).getOrElse { err ->

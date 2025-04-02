@@ -1,7 +1,7 @@
 package unit.app.use_cases.modelToString
 
 import adapter.coder.FOLCoderServiceImpl
-import app.use_cases.modelToString.FOLModelToStringUseCase
+import app.use_cases.modelToString.FOLModelToFOFFormulaStringUseCase
 import app.use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
 import entities.fol.FOLConstant
 import entities.fol.tptp.AnnotatedFormula
@@ -11,15 +11,15 @@ import kotlin.test.assertEquals
 
 class TPTPAnnotatedFormulaModelToStringUseCaseTest : ShouldSpec({
     val folCoderServiceImpl = FOLCoderServiceImpl()
-    val folModelToStringUseCase = FOLModelToStringUseCase()
+    val folModelToFOFFormulaStringUseCase = FOLModelToFOFFormulaStringUseCase()
     
     should("invoke with conjecture") {
         val annotatedFormula = AnnotatedFormula("testName", FormulaType.Conjecture, FOLConstant("testConstant"))
         val encodedFOLModel = folCoderServiceImpl.encode(annotatedFormula.expression)
-        val transformedFormula = FOLModelToStringUseCase().invoke(encodedFOLModel)
+        val transformedFormula = FOLModelToFOFFormulaStringUseCase().invoke(encodedFOLModel)
 
         val result = TPTPAnnotatedFormulaModelToStringUseCase(
-            fOLModelToStringUseCase = folModelToStringUseCase,
+            fOLModelToFOFFormulaStringUseCase = folModelToFOFFormulaStringUseCase,
             fOLCoderService = folCoderServiceImpl
         ).invoke(
             annotatedFormula,
@@ -31,10 +31,10 @@ class TPTPAnnotatedFormulaModelToStringUseCaseTest : ShouldSpec({
     should("invoke with hypothesis") {
         val annotatedFormula = AnnotatedFormula("testName", FormulaType.Hypothesis, FOLConstant("testConstant"))
         val encodedFOLModel = folCoderServiceImpl.encode(annotatedFormula.expression)
-        val transformedFormula = FOLModelToStringUseCase().invoke(encodedFOLModel)
+        val transformedFormula = FOLModelToFOFFormulaStringUseCase().invoke(encodedFOLModel)
 
         val result = TPTPAnnotatedFormulaModelToStringUseCase(
-            fOLModelToStringUseCase = folModelToStringUseCase,
+            fOLModelToFOFFormulaStringUseCase = folModelToFOFFormulaStringUseCase,
             fOLCoderService = folCoderServiceImpl
         ).invoke(
             annotatedFormula,
@@ -46,10 +46,10 @@ class TPTPAnnotatedFormulaModelToStringUseCaseTest : ShouldSpec({
     should("invoke with lemma") {
         val annotatedFormula = AnnotatedFormula("testName", FormulaType.Lemma, FOLConstant("testConstant"))
         val encodedFOLModel = folCoderServiceImpl.encode(annotatedFormula.expression)
-        val transformedFormula = FOLModelToStringUseCase().invoke(encodedFOLModel)
+        val transformedFormula = FOLModelToFOFFormulaStringUseCase().invoke(encodedFOLModel)
 
         val result = TPTPAnnotatedFormulaModelToStringUseCase(
-            fOLModelToStringUseCase = folModelToStringUseCase,
+            fOLModelToFOFFormulaStringUseCase = folModelToFOFFormulaStringUseCase,
             fOLCoderService = folCoderServiceImpl
         ).invoke(
             annotatedFormula,
@@ -61,10 +61,10 @@ class TPTPAnnotatedFormulaModelToStringUseCaseTest : ShouldSpec({
     should("invoke with question") {
         val annotatedFormula = AnnotatedFormula("testName", FormulaType.Question, FOLConstant("testConstant"))
         val encodedFOLModel = folCoderServiceImpl.encode(annotatedFormula.expression)
-        val transformedFormula = FOLModelToStringUseCase().invoke(encodedFOLModel)
+        val transformedFormula = FOLModelToFOFFormulaStringUseCase().invoke(encodedFOLModel)
 
         val result = TPTPAnnotatedFormulaModelToStringUseCase(
-            fOLModelToStringUseCase = folModelToStringUseCase,
+            fOLModelToFOFFormulaStringUseCase = folModelToFOFFormulaStringUseCase,
             fOLCoderService = folCoderServiceImpl
         ).invoke(
             annotatedFormula,

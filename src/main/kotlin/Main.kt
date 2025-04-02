@@ -7,7 +7,7 @@ suspend fun main(args: Array<String>) =
     Rs2fol().subcommands(
         Rewrite(),
         Transform(),
-        QaAnswerToRs(),
+        QaAnswerToRS(),
         Check(),
         TransformQa(),
     )

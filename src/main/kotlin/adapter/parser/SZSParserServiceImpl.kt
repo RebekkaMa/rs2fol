@@ -2,7 +2,7 @@ package adapter.parser
 
 import app.interfaces.results.SZSParserServiceResult
 import app.interfaces.services.SZSParserService
-import app.interfaces.services.TptpTupleAnswerFormParserService
+import app.interfaces.services.TPTPTupleAnswerFormParserService
 import entities.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -10,7 +10,7 @@ import util.commandResult.*
 import java.io.BufferedReader
 
 class SZSParserServiceImpl(
-    private val tptpTupleAnswerFormToModelService: TptpTupleAnswerFormParserService
+    private val tptpTupleAnswerFormToModelService: TPTPTupleAnswerFormParserService
 ) : SZSParserService {
 
     private val statusRegex = Regex("[#%]{1,2} SZS status ([\\w-]+)(?: for ([^\\s:]+)?)?(?:\\s*:\\s*(.+))?")

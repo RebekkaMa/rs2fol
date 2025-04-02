@@ -3,7 +3,7 @@ package entities.rdfsurfaces.rdf_term
 import entities.rdfsurfaces.rdf_term.IRI.Companion.from
 import util.IRIConstants
 
-sealed class Literal : RdfTerm {
+sealed class Literal : RDFTerm {
     abstract val lexicalValue: String
     abstract val datatypeIRI: IRI
 

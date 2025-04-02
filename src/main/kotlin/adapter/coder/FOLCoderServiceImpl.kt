@@ -24,8 +24,6 @@ class FOLCoderServiceImpl : FOLCoderService {
             is FOLImplies -> FOLImplies(encode(folModel.left), encode(folModel.right))
             is FOLNot -> FOLNot(encode(folModel.expression))
             is FOLOr -> FOLOr(folModel.expressions.map { encode(it) })
-            is FOLEquality -> FOLEquality(encode(folModel.left), encode(folModel.right))
-            is FOLNotEqual -> FOLNotEqual(encode(folModel.left), encode(folModel.right))
             is FOLPredicate -> FOLPredicate(folModel.name, folModel.arguments.map { encode(it) })
             is FOLExists -> FOLExists(
                 folModel.variables.map { FOLVariable(encodeVariable(it.name)) },
@@ -58,8 +56,6 @@ class FOLCoderServiceImpl : FOLCoderService {
             is FOLImplies -> FOLImplies(decode(folModel.left), decode(folModel.right))
             is FOLNot -> FOLNot(decode(folModel.expression))
             is FOLOr -> FOLOr(folModel.expressions.map { decode(it) })
-            is FOLEquality -> FOLEquality(decode(folModel.left), decode(folModel.right))
-            is FOLNotEqual -> FOLNotEqual(decode(folModel.left), decode(folModel.right))
             is FOLPredicate -> FOLPredicate(folModel.name, folModel.arguments.map { decode(it) })
             is FOLExists -> FOLExists(
                 folModel.variables.map { FOLVariable(decodeVariable(it.name)) },

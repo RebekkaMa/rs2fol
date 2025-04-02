@@ -3,7 +3,7 @@ package unit.app.use_cases.modelToString
 import adapter.coder.N3SRDFTermCoderServiceImpl
 import app.use_cases.modelToString.RdfSurfaceModelToN3UseCase
 import entities.rdfsurfaces.PositiveSurface
-import entities.rdfsurfaces.RdfTriple
+import entities.rdfsurfaces.RDFTriple
 import entities.rdfsurfaces.rdf_term.BlankNode
 import entities.rdfsurfaces.rdf_term.IRI
 import io.kotest.core.spec.style.ShouldSpec
@@ -16,7 +16,7 @@ class RdfSurfaceModelToN3UseCaseTest : ShouldSpec({
         val positiveSurface = PositiveSurface(
             graffiti = listOf(BlankNode("b1")),
             hayesGraph = listOf(
-                RdfTriple(
+                RDFTriple(
                     rdfSubject = BlankNode("b1"),
                     rdfPredicate = IRI.from("http://example.org/predicate"),
                     rdfObject = IRI.from("http://example.org/object")
@@ -39,22 +39,22 @@ class RdfSurfaceModelToN3UseCaseTest : ShouldSpec({
         val positiveSurface = PositiveSurface(
             graffiti = listOf(BlankNode("b1")),
             hayesGraph = listOf(
-                RdfTriple(
+                RDFTriple(
                     rdfSubject = BlankNode("b1"),
                     rdfPredicate = IRI.from("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
                     rdfObject = IRI.from("http://www.w3.org/2000/10/swap/log#list")
                 ),
-                RdfTriple(
+                RDFTriple(
                     rdfSubject = BlankNode("b1"),
                     rdfPredicate = IRI.from("http://www.w3.org/2000/01/rdf-schema#subClassOf"),
                     rdfObject = IRI.from("http://www.w3.org/2001/XMLSchema#string")
                 ),
-                RdfTriple(
+                RDFTriple(
                     rdfSubject = BlankNode("b1"),
                     rdfPredicate = IRI.from("http://example.org/predicate#test"),
                     rdfObject = IRI.from("http://example.org/object#test")
                 ),
-                RdfTriple(
+                RDFTriple(
                     rdfSubject = BlankNode("b1"),
                     rdfPredicate = IRI.from("http://example.org/abc#test"),
                     rdfObject = IRI.from("http://example.org/def#test")

@@ -2,14 +2,14 @@ package unit.controllerTest
 
 import app.use_cases.modelTransformer.ListType
 import app.use_cases.modelTransformer.RDFSurfaceModelToFOLModelUseCase
-import app.use_cases.modelTransformer.RDFSurfaceModelToTPTPModelUseCase
+import app.use_cases.modelTransformer.RDFSurfaceModelToTPTPAnnotatedFormulaUseCase
 import entities.fol.*
 import entities.fol.tptp.AnnotatedFormula
 import entities.fol.tptp.FormulaType
 import entities.rdfsurfaces.NegativeSurface
 import entities.rdfsurfaces.PositiveSurface
 import entities.rdfsurfaces.QuerySurface
-import entities.rdfsurfaces.RdfTriple
+import entities.rdfsurfaces.RDFTriple
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
 import io.kotest.core.spec.style.ShouldSpec
@@ -35,7 +35,7 @@ class RDFSurfaceModelToTPTPModeUseCaseTest
                 val iri2 = IRI.from("http://www.perceive.net/schemas/relationship/enemyOf")
                 val iri3 = IRI.from("http://example.org/#green-goblin")
 
-                val rdfTriple = RdfTriple(iri1, iri2, iri3)
+                val rdfTriple = RDFTriple(iri1, iri2, iri3)
 
                 val expectedResult = AnnotatedFormula(
                     "axiom",
@@ -50,7 +50,7 @@ class RDFSurfaceModelToTPTPModeUseCaseTest
                     )
                 )
 
-                val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+                val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                     PositiveSurface(
                         listOf(),
                         listOf(rdfTriple)
@@ -89,13 +89,13 @@ class RDFSurfaceModelToTPTPModeUseCaseTest
                             "and up to two sequential apostrophes ('')."
                 val literal5 = DefaultLiteral(literal5Value, IRI.from(XSDDatatype.XSDstring.uri))
 
-                val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
-                val rdfTriple2 = RdfTriple(iri1, iri2, literal1)
-                val rdfTriple3 = RdfTriple(iri1, iri2, literal1)
-                val rdfTriple4 = RdfTriple(iri1, iri3, literal2)
-                val rdfTriple5 = RdfTriple(iri1, iri3, literal3)
-                val rdfTriple6 = RdfTriple(iri1, iri3, literal4)
-                val rdfTriple7 = RdfTriple(iri1, iri4, literal5)
+                val rdfTriple1 = RDFTriple(iri1, iri2, literal1)
+                val rdfTriple2 = RDFTriple(iri1, iri2, literal1)
+                val rdfTriple3 = RDFTriple(iri1, iri2, literal1)
+                val rdfTriple4 = RDFTriple(iri1, iri3, literal2)
+                val rdfTriple5 = RDFTriple(iri1, iri3, literal3)
+                val rdfTriple6 = RDFTriple(iri1, iri3, literal4)
+                val rdfTriple7 = RDFTriple(iri1, iri4, literal5)
 
                 val expectedResult =
                     AnnotatedFormula(
@@ -168,7 +168,7 @@ class RDFSurfaceModelToTPTPModeUseCaseTest
                     )
 
 
-                val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+                val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                     PositiveSurface(
                         listOf(),
                         listOf(rdfTriple1, rdfTriple2, rdfTriple3, rdfTriple4, rdfTriple5, rdfTriple6, rdfTriple7)
@@ -196,7 +196,7 @@ class RDFSurfaceModelToTPTPModeUseCaseTest
                 val collection1 =
                     Collection(listOf(literal2, literal3, literal4))
 
-                val rdfTriple1 = RdfTriple(collection1, iri1, literal1)
+                val rdfTriple1 = RDFTriple(collection1, iri1, literal1)
 
                 val expectedResult = AnnotatedFormula(
                     "axiom",
@@ -219,7 +219,7 @@ class RDFSurfaceModelToTPTPModeUseCaseTest
                 )
 
 
-                val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+                val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                     PositiveSurface(
                         listOf(), listOf(rdfTriple1)
                     ),
@@ -242,12 +242,12 @@ class RDFSurfaceModelToTPTPModeUseCaseTest
                 val bnS = BlankNode("S")
                 val bnC = BlankNode("C")
 
-                val rdfTriple1 = RdfTriple(iri1, iri5, iri2)
-                val rdfTriple2 = RdfTriple(iri1, iri5, iri4)
-                val rdfTriple3 = RdfTriple(bnS, iri5, iri2)
-                val rdfTriple4 = RdfTriple(bnS, iri5, iri3)
-                val rdfTriple5 = RdfTriple(bnS, iri5, iri4)
-                val rdfTriple6 = RdfTriple(bnS, iri5, bnC)
+                val rdfTriple1 = RDFTriple(iri1, iri5, iri2)
+                val rdfTriple2 = RDFTriple(iri1, iri5, iri4)
+                val rdfTriple3 = RDFTriple(bnS, iri5, iri2)
+                val rdfTriple4 = RDFTriple(bnS, iri5, iri3)
+                val rdfTriple5 = RDFTriple(bnS, iri5, iri4)
+                val rdfTriple6 = RDFTriple(bnS, iri5, bnC)
 
                 val negativeSurface1 = NegativeSurface(listOf(), listOf(rdfTriple2))
                 val negativeSurface21 = NegativeSurface(listOf(), listOf(rdfTriple4))
@@ -337,7 +337,7 @@ class RDFSurfaceModelToTPTPModeUseCaseTest
                 )
 
 
-                val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+                val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                     PositiveSurface(
                         listOf(),
                         listOf(rdfTriple1, negativeSurface1, negativeSurface2, querySurface)
@@ -365,14 +365,14 @@ class RDFSurfaceModelToTPTPModeUseCaseTest
                 val bnS = BlankNode("S")
                 val bnC = BlankNode("C")
 
-                val rdfTriple1 = RdfTriple(iri1, iri6, iri2)
-                val rdfTriple2 = RdfTriple(iri1, iri6, iri4)
-                val rdfTriple3 = RdfTriple(iri1, iri6, iri5)
-                val rdfTriple4 = RdfTriple(bnS, iri6, iri2)
-                val rdfTriple5 = RdfTriple(bnS, iri6, iri3)
-                val rdfTriple6 = RdfTriple(bnS, iri6, iri4)
-                val rdfTriple7 = RdfTriple(bnS, iri6, iri5)
-                val rdfTriple8 = RdfTriple(bnS, iri6, bnC)
+                val rdfTriple1 = RDFTriple(iri1, iri6, iri2)
+                val rdfTriple2 = RDFTriple(iri1, iri6, iri4)
+                val rdfTriple3 = RDFTriple(iri1, iri6, iri5)
+                val rdfTriple4 = RDFTriple(bnS, iri6, iri2)
+                val rdfTriple5 = RDFTriple(bnS, iri6, iri3)
+                val rdfTriple6 = RDFTriple(bnS, iri6, iri4)
+                val rdfTriple7 = RDFTriple(bnS, iri6, iri5)
+                val rdfTriple8 = RDFTriple(bnS, iri6, bnC)
 
                 val negativeSurface1 = NegativeSurface(listOf(), listOf(rdfTriple2))
                 val negativeSurface211 = NegativeSurface(listOf(), listOf(rdfTriple3))
@@ -494,7 +494,7 @@ class RDFSurfaceModelToTPTPModeUseCaseTest
                     )
                 )
 
-                val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+                val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                     PositiveSurface(
                         listOf(),
                         listOf(rdfTriple1, negativeSurface1, negativeSurface2, negativeSurface3, querySurface)
@@ -518,12 +518,12 @@ class RDFSurfaceModelToTPTPModeUseCaseTest
                 val bnS = BlankNode("S")
                 val bnC = BlankNode("C")
 
-                val rdfTriple1 = RdfTriple(iri1, iri5, iri2)
-                val rdfTriple2 = RdfTriple(iri1, iri5, iri4)
-                val rdfTriple3 = RdfTriple(bnS, iri5, iri2)
-                val rdfTriple4 = RdfTriple(bnS, iri5, iri3)
-                val rdfTriple5 = RdfTriple(bnS, iri5, iri4)
-                val rdfTriple6 = RdfTriple(bnS, iri5, bnC)
+                val rdfTriple1 = RDFTriple(iri1, iri5, iri2)
+                val rdfTriple2 = RDFTriple(iri1, iri5, iri4)
+                val rdfTriple3 = RDFTriple(bnS, iri5, iri2)
+                val rdfTriple4 = RDFTriple(bnS, iri5, iri3)
+                val rdfTriple5 = RDFTriple(bnS, iri5, iri4)
+                val rdfTriple6 = RDFTriple(bnS, iri5, bnC)
 
                 val negativeSurface1 = NegativeSurface(listOf(), listOf(rdfTriple2))
                 val negativeSurface21 = NegativeSurface(listOf(), listOf(rdfTriple4))
@@ -597,7 +597,7 @@ class RDFSurfaceModelToTPTPModeUseCaseTest
                     )
                 )
 
-                val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+                val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                     PositiveSurface(
                         listOf(),
                         listOf(rdfTriple1, negativeSurface1, negativeSurface2, querySurface)
@@ -629,9 +629,9 @@ class RDFSurfaceModelToTPTPModeUseCaseTest
             val collection1 = Collection(listOf(literal1, literal2, literal3))
             val collection2 = Collection(listOf(collection1, literal4, literal5))
 
-            val rdfTriple1 = RdfTriple(collection1, iri1, iri2)
-            val rdfTriple2 = RdfTriple(bnS, iri5, collection2)
-            val rdfTriple3 = RdfTriple(bnS, iri5, bnC)
+            val rdfTriple1 = RDFTriple(collection1, iri1, iri2)
+            val rdfTriple2 = RDFTriple(bnS, iri5, collection2)
+            val rdfTriple3 = RDFTriple(bnS, iri5, bnC)
 
             val fofList1 = FOLFunction(
                 "list",
@@ -684,7 +684,7 @@ class RDFSurfaceModelToTPTPModeUseCaseTest
                 )
             )
 
-            val result = RDFSurfaceModelToTPTPModelUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
+            val result = RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(rdfSurfaceModelToFOLModelUseCase).invoke(
                 PositiveSurface(
                     listOf(),
                     listOf(rdfTriple1, rdfTriple2, rdfTriple3)

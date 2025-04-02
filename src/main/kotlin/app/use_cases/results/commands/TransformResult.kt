@@ -1,4 +1,4 @@
-package app.use_cases.results
+package app.use_cases.results.commands
 
 
 sealed interface TransformResult {

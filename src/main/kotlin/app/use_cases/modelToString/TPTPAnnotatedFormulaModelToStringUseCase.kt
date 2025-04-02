@@ -5,7 +5,7 @@ import entities.fol.tptp.AnnotatedFormula
 import entities.fol.tptp.FormulaType
 
 class TPTPAnnotatedFormulaModelToStringUseCase(
-    private val fOLModelToStringUseCase: FOLModelToStringUseCase,
+    private val fOLModelToFOFFormulaStringUseCase: FOLModelToFOFFormulaStringUseCase,
     private val fOLCoderService: FOLCoderService
 ) {
 
@@ -14,7 +14,7 @@ class TPTPAnnotatedFormulaModelToStringUseCase(
         encode: Boolean
     ): String {
         val encodedFOLModel = if (encode) fOLCoderService.encode(annotatedFormula.expression) else annotatedFormula.expression
-        val transformedFormula = fOLModelToStringUseCase.invoke(encodedFOLModel)
+        val transformedFormula = fOLModelToFOFFormulaStringUseCase.invoke(encodedFOLModel)
         when (annotatedFormula.type) {
             FormulaType.Axiom -> {
                 return "fof(${annotatedFormula.name}, axiom, $transformedFormula)."

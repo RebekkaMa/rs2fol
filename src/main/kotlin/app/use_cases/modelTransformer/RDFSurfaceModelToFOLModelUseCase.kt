@@ -33,7 +33,7 @@ class RDFSurfaceModelToFOLModelUseCase {
         )
 
 
-        fun transform(rdfTerm: RdfTerm): GeneralTerm {
+        fun transform(rdfTerm: RDFTerm): GeneralTerm {
             return when (rdfTerm) {
                 is BlankNode -> transform(rdfTerm)
                 is Literal -> transform(rdfTerm)
@@ -105,7 +105,7 @@ class RDFSurfaceModelToFOLModelUseCase {
                     }
                 }
 
-                is RdfTriple -> FOLPredicate(
+                is RDFTriple -> FOLPredicate(
                     name = "triple",
                     arguments = listOf(
                         transform(hayesGraphElement.rdfSubject),

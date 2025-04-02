@@ -1,7 +1,7 @@
 package app.use_cases.commands.subUseCase
 
 import app.interfaces.services.SZSParserService
-import app.use_cases.results.subUseCaseResults.QuestionAnsweringOutputToRdfSurfacesCascResult
+import app.use_cases.results.subUseCaseResults.QuestionAnsweringOutputToRDFSurfacesCascResult
 import entities.SZSAnswerTupleFormModel
 import entities.SZSOutputModel
 import entities.SZSStatus
@@ -16,7 +16,7 @@ import util.commandResult.fold
 import util.commandResult.map
 import java.io.BufferedReader
 
-class QuestionAnsweringOutputToRdfSurfacesCascUseCase(
+class QuestionAnsweringOutputToRDFSurfacesCascUseCase(
     private val tptpTupleAnswerModelToN3SUseCase: TPTPTupleAnswerModelToN3SUseCase,
     private val szsParserService: SZSParserService
 ) {
@@ -24,7 +24,7 @@ class QuestionAnsweringOutputToRdfSurfacesCascUseCase(
     suspend operator fun invoke(
         qSurface: QSurface,
         questionAnsweringBufferedReader: BufferedReader,
-    ): Result<QuestionAnsweringOutputToRdfSurfacesCascResult.Success, RootError> {
+    ): Result<QuestionAnsweringOutputToRDFSurfacesCascResult.Success, RootError> {
         val answerTuples = mutableSetOf<AnswerTuple>()
         var refutationFound = false
 
@@ -67,21 +67,21 @@ class QuestionAnsweringOutputToRdfSurfacesCascUseCase(
                 return tptpTupleAnswerModelToN3SUseCase(
                     answerTuples = answerTuples.toList(),
                     qSurface = qSurface
-                ).map { QuestionAnsweringOutputToRdfSurfacesCascResult.Success.Answer(it) }
+                ).map { QuestionAnsweringOutputToRDFSurfacesCascResult.Success.Answer(it) }
             }
             return Result.Success(
-                QuestionAnsweringOutputToRdfSurfacesCascResult.Success.Refutation
+                QuestionAnsweringOutputToRDFSurfacesCascResult.Success.Refutation
             )
         }
 
         return if (answerTuples.isEmpty()) {
-            Result.Success(QuestionAnsweringOutputToRdfSurfacesCascResult.Success.NothingFound)
+            Result.Success(QuestionAnsweringOutputToRDFSurfacesCascResult.Success.NothingFound)
         } else {
             tptpTupleAnswerModelToN3SUseCase(
                 answerTuples = answerTuples.toList(),
                 qSurface = qSurface
             ).map {
-                QuestionAnsweringOutputToRdfSurfacesCascResult.Success.Answer(it)
+                QuestionAnsweringOutputToRDFSurfacesCascResult.Success.Answer(it)
             }
         }
     }

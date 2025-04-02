@@ -5,7 +5,7 @@ import adapter.parser.util.stringLiteralLongSingleQuote
 import adapter.parser.util.stringLiteralQuote
 import adapter.parser.util.stringLiteralSingleQuote
 import app.interfaces.services.coder.N3SRDFTermCoderService
-import app.use_cases.results.modelToString.RdfSurfaceModelToN3sResult
+import app.use_cases.results.modelToString.RDFSurfaceModelToN3SResult
 import entities.rdfsurfaces.*
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
@@ -19,7 +19,7 @@ class RdfSurfaceModelToN3UseCase(
     operator fun invoke(
         defaultPositiveSurface: PositiveSurface,
         encode: Boolean
-    ): Result<String, RdfSurfaceModelToN3sResult.Error> {
+    ): Result<String, RDFSurfaceModelToN3SResult.Error> {
         val spaceBase = "   "
 
         var prefixCounter = 0
@@ -99,7 +99,7 @@ class RdfSurfaceModelToN3UseCase(
             separator = " "
         ) { transform(it) }
 
-        fun transform(rdfTerm: RdfTerm): String = when (rdfTerm) {
+        fun transform(rdfTerm: RDFTerm): String = when (rdfTerm) {
             is BlankNode -> transform(rdfTerm)
             is Literal -> transform(rdfTerm)
             is IRI -> transform(rdfTerm)
@@ -137,7 +137,7 @@ class RdfSurfaceModelToN3UseCase(
                     "$newDepthSpace$graffitiStringList $surfaceNameString {$hayesGraphString$newDepthSpace}."
                 }
 
-                is RdfTriple -> "$newDepthSpace${transform(hayesGraphElement.rdfSubject)} ${
+                is RDFTriple -> "$newDepthSpace${transform(hayesGraphElement.rdfSubject)} ${
                     transform(
                         hayesGraphElement.rdfPredicate
                     )
@@ -169,7 +169,7 @@ class RdfSurfaceModelToN3UseCase(
                 rdfSurfacesGraphString.insert(0, "@prefix $prefix: <$iri>.${System.lineSeparator()}")
             }
         } catch (exception: LiteralTransformationException) {
-            return Result.Error(RdfSurfaceModelToN3sResult.Error.LiteralTransformationError(exception.value, exception.iri))
+            return Result.Error(RDFSurfaceModelToN3SResult.Error.LiteralTransformationError(exception.value, exception.iri))
         }
 
         return Result.Success(rdfSurfacesGraphString.toString())

@@ -2,7 +2,7 @@ package app.use_cases.modelToString
 
 import entities.fol.*
 
-class FOLModelToStringUseCase {
+class FOLModelToFOFFormulaStringUseCase {
 
     operator fun invoke(
         folExpression: FOLExpression,
@@ -54,15 +54,6 @@ class FOLModelToStringUseCase {
                         invoke(folExpression.expression, indent + 1)
             }
 
-            is FOLEquality -> {
-                "($newLine$padding  ${
-                    invoke(
-                        folExpression.left,
-                        indent + 1
-                    )
-                } =$newLine$padding  ${invoke(folExpression.right, indent + 1)}$newLine$padding)"
-            }
-
             is FOLEquivalent -> {
                 "($newLine$padding  ${invoke(folExpression.left, indent + 1)} <=>$newLine$padding  ${
                     invoke(
@@ -81,14 +72,6 @@ class FOLModelToStringUseCase {
                 } =>$newLine$padding  ${invoke(folExpression.right, indent + 1)}$newLine$padding)"
             }
 
-            is FOLNotEqual -> {
-                "($newLine$padding  ${
-                    invoke(
-                        folExpression.left,
-                        indent + 1
-                    )
-                } !=$newLine$padding  ${invoke(folExpression.right, indent + 1)}$newLine$padding)"
-            }
         }
     }
 }

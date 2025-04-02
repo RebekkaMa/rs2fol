@@ -1,10 +1,10 @@
 package app.use_cases.commands
 
 import app.interfaces.services.FileService
-import app.interfaces.services.RDFSurfaceParseService
-import app.interfaces.services.TptpTupleAnswerFormParserService
+import app.interfaces.services.RDFSurfaceParserService
+import app.interfaces.services.TPTPTupleAnswerFormParserService
 import app.use_cases.commands.subUseCase.TPTPTupleAnswerModelToN3SUseCase
-import app.use_cases.results.RawQaAnswerToRsResult
+import app.use_cases.results.commands.RawQaAnswerToRSResult
 import entities.rdfsurfaces.rdf_term.IRI
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -13,9 +13,9 @@ import java.io.InputStream
 import java.nio.file.Path
 import kotlin.io.path.pathString
 
-class RawQaAnswerToRsUseCase(
-    private val rdfSurfaceParseService: RDFSurfaceParseService,
-    private val tptpTupleAnswerFormParserService: TptpTupleAnswerFormParserService,
+class RawQaAnswerToRSUseCase(
+    private val rdfSurfaceParserService: RDFSurfaceParserService,
+    private val tptpTupleAnswerFormParserService: TPTPTupleAnswerFormParserService,
     private val fileService: FileService,
     private val tPTPTupleAnswerModelToN3SUseCase: TPTPTupleAnswerModelToN3SUseCase
 ) {
@@ -25,9 +25,9 @@ class RawQaAnswerToRsUseCase(
         baseIri: IRI,
         outputPath: Path,
         rdfList: Boolean,
-    ): Flow<InfoResult<RawQaAnswerToRsResult.Success, RootError>> = flow {
+    ): Flow<InfoResult<RawQaAnswerToRSResult.Success, RootError>> = flow {
 
-        val qSurfaces = rdfSurfaceParseService
+        val qSurfaces = rdfSurfaceParserService
             .parseToEnd(rdfSurface, baseIri, rdfList)
             .getOrElse {
                 emit(infoError(it))
@@ -36,8 +36,8 @@ class RawQaAnswerToRsUseCase(
             .positiveSurface
             .getQSurfaces()
 
-        if (qSurfaces.isEmpty()) emit(infoError(RawQaAnswerToRsResult.Error.NoQuestionSurface))
-        if (qSurfaces.size > 1) emit(infoError(RawQaAnswerToRsResult.Error.MoreThanOneQuestionSurface))
+        if (qSurfaces.isEmpty()) emit(infoError(RawQaAnswerToRSResult.Error.NoQuestionSurface))
+        if (qSurfaces.size > 1) emit(infoError(RawQaAnswerToRSResult.Error.MoreThanOneQuestionSurface))
 
         val qSurface = qSurfaces.single()
 
@@ -54,7 +54,7 @@ class RawQaAnswerToRsUseCase(
         }
 
         if (outputPath.pathString == "-") {
-            emit(infoSuccess(RawQaAnswerToRsResult.Success.WriteToLine(result)))
+            emit(infoSuccess(RawQaAnswerToRSResult.Success.WriteToLine(result)))
             return@flow
         }
 
@@ -62,7 +62,7 @@ class RawQaAnswerToRsUseCase(
             path = outputPath,
             content = result
         ).also {
-            emit(infoSuccess(RawQaAnswerToRsResult.Success.WriteToFile(success = it)))
+            emit(infoSuccess(RawQaAnswerToRSResult.Success.WriteToFile(success = it)))
         }
     }
 }

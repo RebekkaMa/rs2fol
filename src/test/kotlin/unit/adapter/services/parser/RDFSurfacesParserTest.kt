@@ -1,11 +1,11 @@
 package unit.adapter.services.parser
 
-import adapter.parser.RDFSurfaceParseServiceImpl
-import app.interfaces.results.RdfSurfaceParserResult
+import adapter.parser.RDFSurfaceParserServiceImpl
+import app.interfaces.results.RDFSurfaceParserResult
 import entities.rdfsurfaces.NegativeSurface
 import entities.rdfsurfaces.PositiveSurface
 import entities.rdfsurfaces.QuerySurface
-import entities.rdfsurfaces.RdfTriple
+import entities.rdfsurfaces.RDFTriple
 import entities.rdfsurfaces.rdf_term.*
 import entities.rdfsurfaces.rdf_term.Collection
 import io.kotest.core.spec.style.ShouldSpec
@@ -33,9 +33,9 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val iri2 = IRI.from("http://www.perceive.net/schemas/relationship/enemyOf")
                 val iri3 = IRI.from("http://example.org/#green-goblin")
 
-                val rdfTriple = RdfTriple(iri1, iri2, iri3)
+                val rdfTriple = RDFTriple(iri1, iri2, iri3)
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = true
@@ -54,10 +54,10 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val iri4 = IRI.from("http://xmlns.com/foaf/0.1/name")
                 val literal = DefaultLiteral("Spiderman", IRI.from(XSDDatatype.XSDstring.uri))
 
-                val rdfTriple1 = RdfTriple(iri1, iri2, iri3)
-                val rdfTriple2 = RdfTriple(iri1, iri4, literal)
+                val rdfTriple1 = RDFTriple(iri1, iri2, iri3)
+                val rdfTriple2 = RDFTriple(iri1, iri4, literal)
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = true
@@ -76,10 +76,10 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val iri4 = IRI.from("http://xmlns.com/foaf/0.1/name")
                 val literal = DefaultLiteral("Spiderman", IRI.from(XSDDatatype.XSDstring.uri))
 
-                val rdfTriple1 = RdfTriple(iri1, iri2, iri3)
-                val rdfTriple2 = RdfTriple(iri1, iri4, literal)
+                val rdfTriple1 = RDFTriple(iri1, iri2, iri3)
+                val rdfTriple2 = RDFTriple(iri1, iri4, literal)
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = true
@@ -97,10 +97,10 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val literal1 = DefaultLiteral("Spiderman", IRI.from(XSDDatatype.XSDstring.uri))
                 val literal2 = LanguageTaggedString("Человек-паук", "ru")
 
-                val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
-                val rdfTriple2 = RdfTriple(iri1, iri2, literal2)
+                val rdfTriple1 = RDFTriple(iri1, iri2, literal1)
+                val rdfTriple2 = RDFTriple(iri1, iri2, literal2)
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = true
@@ -118,10 +118,10 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val literal2 = LanguageTaggedString("Человек-паук", "ru")
 
 
-                val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
-                val rdfTriple2 = RdfTriple(iri1, iri2, literal2)
+                val rdfTriple1 = RDFTriple(iri1, iri2, literal1)
+                val rdfTriple2 = RDFTriple(iri1, iri2, literal2)
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = true
@@ -137,9 +137,9 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val iri2 = IRI.from("http://www.perceive.net/schemas/relationship/enemyOf")
                 val iri3 = IRI.from("http://example.org/#spiderman")
 
-                val rdfTriple1 = RdfTriple(iri1, iri2, iri3)
+                val rdfTriple1 = RDFTriple(iri1, iri2, iri3)
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = true
@@ -156,9 +156,9 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val iri2 = IRI.from("http://www.perceive.net/schemas/relationship/enemyOf")
                 val iri3 = IRI.from("http://example.org/#spiderman")
 
-                val rdfTriple1 = RdfTriple(iri1, iri2, iri3)
+                val rdfTriple1 = RDFTriple(iri1, iri2, iri3)
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = true
@@ -192,18 +192,18 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val iri20 = IRI.from("http://another.example/subject8")
 
 
-                val rdfTriple1 = RdfTriple(iri1, iri2, iri3)
-                val rdfTriple2 = RdfTriple(iri4, iri5, iri6)
-                val rdfTriple3 = RdfTriple(iri4, iri5, iri6)
-                val rdfTriple4 = RdfTriple(iri7, iri8, iri9)
-                val rdfTriple5 = RdfTriple(iri7, iri8, iri9)
-                val rdfTriple6 = RdfTriple(iri10, iri11, iri12)
-                val rdfTriple7 = RdfTriple(iri13, iri14, iri15)
-                val rdfTriple8 = RdfTriple(iri16, iri17, iri18)
-                val rdfTriple9 = RdfTriple(iri19, iri17, iri20)
+                val rdfTriple1 = RDFTriple(iri1, iri2, iri3)
+                val rdfTriple2 = RDFTriple(iri4, iri5, iri6)
+                val rdfTriple3 = RDFTriple(iri4, iri5, iri6)
+                val rdfTriple4 = RDFTriple(iri7, iri8, iri9)
+                val rdfTriple5 = RDFTriple(iri7, iri8, iri9)
+                val rdfTriple6 = RDFTriple(iri10, iri11, iri12)
+                val rdfTriple7 = RDFTriple(iri13, iri14, iri15)
+                val rdfTriple8 = RDFTriple(iri16, iri17, iri18)
+                val rdfTriple9 = RDFTriple(iri19, iri17, iri20)
 
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = true
@@ -233,10 +233,10 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val literal1 = DefaultLiteral("Green Goblin", IRI.from(XSDDatatype.XSDstring.uri))
                 val literal2 = DefaultLiteral("Spiderman", IRI.from(XSDDatatype.XSDstring.uri))
 
-                val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
-                val rdfTriple2 = RdfTriple(iri3, iri2, literal2)
+                val rdfTriple1 = RDFTriple(iri1, iri2, literal1)
+                val rdfTriple2 = RDFTriple(iri3, iri2, literal2)
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = true
@@ -267,16 +267,16 @@ class RDFSurfacesParserTest : ShouldSpec(
                             "and up to two sequential apostrophes ('').", IRI.from(XSDDatatype.XSDstring.uri)
                 )
 
-                val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
-                val rdfTriple2 = RdfTriple(iri1, iri2, literal1)
-                val rdfTriple3 = RdfTriple(iri1, iri2, literal1)
-                val rdfTriple4 = RdfTriple(iri1, iri3, literal2)
-                val rdfTriple5 = RdfTriple(iri1, iri3, literal3)
-                val rdfTriple6 = RdfTriple(iri1, iri3, literal4)
-                val rdfTriple7 = RdfTriple(iri1, iri4, literal5)
+                val rdfTriple1 = RDFTriple(iri1, iri2, literal1)
+                val rdfTriple2 = RDFTriple(iri1, iri2, literal1)
+                val rdfTriple3 = RDFTriple(iri1, iri2, literal1)
+                val rdfTriple4 = RDFTriple(iri1, iri3, literal2)
+                val rdfTriple5 = RDFTriple(iri1, iri3, literal3)
+                val rdfTriple6 = RDFTriple(iri1, iri3, literal4)
+                val rdfTriple7 = RDFTriple(iri1, iri4, literal5)
 
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = true
@@ -300,11 +300,11 @@ class RDFSurfacesParserTest : ShouldSpec(
                 )
                 val literal3 = DefaultLiteral("1.663E-4", IRI.from(XSDDatatype.XSDdouble.uri))
 
-                val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
-                val rdfTriple2 = RdfTriple(iri1, iri3, literal2)
-                val rdfTriple3 = RdfTriple(iri1, iri4, literal3)
+                val rdfTriple1 = RDFTriple(iri1, iri2, literal1)
+                val rdfTriple2 = RDFTriple(iri1, iri3, literal2)
+                val rdfTriple3 = RDFTriple(iri1, iri4, literal3)
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = true
@@ -322,9 +322,9 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val literal1 = DefaultLiteral("false", IRI.from(XSDDatatype.XSDboolean.uri))
 
-                val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
+                val rdfTriple1 = RDFTriple(iri1, iri2, literal1)
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = true
@@ -342,11 +342,11 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val bn2 = BlankNode("bob")
 
 
-                val rdfTriple1 = RdfTriple(bn1, iri1, bn2)
-                val rdfTriple2 = RdfTriple(bn2, iri1, bn1)
+                val rdfTriple1 = RDFTriple(bn1, iri1, bn2)
+                val rdfTriple2 = RDFTriple(bn2, iri1, bn1)
 
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = true
@@ -370,11 +370,11 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val literal = DefaultLiteral("Bob", IRI.from(XSDDatatype.XSDstring.uri))
 
 
-                val rdfTriple1 = RdfTriple(bn1, iri1, bn2)
-                val rdfTriple2 = RdfTriple(bn2, iri2, literal)
+                val rdfTriple1 = RDFTriple(bn1, iri1, bn2)
+                val rdfTriple2 = RDFTriple(bn2, iri2, literal)
 
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = true
@@ -404,15 +404,15 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val literal3 = DefaultLiteral("Eve", IRI.from(XSDDatatype.XSDstring.uri))
 
 
-                val rdfTriple1 = RdfTriple(bn1, iri1, bn3)
-                val rdfTriple2 = RdfTriple(bn1, iri2, literal1)
-                val rdfTriple3 = RdfTriple(bn2, iri2, literal3)
-                val rdfTriple4 = RdfTriple(bn3, iri2, literal2)
-                val rdfTriple5 = RdfTriple(bn3, iri1, bn2)
-                val rdfTriple6 = RdfTriple(bn3, iri3, iri4)
+                val rdfTriple1 = RDFTriple(bn1, iri1, bn3)
+                val rdfTriple2 = RDFTriple(bn1, iri2, literal1)
+                val rdfTriple3 = RDFTriple(bn2, iri2, literal3)
+                val rdfTriple4 = RDFTriple(bn3, iri2, literal2)
+                val rdfTriple5 = RDFTriple(bn3, iri1, bn2)
+                val rdfTriple6 = RDFTriple(bn3, iri3, iri4)
 
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = true
@@ -443,14 +443,14 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val literal3 = DefaultLiteral("Eve", IRI.from(XSDDatatype.XSDstring.uri))
 
 
-                val rdfTriple1 = RdfTriple(bn1, iri2, literal1)
-                val rdfTriple2 = RdfTriple(bn1, iri1, bn2)
-                val rdfTriple3 = RdfTriple(bn2, iri2, literal2)
-                val rdfTriple4 = RdfTriple(bn2, iri1, bn3)
-                val rdfTriple5 = RdfTriple(bn3, iri2, literal3)
-                val rdfTriple6 = RdfTriple(bn2, iri3, iri4)
+                val rdfTriple1 = RDFTriple(bn1, iri2, literal1)
+                val rdfTriple2 = RDFTriple(bn1, iri1, bn2)
+                val rdfTriple3 = RDFTriple(bn2, iri2, literal2)
+                val rdfTriple4 = RDFTriple(bn2, iri1, bn3)
+                val rdfTriple5 = RDFTriple(bn3, iri2, literal3)
+                val rdfTriple6 = RDFTriple(bn2, iri3, iri4)
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = true
@@ -474,10 +474,10 @@ class RDFSurfacesParserTest : ShouldSpec(
 
                 val collection1 = Collection(listOf(literal1, literal2))
 
-                val rdfTriple1 = RdfTriple(iri1, iri2, collection1)
+                val rdfTriple1 = RDFTriple(iri1, iri2, collection1)
 
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = false
@@ -502,14 +502,14 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val literal2 = DefaultLiteral("banana", IRI.from(XSDDatatype.XSDstring.uri))
 
 
-                val rdfTriple1 = RdfTriple(iri1, iri2, bn2)
-                val rdfTriple2 = RdfTriple(bn1, iri3, literal2)
-                val rdfTriple3 = RdfTriple(bn1, iri4, iri5)
-                val rdfTriple4 = RdfTriple(bn2, iri3, literal1)
-                val rdfTriple5 = RdfTriple(bn2, iri4, bn1)
+                val rdfTriple1 = RDFTriple(iri1, iri2, bn2)
+                val rdfTriple2 = RDFTriple(bn1, iri3, literal2)
+                val rdfTriple3 = RDFTriple(bn1, iri4, iri5)
+                val rdfTriple4 = RDFTriple(bn2, iri3, literal1)
+                val rdfTriple5 = RDFTriple(bn2, iri4, bn1)
 
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = false
@@ -529,9 +529,9 @@ class RDFSurfacesParserTest : ShouldSpec(
                 )
 
 
-                val rdfTriple1 = RdfTriple(iri1, iri2, literal1)
+                val rdfTriple1 = RDFTriple(iri1, iri2, literal1)
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = false
@@ -558,9 +558,9 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val collection1 =
                     Collection(listOf(literal2, literal3, literal4))
 
-                val rdfTriple1 = RdfTriple(collection1, iri1, literal1)
+                val rdfTriple1 = RDFTriple(collection1, iri1, literal1)
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = false
@@ -588,15 +588,15 @@ class RDFSurfacesParserTest : ShouldSpec(
                 )
                 val literal4 = DefaultLiteral("3E1", IRI.from(XSDDatatype.XSDdouble.uri))
 
-                val rdfTriple1 = RdfTriple(bn0, iri2, literal2)
-                val rdfTriple2 = RdfTriple(bn0, iri3, bn1)
-                val rdfTriple3 = RdfTriple(bn1, iri2, literal3)
-                val rdfTriple4 = RdfTriple(bn1, iri3, bn2)
-                val rdfTriple5 = RdfTriple(bn2, iri2, literal4)
-                val rdfTriple6 = RdfTriple(bn2, iri3, iri4)
-                val rdfTriple7 = RdfTriple(bn0, iri1, literal1)
+                val rdfTriple1 = RDFTriple(bn0, iri2, literal2)
+                val rdfTriple2 = RDFTriple(bn0, iri3, bn1)
+                val rdfTriple3 = RDFTriple(bn1, iri2, literal3)
+                val rdfTriple4 = RDFTriple(bn1, iri3, bn2)
+                val rdfTriple5 = RDFTriple(bn2, iri2, literal4)
+                val rdfTriple6 = RDFTriple(bn2, iri3, iri4)
+                val rdfTriple7 = RDFTriple(bn0, iri1, literal1)
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = false
@@ -622,10 +622,10 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val collection1 = Collection(listOf(literal2))
                 val collection2 = Collection(listOf(literal1, bn0, collection1))
 
-                val rdfTriple1 = RdfTriple(collection2, iri3, iri4)
-                val rdfTriple2 = RdfTriple(bn0, iri1, iri2)
+                val rdfTriple1 = RDFTriple(collection2, iri3, iri4)
+                val rdfTriple2 = RDFTriple(bn0, iri1, iri2)
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = false
@@ -655,18 +655,18 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val literal1 = DefaultLiteral("1", IRI.from(XSDDatatype.XSDinteger.uri))
                 val literal2 = DefaultLiteral("2", IRI.from(XSDDatatype.XSDinteger.uri))
 
-                val rdfTriple1 = RdfTriple(bn0, iri2, literal1)
-                val rdfTriple2 = RdfTriple(bn0, iri3, bn1)
-                val rdfTriple3 = RdfTriple(bn1, iri2, bn2)
-                val rdfTriple4 = RdfTriple(bn2, iri1, iri5)
-                val rdfTriple5 = RdfTriple(bn1, iri3, bn3)
-                val rdfTriple6 = RdfTriple(bn3, iri2, bn4)
-                val rdfTriple7 = RdfTriple(bn4, iri2, literal2)
-                val rdfTriple8 = RdfTriple(bn4, iri3, iri4)
-                val rdfTriple9 = RdfTriple(bn3, iri3, iri4)
+                val rdfTriple1 = RDFTriple(bn0, iri2, literal1)
+                val rdfTriple2 = RDFTriple(bn0, iri3, bn1)
+                val rdfTriple3 = RDFTriple(bn1, iri2, bn2)
+                val rdfTriple4 = RDFTriple(bn2, iri1, iri5)
+                val rdfTriple5 = RDFTriple(bn1, iri3, bn3)
+                val rdfTriple6 = RDFTriple(bn3, iri2, bn4)
+                val rdfTriple7 = RDFTriple(bn4, iri2, literal2)
+                val rdfTriple8 = RDFTriple(bn4, iri3, iri4)
+                val rdfTriple9 = RDFTriple(bn3, iri3, iri4)
 
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = true
@@ -701,12 +701,12 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val bnS = BlankNode("S")
                 val bnC = BlankNode("C")
 
-                val rdfTriple1 = RdfTriple(iri1, iri5, iri2)
-                val rdfTriple2 = RdfTriple(iri1, iri5, iri4)
-                val rdfTriple3 = RdfTriple(bnS, iri5, iri2)
-                val rdfTriple4 = RdfTriple(bnS, iri5, iri3)
-                val rdfTriple5 = RdfTriple(bnS, iri5, iri4)
-                val rdfTriple6 = RdfTriple(bnS, iri5, bnC)
+                val rdfTriple1 = RDFTriple(iri1, iri5, iri2)
+                val rdfTriple2 = RDFTriple(iri1, iri5, iri4)
+                val rdfTriple3 = RDFTriple(bnS, iri5, iri2)
+                val rdfTriple4 = RDFTriple(bnS, iri5, iri3)
+                val rdfTriple5 = RDFTriple(bnS, iri5, iri4)
+                val rdfTriple6 = RDFTriple(bnS, iri5, bnC)
 
                 val negativeSurface1 = NegativeSurface(listOf(), listOf(rdfTriple2))
                 val negativeSurface21 = NegativeSurface(listOf(), listOf(rdfTriple4))
@@ -715,7 +715,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                     NegativeSurface(listOf(bnS), listOf(rdfTriple3, negativeSurface21, negativeSurface22))
                 val querySurface = QuerySurface(listOf(bnS, bnC), listOf(rdfTriple6))
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = true
@@ -738,14 +738,14 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val bnS = BlankNode("S")
                 val bnC = BlankNode("C")
 
-                val rdfTriple1 = RdfTriple(iri1, iri6, iri2)
-                val rdfTriple2 = RdfTriple(iri1, iri6, iri4)
-                val rdfTriple3 = RdfTriple(iri1, iri6, iri5)
-                val rdfTriple4 = RdfTriple(bnS, iri6, iri2)
-                val rdfTriple5 = RdfTriple(bnS, iri6, iri3)
-                val rdfTriple6 = RdfTriple(bnS, iri6, iri4)
-                val rdfTriple7 = RdfTriple(bnS, iri6, iri5)
-                val rdfTriple8 = RdfTriple(bnS, iri6, bnC)
+                val rdfTriple1 = RDFTriple(iri1, iri6, iri2)
+                val rdfTriple2 = RDFTriple(iri1, iri6, iri4)
+                val rdfTriple3 = RDFTriple(iri1, iri6, iri5)
+                val rdfTriple4 = RDFTriple(bnS, iri6, iri2)
+                val rdfTriple5 = RDFTriple(bnS, iri6, iri3)
+                val rdfTriple6 = RDFTriple(bnS, iri6, iri4)
+                val rdfTriple7 = RDFTriple(bnS, iri6, iri5)
+                val rdfTriple8 = RDFTriple(bnS, iri6, bnC)
 
                 val negativeSurface1 = NegativeSurface(listOf(), listOf(rdfTriple2))
                 val negativeSurface211 = NegativeSurface(listOf(), listOf(rdfTriple3))
@@ -761,7 +761,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 )
                 val querySurface = QuerySurface(listOf(bnS, bnC), listOf(rdfTriple8))
 
-                RDFSurfaceParseServiceImpl().parseToEnd(
+                RDFSurfaceParserServiceImpl().parseToEnd(
                     file.readText(),
                     IRI.from("file://" + file.absolute().parent.invariantSeparatorsPathString + "/"),
                     useRDFLists = true
@@ -774,7 +774,7 @@ class RDFSurfacesParserTest : ShouldSpec(
         context("duplicated Blank Nodes") {
             should("change Blank Nodes Base") {
                 val testStr = "@prefix : <http://example.org#> . _:BN_12 _:BN_043 _:BN_0023. (:a _:BN_23 []) :b :c."
-                val rdfSurfaceParser = RDFSurfaceParseServiceImpl()
+                val rdfSurfaceParser = RDFSurfaceParserServiceImpl()
 
                 rdfSurfaceParser.parseToEnd(
                     input = testStr,
@@ -787,19 +787,19 @@ class RDFSurfacesParserTest : ShouldSpec(
             should("throw an exeption") {
                 val testStr =
                     "@prefix : <http://example.org#> . _:BN_12 _:BN_043 _:BN_0000000000000023. (:a _:BN_23 []) :b :c."
-                val rdfSurfaceParser = RDFSurfaceParseServiceImpl()
+                val rdfSurfaceParser = RDFSurfaceParserServiceImpl()
                 rdfSurfaceParser.parseToEnd(
                     testStr,
                     IRI.from("file://" + IRI.from(System.getProperty("user.dir"))),
                     useRDFLists = true
-                ).getErrorOrNull() shouldBe RdfSurfaceParserResult.Error.BlankNodeLabelCollision
+                ).getErrorOrNull() shouldBe RDFSurfaceParserResult.Error.BlankNodeLabelCollision
             }
 
         }
         context("case insensitive base") {
             should("accept case insensitive 'base' and 'prefix'") {
                 val testStr = "BaSe <http://example.org#> \n prEfix : <http://example.de#> \n  <#prefix> :a \"base\""
-                val rdfSurfaceParser = RDFSurfaceParseServiceImpl()
+                val rdfSurfaceParser = RDFSurfaceParserServiceImpl()
 
                 val iri1 = IRI.from("http://example.org#prefix")
                 val iri2 = IRI.from("http://example.de#a")
@@ -812,26 +812,26 @@ class RDFSurfacesParserTest : ShouldSpec(
                     true
                 ).getSuccessOrNull().shouldNotBeNull().positiveSurface shouldBeEqualToComparingFields PositiveSurface(
                     listOf(),
-                    listOf(RdfTriple(iri1, iri2, literal))
+                    listOf(RDFTriple(iri1, iri2, literal))
                 )
             }
         }
 
         context("numeric Literals"){
             should("create DefaultLiteral with valid double literal") {
-                val literal = RDFSurfaceParseServiceImpl().createNumericLiteral("1.23E4")
+                val literal = RDFSurfaceParserServiceImpl().createNumericLiteral("1.23E4")
                 assertEquals("1.23E4", literal.lexicalValue)
                 assertEquals(IRI.from(IRIConstants.XSD_DOUBLE), literal.datatypeIRI)
             }
 
             should("create DefaultLiteral with valid decimal literal") {
-                val literal = RDFSurfaceParseServiceImpl().createNumericLiteral("123.45")
+                val literal = RDFSurfaceParserServiceImpl().createNumericLiteral("123.45")
                 assertEquals("123.45", literal.lexicalValue)
                 assertEquals(IRI.from(IRIConstants.XSD_DECIMAL), literal.datatypeIRI)
             }
 
             should("create DefaultLiteral with valid integer literal") {
-                val literal = RDFSurfaceParseServiceImpl().createNumericLiteral("123")
+                val literal = RDFSurfaceParserServiceImpl().createNumericLiteral("123")
                 assertEquals("123", literal.lexicalValue)
                 assertEquals(IRI.from(IRIConstants.XSD_INTEGER), literal.datatypeIRI)
             }

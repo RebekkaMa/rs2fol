@@ -1,4 +1,4 @@
-package app.use_cases.results
+package app.use_cases.results.commands
 
 sealed interface RewriteResult {
     sealed interface Success : util.commandResult.Success, RewriteResult {

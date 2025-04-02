@@ -1,12 +1,12 @@
 package app.use_cases.commands
 
 import app.interfaces.services.FileService
-import app.interfaces.services.RDFSurfaceParseService
+import app.interfaces.services.RDFSurfaceParserService
 import app.use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
 import app.use_cases.modelTransformer.CanoncicalizeRDFSurfaceLiteralsUseCase
 import app.use_cases.modelTransformer.FormulaRole
-import app.use_cases.modelTransformer.RDFSurfaceModelToTPTPModelUseCase
-import app.use_cases.results.TransformResult
+import app.use_cases.modelTransformer.RDFSurfaceModelToTPTPAnnotatedFormulaUseCase
+import app.use_cases.results.commands.TransformResult
 import entities.rdfsurfaces.rdf_term.IRI
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -16,9 +16,9 @@ import kotlin.io.path.pathString
 
 class TransformUseCase(
     private val fileService: FileService,
-    private val rdfSurfaceParseService: RDFSurfaceParseService,
+    private val rdfSurfaceParserService: RDFSurfaceParserService,
     private val tPTPAnnotatedFormulaModelToStringUseCase : TPTPAnnotatedFormulaModelToStringUseCase,
-    private val rdfSurfaceModelToTPTPModelUseCase: RDFSurfaceModelToTPTPModelUseCase,
+    private val rdfSurfaceModelToTPTPAnnotatedFormulaUseCase: RDFSurfaceModelToTPTPAnnotatedFormulaUseCase,
     private val canoncicalizeRDFSurfaceLiteralsUseCase: CanoncicalizeRDFSurfaceLiteralsUseCase
 ) {
 
@@ -33,7 +33,7 @@ class TransformUseCase(
         encode: Boolean,
     ): Flow<InfoResult<TransformResult.Success, RootError>> = flow {
 
-        val parseResult = rdfSurfaceParseService.parseToEnd(rdfSurface, baseIri, useRdfLists)
+        val parseResult = rdfSurfaceParserService.parseToEnd(rdfSurface, baseIri, useRdfLists)
         val axiomFormula = parseResult
             .runOnSuccess { successResult ->
                 val surface = if (dEntailment) {
@@ -42,7 +42,7 @@ class TransformUseCase(
                         return@flow
                     }
                 } else successResult.positiveSurface
-                rdfSurfaceModelToTPTPModelUseCase.invoke(
+                rdfSurfaceModelToTPTPAnnotatedFormulaUseCase.invoke(
                     defaultPositiveSurface = surface,
                     ignoreQuerySurfaces = ignoreQuerySurface,
                 )
@@ -54,7 +54,7 @@ class TransformUseCase(
             .joinToString(separator = System.lineSeparator()) { tPTPAnnotatedFormulaModelToStringUseCase.invoke(it, encode) }
 
         val consequenceFormula = consequenceSurface?.let {
-            val consequenceParseResult = rdfSurfaceParseService.parseToEnd(it, baseIri, useRdfLists)
+            val consequenceParseResult = rdfSurfaceParserService.parseToEnd(it, baseIri, useRdfLists)
             consequenceParseResult
                 .runOnSuccess { successResult ->
                     val surface = if (dEntailment) {
@@ -63,7 +63,7 @@ class TransformUseCase(
                             return@flow
                         }
                     } else successResult.positiveSurface
-                    rdfSurfaceModelToTPTPModelUseCase.invoke(
+                    rdfSurfaceModelToTPTPAnnotatedFormulaUseCase.invoke(
                         defaultPositiveSurface = surface,
                         ignoreQuerySurfaces = ignoreQuerySurface,
                         formulaRole = FormulaRole.Conjecture,

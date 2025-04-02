@@ -1,8 +1,8 @@
 package adapter.parser
 
 import adapter.parser.util.*
-import app.interfaces.results.RdfSurfaceParserResult
-import app.interfaces.services.RDFSurfaceParseService
+import app.interfaces.results.RDFSurfaceParserResult
+import app.interfaces.services.RDFSurfaceParserService
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parser
@@ -26,7 +26,7 @@ typealias FreeVariables = Set<BlankNode>
 typealias CollectionBlankNodes = Set<BlankNode>
 typealias InterimParseResult = Triple<HayesGraph, FreeVariables, CollectionBlankNodes>
 
-class RDFSurfaceParseServiceImpl : Grammar<PositiveSurface>(), RDFSurfaceParseService {
+class RDFSurfaceParserServiceImpl : Grammar<PositiveSurface>(), RDFSurfaceParserService {
 
     private object BlankNodeCounter {
         private var count: Int = 0
@@ -47,11 +47,11 @@ class RDFSurfaceParseServiceImpl : Grammar<PositiveSurface>(), RDFSurfaceParseSe
 
     private val space by regexToken("\\s+", ignore = true)
 
-    private val blankNodeTriplesSet = mutableListOf<RdfTriple>()
+    private val blankNodeTriplesSet = mutableListOf<RDFTriple>()
     private val prefixMap = mutableMapOf<String, String>()
     private var baseIri: IRI = from("file://" + System.getProperty("user.dir") + "/")
 
-    private val collectionTripleSet = mutableListOf<RdfTriple>()
+    private val collectionTripleSet = mutableListOf<RDFTriple>()
     private val blankNodeToDirectParentSet = mutableSetOf<BlankNode>()
 
     private val varSet = mutableSetOf<BlankNode>()
@@ -166,25 +166,25 @@ class RDFSurfaceParseServiceImpl : Grammar<PositiveSurface>(), RDFSurfaceParseSe
         BlankNode(createBlankNodeId()).also { blankNodeSubj ->
             varSet.add(blankNodeSubj)
             objList.forEach {
-                blankNodeTriplesSet.add(RdfTriple(blankNodeSubj, pred, it))
+                blankNodeTriplesSet.add(RDFTriple(blankNodeSubj, pred, it))
             }
             semicolonRestList.forEach {
                 val (semiPred, semiObjList) = it ?: return@forEach
                 semiObjList.forEach { semiObj ->
-                    blankNodeTriplesSet.add(RdfTriple(blankNodeSubj, semiPred, semiObj))
+                    blankNodeTriplesSet.add(RDFTriple(blankNodeSubj, semiPred, semiObj))
                 }
             }
         }
     }
 
-    private val collection: Parser<RdfTerm> by -lpar and zeroOrMore(parser(this::rdfObject)) and -rpar use {
+    private val collection: Parser<RDFTerm> by -lpar and zeroOrMore(parser(this::rdfObject)) and -rpar use {
         if (useRDFLists) {
             if (this.isEmpty()) from(IRIConstants.RDF_NIL_IRI) else {
                 val collectionStart = BlankNode(createBlankNodeId())
                 blankNodeToDirectParentSet.add(collectionStart)
                 this.foldIndexed(collectionStart) { index, acc, s ->
                     collectionTripleSet.add(
-                        RdfTriple(
+                        RDFTriple(
                             acc,
                             from(IRIConstants.RDF_FIRST_IRI),
                             s
@@ -192,7 +192,7 @@ class RDFSurfaceParseServiceImpl : Grammar<PositiveSurface>(), RDFSurfaceParseSe
                     )
                     if (index >= this.lastIndex) {
                         collectionTripleSet.add(
-                            RdfTriple(
+                            RDFTriple(
                                 acc,
                                 from(IRIConstants.RDF_REST_IRI),
                                 from(IRIConstants.RDF_NIL_IRI)
@@ -203,7 +203,7 @@ class RDFSurfaceParseServiceImpl : Grammar<PositiveSurface>(), RDFSurfaceParseSe
                     val nextRestBlankNode = BlankNode(createBlankNodeId())
                     blankNodeToDirectParentSet.add(nextRestBlankNode)
                     collectionTripleSet.add(
-                        RdfTriple(
+                        RDFTriple(
                             acc,
                             from(IRIConstants.RDF_REST_IRI),
                             nextRestBlankNode
@@ -230,7 +230,7 @@ class RDFSurfaceParseServiceImpl : Grammar<PositiveSurface>(), RDFSurfaceParseSe
             else -> it
         }
     } or blankNode.map { varSet.add(it); it } or literal
-    private val rdfObject: Parser<RdfTerm> by iri or blankNode.map { varSet.add(it); it } or literal or blankNodePropertyList or collection
+    private val rdfObject: Parser<RDFTerm> by iri or blankNode.map { varSet.add(it); it } or literal or blankNodePropertyList or collection
 
     private val verb by predicate or a.map { from(IRIConstants.RDF_TYPE_IRI) } or literal or iri
 
@@ -252,13 +252,13 @@ class RDFSurfaceParseServiceImpl : Grammar<PositiveSurface>(), RDFSurfaceParseSe
             if (predObjList != null) {
                 val (pred, objList, semicolonRestList) = predObjList
                 objList.forEach {
-                    add(RdfTriple(subj, pred, it))
+                    add(RDFTriple(subj, pred, it))
                 }
                 semicolonRestList.forEach {
                     val (semiPred, semiObjList) = it ?: return@forEach
                     semiObjList.forEach { semiObj ->
                         add(
-                            RdfTriple(
+                            RDFTriple(
                                 subj,
                                 semiPred,
                                 semiObj
@@ -411,27 +411,27 @@ class RDFSurfaceParseServiceImpl : Grammar<PositiveSurface>(), RDFSurfaceParseSe
     }
 
 
-    override fun parseToEnd(input: String, baseIRI: IRI, useRDFLists: Boolean): Result<RdfSurfaceParserResult.Success.Parsed, RootError> {
+    override fun parseToEnd(input: String, baseIRI: IRI, useRDFLists: Boolean): Result<RDFSurfaceParserResult.Success.Parsed, RootError> {
         this.useRDFLists = useRDFLists
         var bnLabel = "BN_"
         var i = 0
         while (input.contains("_:$bnLabel\\d+".toRegex()) && i++ in 0..10) {
             bnLabel += '0'
         }
-        if (i > 10) return error(RdfSurfaceParserResult.Error.BlankNodeLabelCollision)  //("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
+        if (i > 10) return error(RDFSurfaceParserResult.Error.BlankNodeLabelCollision)  //("Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'.")
         this.bnLabel = bnLabel
         this.baseIri = baseIRI
         return try {
-            success(RdfSurfaceParserResult.Success.Parsed(rootParser.parseToEnd(tokenizer.tokenize(input))))
+            success(RDFSurfaceParserResult.Success.Parsed(rootParser.parseToEnd(tokenizer.tokenize(input))))
         } catch (exc: Throwable) {
             when (exc) {
-                is SurfaceNotSupportedException -> RdfSurfaceParserResult.Error.SurfaceNotSupported(surface = exc.surface)
-                is UndefinedPrefixException -> RdfSurfaceParserResult.Error.UndefinedPrefix(prefix = exc.prefix)
-                is LiteralNotValidException -> RdfSurfaceParserResult.Error.LiteralNotValid(
+                is SurfaceNotSupportedException -> RDFSurfaceParserResult.Error.SurfaceNotSupported(surface = exc.surface)
+                is UndefinedPrefixException -> RDFSurfaceParserResult.Error.UndefinedPrefix(prefix = exc.prefix)
+                is LiteralNotValidException -> RDFSurfaceParserResult.Error.LiteralNotValid(
                     value = exc.value,
                     iri = exc.iri
                 )
-                is ParseException -> RdfSurfaceParserResult.Error.GenericInvalidInput(cause = exc.toString() + System.lineSeparator() + (exc.stackTrace.firstOrNull() ?: ""))
+                is ParseException -> RDFSurfaceParserResult.Error.GenericInvalidInput(cause = exc.toString() + System.lineSeparator() + (exc.stackTrace.firstOrNull() ?: ""))
                 else -> throw exc
             }.let { error(it) }
         }

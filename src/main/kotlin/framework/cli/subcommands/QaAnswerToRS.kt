@@ -19,7 +19,7 @@ import util.commandResult.fold
 import util.workingDir
 import kotlin.io.path.*
 
-class QaAnswerToRs : SuspendingCliktCommand() {
+class QaAnswerToRS : SuspendingCliktCommand() {
     private val commonOptions by CommonOptions()
 
     private val input by option(

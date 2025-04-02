@@ -3,7 +3,7 @@ package app.use_cases.commands
 import app.interfaces.services.SZSParserService
 import app.interfaces.services.TheoremProverRunnerService
 import app.use_cases.commands.subUseCase.GetTheoremProverCommandUseCase
-import app.use_cases.results.CheckResult
+import app.use_cases.results.commands.CheckResult
 import entities.SZSAnswerTupleFormModel
 import entities.SZSOutputModel
 import entities.SZSStatus

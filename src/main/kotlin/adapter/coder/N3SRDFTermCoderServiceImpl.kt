@@ -4,11 +4,11 @@ import adapter.parser.util.pnChars
 import adapter.parser.util.pnCharsU
 import app.interfaces.services.coder.N3SRDFTermCoderService
 import entities.rdfsurfaces.rdf_term.BlankNode
-import entities.rdfsurfaces.rdf_term.RdfTerm
+import entities.rdfsurfaces.rdf_term.RDFTerm
 
 class N3SRDFTermCoderServiceImpl : N3SRDFTermCoderService {
 
-    override fun <T : RdfTerm> encode(rdfTerm: T): T {
+    override fun <T : RDFTerm> encode(rdfTerm: T): T {
         return when (rdfTerm) {
             is BlankNode -> {
                 return BlankNode(encodeBlankNodeId(rdfTerm.blankNodeId)) as T

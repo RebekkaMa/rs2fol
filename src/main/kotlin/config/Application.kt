@@ -4,9 +4,9 @@ import adapter.coder.FOLCoderServiceImpl
 import adapter.coder.N3SRDFTermCoderServiceImpl
 import adapter.file.FileServiceImpl
 import adapter.jena.XSDLiteralServiceImpl
-import adapter.parser.RDFSurfaceParseServiceImpl
+import adapter.parser.RDFSurfaceParserServiceImpl
 import adapter.parser.SZSParserServiceImpl
-import adapter.parser.TptpTupleAnswerFormToModelServiceImpl
+import adapter.parser.TPTPTupleAnswerFormToModelServiceImpl
 import adapter.presenter.*
 import adapter.theoremProver.ConfigLoaderServiceImpl
 import adapter.theoremProver.TheoremProverRunnerServiceImpl
@@ -20,15 +20,15 @@ import app.interfaces.services.presenter.SuccessToStringTransformerService
 import app.interfaces.services.presenter.TextStylerService
 import app.use_cases.commands.*
 import app.use_cases.commands.subUseCase.GetTheoremProverCommandUseCase
-import app.use_cases.commands.subUseCase.QuestionAnsweringOutputToRdfSurfacesCascUseCase
+import app.use_cases.commands.subUseCase.QuestionAnsweringOutputToRDFSurfacesCascUseCase
 import app.use_cases.commands.subUseCase.TPTPTupleAnswerModelToN3SUseCase
-import app.use_cases.modelToString.FOLModelToStringUseCase
+import app.use_cases.modelToString.FOLModelToFOFFormulaStringUseCase
 import app.use_cases.modelToString.RdfSurfaceModelToN3UseCase
 import app.use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
 import app.use_cases.modelTransformer.CanoncicalizeRDFSurfaceLiteralsUseCase
 import app.use_cases.modelTransformer.FOLGeneralTermToRDFTermUseCase
 import app.use_cases.modelTransformer.RDFSurfaceModelToFOLModelUseCase
-import app.use_cases.modelTransformer.RDFSurfaceModelToTPTPModelUseCase
+import app.use_cases.modelTransformer.RDFSurfaceModelToTPTPAnnotatedFormulaUseCase
 
 
 object Application {
@@ -41,18 +41,18 @@ object Application {
         )
     }
 
-    fun createCascQaAnswerToRsUseCase(): CascQaAnswerToRsUseCase {
-        return CascQaAnswerToRsUseCase(
-            rdfSurfaceParseService = createRDFSurfaceParseService(),
+    fun createCascQaAnswerToRsUseCase(): CascQaAnswerToRSUseCase {
+        return CascQaAnswerToRSUseCase(
+            rdfSurfaceParserService = createRDFSurfaceParseService(),
             fileService = createFileService(),
             questionAnsweringOutputToRdfSurfacesCascUseCase = createQuestionAnsweringOutputToRdfSurfacesCascUseCase(),
             successToStringTransformerService = createFileSuccessToStringTransformerService()
         )
     }
 
-    fun createRawQaAnswerToRsUseCase(): RawQaAnswerToRsUseCase {
-        return RawQaAnswerToRsUseCase(
-            rdfSurfaceParseService = createRDFSurfaceParseService(),
+    fun createRawQaAnswerToRsUseCase(): RawQaAnswerToRSUseCase {
+        return RawQaAnswerToRSUseCase(
+            rdfSurfaceParserService = createRDFSurfaceParseService(),
             tPTPTupleAnswerModelToN3SUseCase = createTptpTupleAnswerModelToRdfSurfaceUseCase(),
             fileService = createFileService(),
             tptpTupleAnswerFormParserService = createTptpTupleAnswerFormParserService(),
@@ -62,7 +62,7 @@ object Application {
     fun createRewriteUseCase(): RewriteUseCase {
         return RewriteUseCase(
             fileService = createFileService(),
-            rdfSurfaceParseService = createRDFSurfaceParseService(),
+            rdfSurfaceParserService = createRDFSurfaceParseService(),
             rdfSurfaceModelToN3UseCase = createRdfSurfaceModelToN3UseCase(),
             canoncicalizeRDFSurfaceLiteralsUseCase = createCanonicalizeRDFSurfaceLiteralsUseCase()
         )
@@ -70,11 +70,11 @@ object Application {
 
     fun createTransformQaUseCase(): TransformQaUseCase {
         return TransformQaUseCase(
-            rdfSurfaceParseService = createRDFSurfaceParseService(),
+            rdfSurfaceParserService = createRDFSurfaceParseService(),
             theoremProverRunnerService = createTheoremProverRunnerService(),
             fileService = createFileService(),
             tPTPAnnotatedFormulaModelToStringUseCase = createTPTPAnnotatedFormulaModelToStringUseCase(),
-            rdfSurfaceModelToTPTPModelUseCase = createRdfSurfaceModelToTPTPModelUseCase(),
+            rdfSurfaceModelToTPTPAnnotatedFormulaUseCase = createRdfSurfaceModelToTPTPModelUseCase(),
             getTheoremProverCommandUseCase = createGetTheoremProverCommandUseCase(),
             questionAnsweringOutputToRdfSurfacesCascUseCase = createQuestionAnsweringOutputToRdfSurfacesCascUseCase(),
             canoncicalizeRDFSurfaceLiteralsUseCase = createCanonicalizeRDFSurfaceLiteralsUseCase()
@@ -82,8 +82,8 @@ object Application {
         )
     }
 
-    private fun createQuestionAnsweringOutputToRdfSurfacesCascUseCase(): QuestionAnsweringOutputToRdfSurfacesCascUseCase {
-        return QuestionAnsweringOutputToRdfSurfacesCascUseCase(
+    private fun createQuestionAnsweringOutputToRdfSurfacesCascUseCase(): QuestionAnsweringOutputToRDFSurfacesCascUseCase {
+        return QuestionAnsweringOutputToRDFSurfacesCascUseCase(
             tptpTupleAnswerModelToN3SUseCase = createTptpTupleAnswerModelToRdfSurfaceUseCase(),
             szsParserService = createSzsParserService()
         )
@@ -104,9 +104,9 @@ object Application {
     fun createTransformUseCase(): TransformUseCase {
         return TransformUseCase(
             fileService = createFileService(),
-            rdfSurfaceParseService = createRDFSurfaceParseService(),
+            rdfSurfaceParserService = createRDFSurfaceParseService(),
             tPTPAnnotatedFormulaModelToStringUseCase = createTPTPAnnotatedFormulaModelToStringUseCase(),
-            rdfSurfaceModelToTPTPModelUseCase = createRdfSurfaceModelToTPTPModelUseCase(),
+            rdfSurfaceModelToTPTPAnnotatedFormulaUseCase = createRdfSurfaceModelToTPTPModelUseCase(),
             canoncicalizeRDFSurfaceLiteralsUseCase = createCanonicalizeRDFSurfaceLiteralsUseCase()
         )
     }
@@ -126,17 +126,17 @@ object Application {
 
     private fun createTPTPAnnotatedFormulaModelToStringUseCase(): TPTPAnnotatedFormulaModelToStringUseCase {
         return TPTPAnnotatedFormulaModelToStringUseCase(
-            fOLModelToStringUseCase = createFOLModelToStringUseCase(),
+            fOLModelToFOFFormulaStringUseCase = createFOLModelToStringUseCase(),
             fOLCoderService = createFOLCoderService(),
         )
     }
 
-    private fun createFOLModelToStringUseCase(): FOLModelToStringUseCase {
-        return FOLModelToStringUseCase()
+    private fun createFOLModelToStringUseCase(): FOLModelToFOFFormulaStringUseCase {
+        return FOLModelToFOFFormulaStringUseCase()
     }
 
-    private fun createRdfSurfaceModelToTPTPModelUseCase(): RDFSurfaceModelToTPTPModelUseCase {
-        return RDFSurfaceModelToTPTPModelUseCase(createRdfSurfaceModelToFOLModelUseCase())
+    private fun createRdfSurfaceModelToTPTPModelUseCase(): RDFSurfaceModelToTPTPAnnotatedFormulaUseCase {
+        return RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(createRdfSurfaceModelToFOLModelUseCase())
     }
 
     private fun createCanonicalizeRDFSurfaceLiteralsUseCase(): CanoncicalizeRDFSurfaceLiteralsUseCase {
@@ -157,8 +157,8 @@ object Application {
         )
     }
 
-    private fun createRDFSurfaceParseService(): RDFSurfaceParseService {
-        return RDFSurfaceParseServiceImpl()
+    private fun createRDFSurfaceParseService(): RDFSurfaceParserService {
+        return RDFSurfaceParserServiceImpl()
     }
 
     private fun createConfigLoaderService(): ConfigLoaderService {
@@ -169,8 +169,8 @@ object Application {
         return TheoremProverRunnerServiceImpl()
     }
 
-    private fun createTptpTupleAnswerFormParserService(): TptpTupleAnswerFormParserService {
-        return TptpTupleAnswerFormToModelServiceImpl()
+    private fun createTptpTupleAnswerFormParserService(): TPTPTupleAnswerFormParserService {
+        return TPTPTupleAnswerFormToModelServiceImpl()
     }
 
     private fun createFOLCoderService(): FOLCoderService {

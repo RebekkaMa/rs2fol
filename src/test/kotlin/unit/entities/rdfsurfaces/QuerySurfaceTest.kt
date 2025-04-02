@@ -37,21 +37,21 @@ class QuerySurfaceTest : ShouldSpec({
                 IRI.from("http://www.w3.org/2001/XMLSchema#string"),
             )
 
-            val triple11 = entities.rdfsurfaces.RdfTriple(bn1, iri1, literal1)
-            val triple12 = entities.rdfsurfaces.RdfTriple(literal3, bn2, bn4)
-            val triple13 = entities.rdfsurfaces.RdfTriple(iri3, literal2, bn3)
+            val triple11 = entities.rdfsurfaces.RDFTriple(bn1, iri1, literal1)
+            val triple12 = entities.rdfsurfaces.RDFTriple(literal3, bn2, bn4)
+            val triple13 = entities.rdfsurfaces.RDFTriple(iri3, literal2, bn3)
 
-            val triple11_r = entities.rdfsurfaces.RdfTriple(bn1_r, iri1, literal1)
-            val triple12_r = entities.rdfsurfaces.RdfTriple(literal3, bn2_r, bn4)
-            val triple13_r = entities.rdfsurfaces.RdfTriple(iri3, literal2, bn3_r)
+            val triple11_r = entities.rdfsurfaces.RDFTriple(bn1_r, iri1, literal1)
+            val triple12_r = entities.rdfsurfaces.RDFTriple(literal3, bn2_r, bn4)
+            val triple13_r = entities.rdfsurfaces.RDFTriple(iri3, literal2, bn3_r)
 
-            val triple21 = entities.rdfsurfaces.RdfTriple(iri2, iri1, bn1)
-            val triple22 = entities.rdfsurfaces.RdfTriple(iri3, bn2, iri2)
-            val triple23 = entities.rdfsurfaces.RdfTriple(iri3, iri2, iri1)
+            val triple21 = entities.rdfsurfaces.RDFTriple(iri2, iri1, bn1)
+            val triple22 = entities.rdfsurfaces.RDFTriple(iri3, bn2, iri2)
+            val triple23 = entities.rdfsurfaces.RDFTriple(iri3, iri2, iri1)
 
-            val triple21_r = entities.rdfsurfaces.RdfTriple(iri2, iri1, bn1_r)
-            val triple22_r = entities.rdfsurfaces.RdfTriple(iri3, bn2_r, iri2)
-            val triple23_r = entities.rdfsurfaces.RdfTriple(iri3, iri2, iri1)
+            val triple21_r = entities.rdfsurfaces.RDFTriple(iri2, iri1, bn1_r)
+            val triple22_r = entities.rdfsurfaces.RDFTriple(iri3, bn2_r, iri2)
+            val triple23_r = entities.rdfsurfaces.RDFTriple(iri3, iri2, iri1)
 
             val positiveSurface21 = entities.rdfsurfaces.PositiveSurface(listOf(), listOf(triple21, triple22, triple23))
             val negativeSurface21 = entities.rdfsurfaces.NegativeSurface(listOf(), listOf(triple21, triple22, triple23))

@@ -1,22 +1,22 @@
 package adapter.presenter
 
-import app.interfaces.results.RdfSurfaceParserResult
+import app.interfaces.results.RDFSurfaceParserResult
 import app.interfaces.results.SZSParserServiceResult
+import app.interfaces.results.TPTPTupleAnswerFormParserResult
 import app.interfaces.results.TheoremProverRunnerResult
-import app.interfaces.results.TptpTupleAnswerFormParserResult
 import app.interfaces.services.presenter.ErrorToStringTransformerService
 import app.interfaces.services.presenter.TextStylerService
-import app.use_cases.results.CascQaAnswerToRsResult
-import app.use_cases.results.CheckResult
-import app.use_cases.results.RawQaAnswerToRsResult
-import app.use_cases.results.TransformQaResult
-import app.use_cases.results.modelToString.RdfSurfaceModelToN3sResult
+import app.use_cases.results.commands.CascQaAnswerToRSResult
+import app.use_cases.results.commands.CheckResult
+import app.use_cases.results.commands.RawQaAnswerToRSResult
+import app.use_cases.results.commands.TransformQaResult
+import app.use_cases.results.modelToString.RDFSurfaceModelToN3SResult
 import app.use_cases.results.modelTransformerResults.FOLGeneralTermToRDFSurfaceResult
 import app.use_cases.results.modelTransformerResults.RDFSurfaceModelToFOLModelResult
 import app.use_cases.results.subUseCaseResults.GetTheoremProverCommandResult
-import app.use_cases.results.subUseCaseResults.QuestionAnsweringOutputToRdfSurfacesCascResult
+import app.use_cases.results.subUseCaseResults.QuestionAnsweringOutputToRDFSurfacesCascResult
 import app.use_cases.results.subUseCaseResults.TPTPTupleAnswerModelToN3SResult
-import entities.rdfsurfaces.results.RdfSurfaceResult
+import entities.rdfsurfaces.results.RDFSurfaceResult
 import util.commandResult.RootError
 
 class ErrorToStringTransformerServiceImpl(private val textStylerService: TextStylerService) :
@@ -30,9 +30,9 @@ class ErrorToStringTransformerServiceImpl(private val textStylerService: TextSty
                 }
             }
 
-            is RdfSurfaceModelToN3sResult.Error -> {
+            is RDFSurfaceModelToN3SResult.Error -> {
                 when (error) {
-                    is RdfSurfaceModelToN3sResult.Error.LiteralTransformationError -> "Literal (value='${error.value},iri=${error.iri})' can not be converted to N3S"
+                    is RDFSurfaceModelToN3SResult.Error.LiteralTransformationError -> "Literal (value='${error.value},iri=${error.iri})' can not be converted to N3S"
                 }
 
             }
@@ -51,19 +51,19 @@ class ErrorToStringTransformerServiceImpl(private val textStylerService: TextSty
                 }
             }
 
-            is CascQaAnswerToRsResult.Error -> {
+            is CascQaAnswerToRSResult.Error -> {
                 when (error) {
-                    is CascQaAnswerToRsResult.Error.NoQuestionSurface -> "No question surface found. At least one is required."
-                    is CascQaAnswerToRsResult.Error.MoreThanOneQuestionSurface -> "More than one question surface found. Only one is supported."
+                    is CascQaAnswerToRSResult.Error.NoQuestionSurface -> "No question surface found. At least one is required."
+                    is CascQaAnswerToRSResult.Error.MoreThanOneQuestionSurface -> "More than one question surface found. Only one is supported."
                 }
             }
 
-            is RdfSurfaceParserResult.Error -> {
+            is RDFSurfaceParserResult.Error -> {
                 when (error) {
-                    is RdfSurfaceParserResult.Error.BlankNodeLabelCollision -> "Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'."
-                    is RdfSurfaceParserResult.Error.UndefinedPrefix -> "Undefined prefix: " + error.prefix
-                    is RdfSurfaceParserResult.Error.LiteralNotValid -> "Not valid literal with value ${error.value} and iri ${error.iri}"
-                    is RdfSurfaceParserResult.Error.GenericInvalidInput -> {
+                    is RDFSurfaceParserResult.Error.BlankNodeLabelCollision -> "Invalid blank node Label. Please rename all blank node labels that have the form 'BN_[0-9]+'."
+                    is RDFSurfaceParserResult.Error.UndefinedPrefix -> "Undefined prefix: " + error.prefix
+                    is RDFSurfaceParserResult.Error.LiteralNotValid -> "Not valid literal with value ${error.value} and iri ${error.iri}"
+                    is RDFSurfaceParserResult.Error.GenericInvalidInput -> {
                         buildString {
                             append("Invalid Input. Please check the syntax!")
                             if (debug) return@buildString
@@ -73,12 +73,12 @@ class ErrorToStringTransformerServiceImpl(private val textStylerService: TextSty
                         }
                     }
 
-                    is RdfSurfaceParserResult.Error.SurfaceNotSupported -> "Surface '${error.surface}' is not supported"
+                    is RDFSurfaceParserResult.Error.SurfaceNotSupported -> "Surface '${error.surface}' is not supported"
 
                 }
             }
 
-            is TptpTupleAnswerFormParserResult.Error.GenericInvalidInput -> {
+            is TPTPTupleAnswerFormParserResult.Error.GenericInvalidInput -> {
                 buildString {
                     append("Could not parse TPTP Tuple Answer '${error.tptpTuple}'")
                     append("Invalid input. Please check the syntax!")
@@ -96,10 +96,10 @@ class ErrorToStringTransformerServiceImpl(private val textStylerService: TextSty
                 }
             }
 
-            is RawQaAnswerToRsResult.Error -> {
+            is RawQaAnswerToRSResult.Error -> {
                 when (error) {
-                    RawQaAnswerToRsResult.Error.NoQuestionSurface -> "No question surface found. At least one is required."
-                    RawQaAnswerToRsResult.Error.MoreThanOneQuestionSurface -> "More than one question surface found. Only one is supported."
+                    RawQaAnswerToRSResult.Error.NoQuestionSurface -> "No question surface found. At least one is required."
+                    RawQaAnswerToRSResult.Error.MoreThanOneQuestionSurface -> "More than one question surface found. Only one is supported."
                 }
             }
 
@@ -110,7 +110,7 @@ class ErrorToStringTransformerServiceImpl(private val textStylerService: TextSty
                 )
             }
 
-            is QuestionAnsweringOutputToRdfSurfacesCascResult.Error.AnswerTupleTransformation -> {
+            is QuestionAnsweringOutputToRDFSurfacesCascResult.Error.AnswerTupleTransformation -> {
                 "Error regarding ${error.affectedFormula}: " + invoke(error.error, debug = debug)
             }
 
@@ -154,9 +154,9 @@ class ErrorToStringTransformerServiceImpl(private val textStylerService: TextSty
                         }
             }
 
-            is RdfSurfaceResult.Error -> {
+            is RDFSurfaceResult.Error -> {
                 when (error) {
-                    RdfSurfaceResult.Error.TupleArityUnequalToGraffitiCount -> "The arity of the answer tuples doesn't match the number of graffiti on the negative answer surface!"
+                    RDFSurfaceResult.Error.TupleArityUnequalToGraffitiCount -> "The arity of the answer tuples doesn't match the number of graffiti on the negative answer surface!"
                 }
             }
 

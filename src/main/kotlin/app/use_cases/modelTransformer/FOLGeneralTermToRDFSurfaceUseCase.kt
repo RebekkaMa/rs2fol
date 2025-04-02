@@ -11,7 +11,7 @@ import util.commandResult.*
 
 class FOLGeneralTermToRDFTermUseCase {
 
-    operator fun invoke(generalTerm: GeneralTerm): Result<RdfTerm, RootError> {
+    operator fun invoke(generalTerm: GeneralTerm): Result<RDFTerm, RootError> {
         return when (generalTerm) {
             is FOLVariable -> success(BlankNode(generalTerm.name))
             is FOLFunction -> {
