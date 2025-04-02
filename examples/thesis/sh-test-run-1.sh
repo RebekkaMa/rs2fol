@@ -20,9 +20,9 @@ run_check() {
     echo -e -n "$FILENAME - "
 
     if [[ "$USE_C" == "yes" ]]; then
-        RESULT=$($RS2FOL_PATH check --program vampire --option-id 2 -q -i "$FILE" -c "${PROJECT_PATH}rs2fol/examples/thesis/answer.n3s" -cf "${PROJECT_PATH}/rs2fol/examples/thesis/config.json" -r -t 120 2>&1 | tr -d '\n')
+        RESULT=$($RS2FOL_PATH check --program vampire --option-id 2 -q -i "$FILE" -c "${PROJECT_PATH}rs2fol/examples/thesis/answer.n3s" --config "${PROJECT_PATH}/rs2fol/examples/thesis/config.json" -r -t 120 2>&1 | tr -d '\n')
     else
-        RESULT=$($RS2FOL_PATH check --program vampire --option-id 2 -q -i "$FILE" -cf "${PROJECT_PATH}/rs2fol/examples/thesis/config.json" -r -t 120 2>&1 | tr -d '\n')
+        RESULT=$($RS2FOL_PATH check --program vampire --option-id 2 -q -i "$FILE" --config "${PROJECT_PATH}/rs2fol/examples/thesis/config.json" -r -t 120 2>&1 | tr -d '\n')
     fi
 
     echo "$FILENAME,$RESULT" >> "$OUTPUT_FILE"

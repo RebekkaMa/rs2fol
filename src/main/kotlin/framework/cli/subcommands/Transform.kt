@@ -9,6 +9,7 @@ import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.switch
 import com.github.ajalt.clikt.parameters.types.path
 import config.Application
 import entities.rdfsurfaces.rdf_term.IRI
@@ -19,50 +20,69 @@ import kotlin.io.path.*
 
 class Transform : SuspendingCliktCommand() {
     private val commonOptions by CommonOptions()
-    private val input by option("--input", "-i", help = "Get RDF surface from <path>").path()
-    private val output by option("--output", "-o", help = "Write output to <path>").path()
-        .default(java.nio.file.Path.of("-"))
 
-    private val consequence by option("--consequence", "-c", help = "Path to the consequence RDF surface").path()
+    private val input by option(
+        "--input", "-i",
+        help = "Path to the RDF surface input file. It will be transformed into a TPTP first-order formula of type axiom."
+    ).path().default(Path("-"), defaultForHelp = "stdin")
 
-    private val ignoreNegativeAnswerSurface by option("--ignoreQuerySurface").flag(default = false, defaultForHelp = "false")
+    private val output by option(
+        "--output", "-o",
+        help = "Path to the output file"
+    ).path().default(Path("-"), defaultForHelp = "stdout")
 
-    private val quiet by option("--quiet", "-q", help = "Display less output")
-        .flag(default = false)
+    private val consequence by option(
+        "--consequence", "-c",
+        help = "Path to the RDF surface representing the expected consequence. It will be transformed into a TPTP first-order formula of type conjecture."
+    ).path()
 
-    private val disEnc by option(
-        "--disEnc",
-        help = "Disable encoding. If this option is deactivated, values that correspond to the N3S or TPTP syntax will be encoded."
+    private val ignoreNegativeAnswerSurface by option(
+        "--ignoreNegativeAnswerSurface",
+        help = "Ignore all negative answer surfaces that are either on the default surface or not embedded in any other surface."
+    ).flag(default = false, defaultForHelp = "false")
+
+    private val quiet by option(
+        "--quiet", "-q",
+        help = "Display less output"
     ).flag(default = false)
+
+    private val enc by option(
+        help = "Enable or disable encoding. If enabled, values that are not valid in N3S or TPTP syntax are automatically encoded to ensure compatibility."
+    ).switch(
+        "--enc" to true,
+        "--no-enc" to false
+    ).default(true)
+
 
     private val dEntailment by option(
         "--d-entailment",
-        help = "If this option is activated, literals with different lexical values but the same value in the value space are mapped to one literal with a canonical lexical value and datatype. This is only supported for XSD datatypes."
+        help = "Enables datatype entailment. Literals with the same literal value but different lexical representations or datatypes are unified using a canonical form. Only supported for XSD datatypes"
     ).flag(default = false)
 
-    override fun help(context: Context) = "Transforms an RDF surface (--input) to a FOL formula in TPTP format"
+    override fun help(context: Context) =
+        "Transforms an RDF surface given via --input into a TPTP first-order formula of type axiom. If a consequence is provided via --consequence, it will additionally be transformed into a TPTP first-order formula of type conjecture. Additional options control output behavior and entailment handling."
 
     override suspend fun run() {
 
         try {
             val (inputStream, baseIri) = when {
-                input == null || input!!.pathString == "-" -> System.`in` to workingDir
+                input.pathString == "-" -> System.`in` to workingDir
 
-                input!!.notExists() -> throw BadParameterValue(
+                input.notExists() -> throw BadParameterValue(
                     currentContext.localization.pathDoesNotExist(
                         "file",
                         input!!.pathString
                     )
                 )
 
-                input!!.isReadable().not() -> throw BadParameterValue(
+                input.isReadable().not() -> throw BadParameterValue(
                     currentContext.localization.pathIsNotReadable(
                         "file",
-                        input!!.pathString
+                        input.pathString
                     )
                 )
 
-                else -> input!!.inputStream() to IRI.from("file://" + input!!.absolute().parent.invariantSeparatorsPathString + "/")
+                else -> input.inputStream() to IRI.from("file://" + input.absolute().parent.invariantSeparatorsPathString + "/")
             }
 
             val rdfSurface = inputStream.bufferedReader().use { it.readText() }
@@ -75,7 +95,7 @@ class Transform : SuspendingCliktCommand() {
                 ignoreQuerySurface = ignoreNegativeAnswerSurface,
                 outputPath = output,
                 dEntailment = dEntailment,
-                encode = !disEnc
+                encode = enc
             )
 
             val infoToStringTransformerService = Application.createInfoToStringTransformerService()
@@ -91,7 +111,7 @@ class Transform : SuspendingCliktCommand() {
                         echo(successToStringTransformerService.invoke(it))
                     },
                     onFailure = {
-                        echo(errorToStringTransformerService.invoke(it), err = true)
+                        echo(errorToStringTransformerService.invoke(it, commonOptions.debug), err = true)
                     }
                 )
 

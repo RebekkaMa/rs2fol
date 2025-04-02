@@ -20,54 +20,62 @@ import kotlin.io.path.*
 class Check : SuspendingCliktCommand() {
     private val commonOptions by CommonOptions()
 
-    private val programName by option("--program", help = "Name of the program to execute").default("vampire")
-    private val optionId by option("--option-id", help = "Option ID for the selected program").int().default(0)
+    private val programName by option(
+        "--program",
+        help = "Name of the external reasoning program to execute, as specified in the configuration file (e.g., vampire)."
+    ).default("vampire")
+
+    private val optionId by option(
+        "--option-id",
+        help = "Numeric identifier for a configuration entry of the selected program, as defined in the configuration file."
+    ).int().default(0)
 
     private val input by option(
-        "--input",
-        "-i",
-        help = "Get RDF surface from <path>"
-    ).path().default(Path("-"))
+        "--input", "-i",
+        help = "Path to the RDF surface input file. It will be transformed into a TPTP first-order formula of type axiom."
+    ).path().default(Path("-"), "stdin")
 
     private val consequence by option(
-        "--consequence",
-        "-c",
-        help = "Path to the consequence (given as RDF surface)"
+        "--consequence", "-c",
+        help = "Path to the RDF surface representing the expected consequence. It will be transformed into a TPTP first-order formula of type conjecture."
     ).path(mustExist = true, mustBeReadable = true)
 
-    private val quiet by option("--quiet", "-q", help = "Display less output")
-        .flag(default = false)
+    private val quiet by option(
+        "--quiet", "-q",
+        help = "Suppress non-essential output."
+    ).flag(default = false)
 
     private val output by option(
-        "--output",
-        "-o",
-        help = "Write the generated FOL formula (interim result) to <path>"
+        "--output", "-o",
+        help = "Path to the file where the generated FOL formula (intermediate result) will be written."
     ).path(mustExist = false)
 
-    private val timeLimit by option("--time-limit", "-t", help = "Time limit in seconds")
-        .long()
+    private val timeLimit by option(
+        "--time-limit", "-t",
+        help = "Time limit for program execution in seconds."
+    ).long()
         .default(120)
         .validate { require(it > 0) { "Time limit must be greater than 0!" } }
 
     private val configFile by option(
-        "--config-file",
-        "-cf",
-        help = "Path to the configuration file"
+        "--config",
+        help = "Path to the configuration file specifying available theorem provers and their options."
     ).path(mustExist = true, mustBeReadable = true).required()
 
-    private val disEnc by option(
-        "--disEnc",
-        help = "Disable encoding. If this option is deactivated, values that correspond to the N3S or TPTP syntax will be encoded."
-    ).flag(default = false)
+    private val enc by option(
+        help = "Enable or disable encoding. If enabled, values that are not valid in N3S or TPTP syntax are automatically encoded to ensure compatibility."
+    ).switch(
+        "--enc" to true,
+        "--no-enc" to false
+    ).default(true)
 
     private val dEntailment by option(
         "--d-entailment",
-        help = "If this option is activated, literals with different lexical values but the same value in the value space are mapped to one literal with a canonical lexical value and datatype. This is only supported for XSD datatypes."
+        help = "Enables datatype entailment. Literals with the same literal value but different lexical representations or datatypes are unified using a canonical form. Only supported for XSD datatypes"
     ).flag(default = false)
 
     override fun help(context: Context) =
-        "Checks whether an RDF surface (--consequence) is a logical consequence of another RDF surface (--input) using the specified theorem prover"
-
+        "Checks whether the RDF surface provided via --consequence is a logical consequence of the RDF surface given via --input, using the specified theorem prover. Additional options control encoding, datatype entailment, and execution behavior."
     override suspend fun run() {
         try {
 
@@ -109,7 +117,7 @@ class Check : SuspendingCliktCommand() {
                 programName = programName,
                 configFile = configFile,
                 dEntailment = dEntailment,
-                encode = !disEnc,
+                encode = enc,
             )
 
             val infoToStringTransformerService = Application.createInfoToStringTransformerService()
@@ -125,7 +133,7 @@ class Check : SuspendingCliktCommand() {
                         echo(successToStringTransformerService.invoke(it))
                     },
                     onFailure = {
-                        echo(errorToStringTransformerService.invoke(it), err = true)
+                        echo(errorToStringTransformerService.invoke(it, commonOptions.debug), err = true)
                     }
                 )
             }

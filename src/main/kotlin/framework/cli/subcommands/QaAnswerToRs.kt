@@ -6,7 +6,10 @@ import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
-import com.github.ajalt.clikt.parameters.options.*
+import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.path
 import config.Application
@@ -18,28 +21,38 @@ import kotlin.io.path.*
 
 class QaAnswerToRs : SuspendingCliktCommand() {
     private val commonOptions by CommonOptions()
-    private val input by option("--input", "-i", help = "Get TPTP answer tuple from <path>").path().default(Path("-"))
-    private val output by option("--output", "-o", help = "Write output to <path>").path(mustExist = false)
-        .default(Path("-"))
 
-    private val querySurface by option(
-        "--q-surface",
-        "-q",
-        help = "Get RDF query or question surface from <path>"
+    private val input by option(
+        "--input", "-i",
+        help = "Path to the TPTP answer tuple input file."
+    ).path().default(Path("-"), "stdin")
+
+    private val output by option(
+        "--output", "-o",
+        help = "Path to the file where the resulting RDF surface will be written."
+    ).path(mustExist = false).default(Path("-"), "stdout")
+
+    private val questionSurface by option(
+        "--q-surface", "-q",
+        help = "Path to the negative answer surface (question) used for reconstructing the answer."
     ).path(
         mustExist = true,
         canBeDir = false,
         mustBeReadable = true
     ).required()
 
-    private val quiet by option("--quiet", help = "Display less output")
-        .flag(default = false)
+    private val quiet by option(
+        "--quiet",
+        help = "Suppress non-essential output."
+    ).flag(default = false)
 
-    private val inputType by option("--input-type", "-it").choice("raw", "szs").default("szs")
+    private val inputType by option(
+        "--input-type", "-it",
+        help = "Format of the input file: 'szs' (default) or 'raw'."
+    ).choice("raw", "szs").default("szs")
 
     override fun help(context: Context) =
-        "Transforms a TPTP tuple answer (--input) into an RDF surface using a specified RDF query or question surface (--q-surface)"
-
+        "Transforms a TPTP answer tuple provided via --input into an RDF surface using the negative answer surface specified via --q-surface. Supports raw or SZS-wrapped input."
     override suspend fun run() {
 
         try {
@@ -63,7 +76,7 @@ class QaAnswerToRs : SuspendingCliktCommand() {
                 else -> input.inputStream() to IRI.from("file://" + input.absolute().parent.invariantSeparatorsPathString + "/")
             }
 
-            val rdfSurfaces = querySurface.readText()
+            val rdfSurfaces = questionSurface.readText()
 
             val result = if (inputType == "raw") {
                 Application.createRawQaAnswerToRsUseCase().invoke(
@@ -96,7 +109,7 @@ class QaAnswerToRs : SuspendingCliktCommand() {
                         echo(successToStringTransformerService.invoke(it))
                     },
                     onFailure = {
-                        echo(errorToStringTransformerService.invoke(it), err = true)
+                        echo(errorToStringTransformerService.invoke(it, commonOptions.debug), err = true)
                     }
                 )
             }

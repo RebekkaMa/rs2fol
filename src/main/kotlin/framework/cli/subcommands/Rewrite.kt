@@ -9,6 +9,7 @@ import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.switch
 import com.github.ajalt.clikt.parameters.types.path
 import config.Application
 import entities.rdfsurfaces.rdf_term.IRI
@@ -19,24 +20,35 @@ import kotlin.io.path.*
 
 class Rewrite : SuspendingCliktCommand() {
     private val commonOptions by CommonOptions()
-    private val input by option("--input", "-i", help = "Get RDF surface from <path>").path().default(Path("-"))
-    private val output by option("--output", "-o", help = "Write output to <path>").path().default(Path("-"))
+    private val input by option(
+        "--input", "-i",
+        help = "Path to the RDF surface input file."
+    ).path().default(Path("-"), defaultForHelp = "stdin")
 
-    private val quiet by option("--quiet", "-q", help = "Display less output")
-        .flag(default = false)
+    private val output by option(
+        "--output", "-o",
+        help = "Path to the file where the rewritten RDF surface will be written."
+    ).path().default(Path("-"), defaultForHelp = "stdout")
 
-    private val disEnc by option(
-        "--disEnc",
-        help = "Disable encoding. If this option is deactivated, values that correspond to the N3S or TPTP syntax will be encoded."
+    private val quiet by option(
+        "--quiet", "-q",
+        help = "Suppress non-essential output."
     ).flag(default = false)
+
+    private val enc by option(
+        help = "Enable or disable encoding. If enabled, values that are not valid in N3S or TPTP syntax are automatically encoded to ensure compatibility."
+    ).switch(
+        "--enc" to true,
+        "--no-enc" to false
+    ).default(true)
 
     private val dEntailment by option(
         "--d-entailment",
-        help = "If this option is activated, literals with different lexical values but the same value in the value space are mapped to one literal with a canonical lexical value and datatype. This is only supported for XSD datatypes."
+        help = "Enables datatype entailment. Literals with the same literal value but different lexical representations or datatypes are unified using a canonical form. Only supported for XSD datatypes"
     ).flag(default = false)
 
-
-    override fun help(context: Context) = "Parses and returns an RDF surface using a sublanguage of Notation 3"
+    override fun help(context: Context) =
+        "Rewrites the RDF surface provided via --input, optionally applying encoding and datatype entailment, and writes the result to the specified output path."
 
     override suspend fun run() {
 
@@ -67,7 +79,7 @@ class Rewrite : SuspendingCliktCommand() {
                 baseIRI = baseIRI,
                 output = output,
                 dEntailment = dEntailment,
-                encode = !disEnc
+                encode = enc
             )
 
             val infoToStringTransformerService = Application.createInfoToStringTransformerService()
@@ -83,7 +95,7 @@ class Rewrite : SuspendingCliktCommand() {
                         echo(successToStringTransformerService.invoke(it))
                     },
                     onFailure = {
-                        echo(errorToStringTransformerService.invoke(it), err = true)
+                        echo(errorToStringTransformerService.invoke(it, commonOptions.debug), err = true)
                     }
                 )
             }

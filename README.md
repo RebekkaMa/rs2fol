@@ -119,11 +119,11 @@ Possible results:
 - **timeout** → the time limit was exceeded
 
 ```bash
-./bin/rs2fol check -i path/to/antecedent.n3s -c path/to/consequence.n3s --program vampire --option-id 0 -cf config.json
+./bin/rs2fol check -i path/to/antecedent.n3s -c path/to/consequence.n3s --program vampire --option-id 0 --config /path/to/config.json
 ```
 
 ```bash
-./bin/rs2fol check -i path/to/antecedent.n3s -c path/to/consequence.n3s --program vampire --option-id 0 -cf /path/to/config.json --d-entailment
+./bin/rs2fol check -i path/to/antecedent.n3s -c path/to/consequence.n3s --program vampire --option-id 0 --config /path/to/config.json --d-entailment
 ```
 
 #### Satisfiability checking
@@ -139,7 +139,7 @@ Possible results:
 - **timeout** → the time limit was exceeded
 
 ```bash
-./bin/rs2fol check -i path/to/antecedent.n3s --program vampire --option-id 0 -cf /path/to/config.json
+./bin/rs2fol check -i path/to/antecedent.n3s --program vampire --option-id 0 --config /path/to/config.json
 ```
 
 Because no consequence surface is provided, this checks the satisfiability of the input RDF surface.
@@ -156,7 +156,7 @@ Steps:
 5. transforms the output triples (in tuple answer form) into an RDF surface using the query/negative answer surface within the input RDF surface
 
 ```bash
-./bin/rs2fol transform-qa --program vampire-qa --option-id 2 -t 5 -i path/to/surface.n3s
+./bin/rs2fol transform-qa --program vampire-qa --option-id 2 -t 5 -i path/to/surface.n3s --config /path/to/config.json
 ```
 
 #### Caution
@@ -211,16 +211,8 @@ UTF-32 codepoints that go beyond this range are represented as usual with two UT
 1. `\u####` – UTF-16 hex code
 2. `Ox####` – same, with `O` (not `0`) prefix
 
-The encoding can be deactivated by using the `--no-encoding` option. This is useful for debugging purposes, but the output may not be valid TPTP syntax.
+The encoding can be deactivated by using the `--no-enc` option. This is useful for debugging purposes, but the output may not be valid TPTP syntax.
 
 ## Architecture
 
 The project follows the principles of [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) as proposed by Robert C. Martin (Uncle Bob).
-
-## Author
-
-Developed by Rebekka Martens as part of her diploma thesis on RDF surface reasoning using FOL.
-
----
-
-Issues, suggestions, or contributions are welcome via GitHub.

@@ -21,7 +21,7 @@ run_check() {
 
     echo -e -n "$FILENAME - "
 
-    RESULT=$($RS2FOL_PATH check --program vampire --option-id 3 -q -i "$FILE" -c "${PROJECT_PATH}rs2fol/examples/thesis/answer.n3s" -cf "${PROJECT_PATH}/rs2fol/examples/thesis/config.json" -r -t 1800 2>&1 | tr -d '\n')
+    RESULT=$($RS2FOL_PATH check --program vampire --option-id 3 -q -i "$FILE" -c "${PROJECT_PATH}rs2fol/examples/thesis/answer.n3s" --config "${PROJECT_PATH}/rs2fol/examples/thesis/config.json" -r -t 1800 2>&1 | tr -d '\n')
 
     echo "$FILENAME,$RESULT" >> "$OUTPUT_FILE"
 
