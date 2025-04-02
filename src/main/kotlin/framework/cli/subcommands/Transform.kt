@@ -23,7 +23,7 @@ class Transform : SuspendingCliktCommand() {
 
     private val input by option(
         "--input", "-i",
-        help = "Path to the RDF surface input file. It will be transformed into a TPTP first-order formula of type axiom."
+        help = "Path to the RDF surface input file. It will be transformed into a TPTP annotated first-order formula of type axiom."
     ).path().default(Path("-"), defaultForHelp = "stdin")
 
     private val output by option(
@@ -33,7 +33,7 @@ class Transform : SuspendingCliktCommand() {
 
     private val consequence by option(
         "--consequence", "-c",
-        help = "Path to the RDF surface representing the expected consequence. It will be transformed into a TPTP first-order formula of type conjecture."
+        help = "Path to the RDF surface representing the expected consequence. It will be transformed into a TPTP annotated first-order formula of type conjecture."
     ).path()
 
     private val ignoreNegativeAnswerSurface by option(
@@ -60,7 +60,7 @@ class Transform : SuspendingCliktCommand() {
     ).flag(default = false)
 
     override fun help(context: Context) =
-        "Transforms an RDF surface given via --input into a TPTP first-order formula of type axiom. If a consequence is provided via --consequence, it will additionally be transformed into a TPTP first-order formula of type conjecture. Additional options control output behavior and entailment handling."
+        "Transforms an RDF surface given via --input into an TPTP annotated first-order formula of type axiom. If a consequence is provided via --consequence, it will additionally be transformed into a TPTP annotated first-order formula of type conjecture. Additional options control output behavior and entailment handling."
 
     override suspend fun run() {
 

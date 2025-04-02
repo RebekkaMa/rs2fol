@@ -39,7 +39,7 @@ class TransformQa :
 
     private val output by option(
         "--output", "-o",
-        help = "Path to the file where the generated TPTP first-order formulas (intermediate result) will be written"
+        help = "Path to the file where the generated TPTP annotated first-order formulas (intermediate result) will be written"
     ).path()
 
     private val quiet by option(

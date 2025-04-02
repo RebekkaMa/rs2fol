@@ -6,7 +6,7 @@ The repository contains test cases that were directly taken from the [RDF Surfac
 
 ## Features
 
-- Translates RDF surfaces into TPTP FOF formulas
+- Translates RDF surfaces into TPTP annotated first-order formulas
 - Satisfiability checking using FOL provers
 - Consequence checking using FOL provers
     - Supports D-entailment (by canonicalisation of literals (lexical values & datatypes)) and simple entailment
@@ -215,4 +215,4 @@ The encoding can be deactivated by using the `--no-enc` option. This is useful f
 
 ## Architecture
 
-The project follows the principles of [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) as proposed by Robert C. Martin (Uncle Bob).
+The project follows the principles of [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) as proposed by [Robert C. Martin](https://de.wikipedia.org/wiki/Robert_Cecil_Martin).

@@ -32,12 +32,12 @@ class Check : SuspendingCliktCommand() {
 
     private val input by option(
         "--input", "-i",
-        help = "Path to the RDF surface input file. It will be transformed into a TPTP first-order formula of type axiom."
+        help = "Path to the RDF surface input file. It will be transformed into a TPTP annotated first-order formula of type axiom."
     ).path().default(Path("-"), "stdin")
 
     private val consequence by option(
         "--consequence", "-c",
-        help = "Path to the RDF surface representing the expected consequence. It will be transformed into a TPTP first-order formula of type conjecture."
+        help = "Path to the RDF surface representing the expected consequence. It will be transformed into a TPTP annotated first-order formula of type conjecture."
     ).path(mustExist = true, mustBeReadable = true)
 
     private val quiet by option(
