@@ -472,7 +472,7 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val literal1 = DefaultLiteral("apple", IRI.from(XSDDatatype.XSDstring.uri))
                 val literal2 = DefaultLiteral("banana", IRI.from(XSDDatatype.XSDstring.uri))
 
-                val collection1 = Collection.fromTerms(literal1, literal2)
+                val collection1 = Collection(listOf(literal1, literal2))
 
                 val rdfTriple1 = RdfTriple(iri1, iri2, collection1)
 
@@ -556,7 +556,7 @@ class RDFSurfacesParserTest : ShouldSpec(
 
 
                 val collection1 =
-                    Collection.fromTerms(literal2, literal3, literal4)
+                    Collection(listOf(literal2, literal3, literal4))
 
                 val rdfTriple1 = RdfTriple(collection1, iri1, literal1)
 
@@ -619,8 +619,8 @@ class RDFSurfacesParserTest : ShouldSpec(
                 val literal1 = DefaultLiteral("1", IRI.from(XSDDatatype.XSDinteger.uri))
                 val literal2 = DefaultLiteral("2", IRI.from(XSDDatatype.XSDinteger.uri))
 
-                val collection1 = Collection.fromTerms(literal2)
-                val collection2 = Collection.fromTerms(literal1, bn0, collection1)
+                val collection1 = Collection(listOf(literal2))
+                val collection2 = Collection(listOf(literal1, bn0, collection1))
 
                 val rdfTriple1 = RdfTriple(collection2, iri3, iri4)
                 val rdfTriple2 = RdfTriple(bn0, iri1, iri2)
