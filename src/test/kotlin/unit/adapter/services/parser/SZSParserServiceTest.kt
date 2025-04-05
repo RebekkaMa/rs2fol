@@ -122,38 +122,6 @@ class SZSParserServiceTest : ShouldSpec({
         assertEquals(listOf("Some proof content"), szsOutputModel?.output)
     }
 
-/*    should("test multiple status blocks") {
-        val input = """
-            % SZS status Theorem for problem6
-            % SZS output start Proof for problem6
-            Some proof content
-            % SZS output end Proof for problem6
-            % SZS status Unsatisfiable for problem7
-            % SZS output start Model for problem7
-            Some model content
-            % SZS output end Model for problem7
-        """.trimIndent()
-
-        val result = parser.parse(input.byteInputStream().bufferedReader()).toList()
-
-        assertEquals(2, result.size)
-
-        assertInstanceOf(SZSOutputModel::class.java, result[0].getSuccessOrNull())
-        assertInstanceOf(SZSOutputModel::class.java, result[1].getSuccessOrNull())
-
-        val firstSzsOutputModel = result[0].getSuccessOrNull()?.szsModel as? SZSOutputModel
-        val secondSzsOutputModel = result[1].getSuccessOrNull()?.szsModel as? SZSOutputModel
-
-        assertEquals(SZSStatusType.SuccessOntology.THEOREM, firstSzsOutputModel?.status?.statusType)
-        assertEquals("problem6", firstSzsOutputModel?.identifier)
-        assertEquals(SZSOutputType.PROOF, firstSzsOutputModel?.outputType)
-        assertEquals(listOf("Some proof content"), firstSzsOutputModel?.output)
-        assertEquals(SZSStatusType.SuccessOntology.UNSATISFIABLE, secondSzsOutputModel?.status?.statusType)
-        assertEquals("problem7", secondSzsOutputModel?.identifier)
-        assertEquals(SZSOutputType.MODEL, secondSzsOutputModel?.outputType)
-        assertEquals(listOf("Some model content"), secondSzsOutputModel?.output)
-    }*/
-
     should("test empty file") {
         val input = ""
 
@@ -161,24 +129,6 @@ class SZSParserServiceTest : ShouldSpec({
 
         assertEquals(0, result)
     }
-
-/*
-    should("test nested blocks") {
-        val input = """
-            % SZS status Theorem for problem1
-            % SZS output start Proof for problem1
-            Some proof content
-            % SZS output start SubProof for problem1
-            Some subproof content
-            % SZS output end SubProof for problem1
-            % SZS output end Proof for problem1
-        """.trimIndent()
-
-        val result = parser.parse(input.byteInputStream().bufferedReader()).single()
-
-        assertEquals(SZSParserServiceResult.Error.OutputStartBeforeEndAndStatus, result.getErrorOrNull())
-    }
-*/
 
     should("test block without end marker") {
         val input = """
