@@ -81,7 +81,7 @@ Create a `config.json` to configure executable paths and options:
   }
 }
 ```
-The best-performing theorem provers along with their configurations can be found at ...
+An example configuration file with settings that yielded the best results during internal evaluations of rs2fol can be found here: [exampleConfig.json](exampleConfig.json).
 
 ## Usage
 
