@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# peano.n3s (list as functions)
+# peano.n3s + constraints (list as RDF Collections)
 
 source ../../.env
 
@@ -39,4 +39,4 @@ run_check() {
 }
 
 
-run_check "${PROJECT_PATH}rs2fol/examples/thesis/test-run-3/peano.n3s"
+run_check "${PROJECT_PATH}rs2fol/examples/thesis/test-run-4/peano_constraints.n3s"

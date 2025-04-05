@@ -54,6 +54,15 @@
           "flags": [
             "--mode",
             "casc",
+            "-t",
+            "${timeLimit}s"
+          ]
+        },
+        {
+          "optionId": 3,
+          "flags": [
+            "--mode",
+            "casc",
             "--cores",
             "0",
             "-t",
@@ -63,7 +72,7 @@
       ]
     },
     "vampire-qa": {
-      "exe": "/home/user/vampireQA/vampire_rel_qa_6176",
+      "exe": "/path/to/vampire_rel_qa_6176",
       "options": [
         {
           "optionId": 0,
@@ -145,7 +154,7 @@
       ]
     },
     "eprover": {
-      "exe": "/home/user/eprover",
+      "exe": "/path/to/eprover",
       "options": [
         {
           "optionId": 0,
@@ -156,7 +165,7 @@
       ]
     },
     "eprover-qa": {
-      "exe": "/home/user/eprover",
+      "exe": "/path/to/eprover",
       "options": [
         {
           "optionId": 0,

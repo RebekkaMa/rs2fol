@@ -66,7 +66,7 @@ class ErrorToStringTransformerServiceImpl(private val textStylerService: TextSty
                     is RDFSurfaceParserResult.Error.GenericInvalidInput -> {
                         buildString {
                             append("Invalid Input. Please check the syntax!")
-                            if (debug) return@buildString
+                            if (!debug) return@buildString
                             append(System.lineSeparator())
                             append(textStylerService.bold("Cause: "))
                             append(error.cause)
@@ -82,7 +82,7 @@ class ErrorToStringTransformerServiceImpl(private val textStylerService: TextSty
                 buildString {
                     append("Could not parse TPTP Tuple Answer '${error.tptpTuple}'")
                     append("Invalid input. Please check the syntax!")
-                    if (debug) return@buildString
+                    if (!debug) return@buildString
                     append(System.lineSeparator())
                     append(textStylerService.bold("Cause: "))
                     append(error.throwable.toString())
@@ -136,7 +136,7 @@ class ErrorToStringTransformerServiceImpl(private val textStylerService: TextSty
                             is TheoremProverRunnerResult.Error.CouldNotBeStarted -> {
                                 buildString {
                                     append("Theorem prover could not be started")
-                                    if (debug) return@buildString
+                                    if (!debug) return@buildString
                                     append(System.lineSeparator())
                                     append(textStylerService.bold("Cause: "))
                                     append("${error.throwable}")
@@ -145,7 +145,7 @@ class ErrorToStringTransformerServiceImpl(private val textStylerService: TextSty
                             is TheoremProverRunnerResult.Error.CouldNotWriteInput -> {
                                 buildString {
                                     append("Could not write input to theorem prover")
-                                    if (debug) return@buildString
+                                    if (!debug) return@buildString
                                     append(System.lineSeparator())
                                     append(textStylerService.bold("Cause: "))
                                     append("${error.throwable}")

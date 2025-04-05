@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# peano.n3s (list as functions)
+# peano.n3s (list as RDF Collections)
 
 source ../../.env
 
@@ -11,9 +11,7 @@ GREEN='\033[0;32m'
 DARK_RED='\033[0;41m'
 NC='\033[0m'
 
-# peano.n3s (list as RDF Collections)
-
-echo "File,Vampire" > "$OUTPUT_FILE"
+echo "File,Vampire,Time(s)" > "$OUTPUT_FILE"
 
 run_check() {
     local FILE="$1"
@@ -21,24 +19,28 @@ run_check() {
 
     echo -e -n "$FILENAME - "
 
+    start=$(date +%s)
+
     RESULT=$($RS2FOL_PATH check --program vampire --option-id 3 -q -i "$FILE" -c "${PROJECT_PATH}rs2fol/examples/thesis/answer.n3s" --config "${PROJECT_PATH}/rs2fol/examples/thesis/config.json" -r -t 1800 2>&1 | tr -d '\n')
 
-    echo "$FILENAME,$RESULT" >> "$OUTPUT_FILE"
+    end=$(date +%s)
+    duration=$((end - start))
+
+    echo "$FILENAME,$RESULT,$duration" >> "$OUTPUT_FILE"
 
     if [[ "$RESULT" == "Consequence" ]]; then
-        echo -e "${GREEN}$RESULT${NC}"
+        echo -e "${GREEN}$RESULT${NC} (${duration}s)"
     elif [[ "$RESULT" == "No consequence" ]]; then
-        echo -e "${RED}$RESULT${NC}"
+        echo -e "${RED}$RESULT${NC} (${duration}s)"
     elif [[ "$RESULT" == "Unsatisfiable" ]]; then
-        echo -e "${GREEN}$RESULT${NC}"
+        echo -e "${GREEN}$RESULT${NC} (${duration}s)"
     elif [[ "$RESULT" == "Satisfiable" ]]; then
-        echo -e "${RED}$RESULT${NC}"
+        echo -e "${RED}$RESULT${NC} (${duration}s)"
     elif [[ "$RESULT" == *"Error"* ]]; then
-        echo -e "${DARK_RED}$RESULT${NC}"
+        echo -e "${DARK_RED}$RESULT${NC} (${duration}s)"
     else
-        echo -e "$RESULT"
+        echo -e "$RESULT (${duration}s)"
     fi
 }
-
 
 run_check "${PROJECT_PATH}rs2fol/examples/thesis/test-run-2/peano.n3s"

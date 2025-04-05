@@ -42,17 +42,14 @@ run_check() {
     fi
 }
 
-# Zuerst alle *_FAIL.n3s-Dateien
 find "$SEARCH_DIR" -type f -name "*_FAIL.n3s" -print0 | while IFS= read -r -d '' FILE; do
     run_check "$FILE" "no"
 done
 
-# Dann alle *_LIE.n3s-Dateien
 find "$SEARCH_DIR" -type f -name "*_LIE.n3s" -print0 | while IFS= read -r -d '' FILE; do
     run_check "$FILE" "yes"
 done
 
-# Dann alle übrigen .n3s-Dateien (nicht *_FAIL.n3s und nicht *_LIE.n3s)
 find "$SEARCH_DIR" -type f -name "*.n3s" ! -name "*_FAIL.n3s" ! -name "*_LIE.n3s" -print0 | while IFS= read -r -d '' FILE; do
     run_check "$FILE" "yes"
 done

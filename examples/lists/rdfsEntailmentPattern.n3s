@@ -1,0 +1,122 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+#rdfd2
+(_:A _:X _:Y) log:onNegativeSurface {
+    _:X _:A _:Y .
+    () log:onNegativeSurface {
+        _:A rdf:type rdf:Property .
+    } .
+} .
+
+#----------------------------------------------
+
+#rdfs2
+(_:A _:X _:Y _:Z) log:onNegativeSurface {
+    _:A rdfs:domain _:X .
+    _:Y _:A _:Z .
+    () log:onNegativeSurface {
+       _:Y rdf:type _:X .
+    } .
+} .
+
+#rdfs3
+(_:A _:X _:Y _:Z) log:onNegativeSurface {
+    _:A rdfs:range _:X .
+    _:Y _:A _:Z .
+    () log:onNegativeSurface {
+       _:Z rdf:type _:X .
+    } .
+} .
+
+#rdfs4a
+(_:A _:X _:Y) log:onNegativeSurface {
+    _:X _:A _:Y .
+    () log:onNegativeSurface {
+       _:X rdf:type rdfs:Resource .
+    } .
+} .
+
+#rdfs4b
+(_:A _:X _:Y) log:onNegativeSurface {
+    _:X _:A _:Y .
+    () log:onNegativeSurface {
+       _:Y rdf:type rdfs:Resource .
+    } .
+} .
+
+#rdfs5
+(_:X _:Y _:Z) log:onNegativeSurface {
+    _:X rdfs:subPropertyOf _:Y .
+    _:Y rdfs:subPropertyOf _:Z .
+    () log:onNegativeSurface {
+       _:X rdfs:subPropertyOf _:Z .
+    } .
+} .
+
+#rdfs6
+(_:X) log:onNegativeSurface {
+    _:X rdf:type rdf:Property .
+    () log:onNegativeSurface {
+       _:X rdfs:subPropertyOf _:X .
+    } .
+} .
+
+#rdfs7
+(_:A _:B _:X _:Y) log:onNegativeSurface {
+    _:A rdfs:subPropertyOf _:B .
+    _:X _:A _:Y .
+    () log:onNegativeSurface {
+       _:X _:B _:Y .
+    } .
+} .
+
+#rdfs8
+(_:X) log:onNegativeSurface {
+    _:X rdf:type rdfs:Class .
+    () log:onNegativeSurface {
+       _:X rdfs:subClassOf rdfs:Resource .
+    } .
+} .
+
+#rdfs9
+(_:X _:Y _:Z) log:onNegativeSurface {
+    _:X rdfs:subClassOf _:Y .
+    _:Z rdf:type _:X .
+    () log:onNegativeSurface {
+       _:Z rdf:type _:Y .
+    } .
+} .
+
+#rdfs10
+(_:X) log:onNegativeSurface {
+ 	_:X rdf:type rdfs:Class .
+    () log:onNegativeSurface {
+       _:X rdfs:subClassOf _:X .
+    } .
+} .
+
+#rdfs11
+(_:X _:Y _:Z) log:onNegativeSurface {
+    _:X rdfs:subClassOf _:Y .
+    _:Y rdfs:subClassOf _:Z .
+    () log:onNegativeSurface {
+        _:X rdfs:subClassOf _:Z .
+    } .
+} .
+
+#rdfs12
+(_:X) log:onNegativeSurface {
+    _:X rdf:type rdfs:ContainerMembershipProperty .
+    () log:onNegativeSurface {
+        _:X rdfs:subPropertyOf rdfs:member .
+    } .
+} .
+
+#rdfs13
+(_:X) log:onNegativeSurface {
+    _:X rdf:type rdfs:Datatype .
+    () log:onNegativeSurface {
+        _:X rdfs:subClassOf rdfs:Literal .
+    } .
+} .
