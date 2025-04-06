@@ -5,7 +5,7 @@ import entities.rdfsurfaces.*
 import entities.rdfsurfaces.rdf_term.Literal
 import util.commandResult.*
 
-class CanoncicalizeRDFSurfaceLiteralsUseCase(private val xsdLiteralService: XSDLiteralService) {
+class CanonicalizeRDFSurfaceLiteralsUseCase(private val xsdLiteralService: XSDLiteralService) {
 
     operator fun <T : RdfSurface> invoke(rdfSurface: T): Result<T, RootError> {
         return canonicalizeHayesGraphElement(rdfSurface).map { it as T }

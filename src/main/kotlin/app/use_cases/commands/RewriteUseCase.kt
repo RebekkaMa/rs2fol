@@ -3,7 +3,7 @@ package app.use_cases.commands
 import app.interfaces.services.FileService
 import app.interfaces.services.RDFSurfaceParserService
 import app.use_cases.modelToString.RdfSurfaceModelToN3UseCase
-import app.use_cases.modelTransformer.CanoncicalizeRDFSurfaceLiteralsUseCase
+import app.use_cases.modelTransformer.CanonicalizeRDFSurfaceLiteralsUseCase
 import app.use_cases.results.commands.RewriteResult
 import entities.rdfsurfaces.rdf_term.IRI
 import kotlinx.coroutines.flow.Flow
@@ -16,7 +16,7 @@ class RewriteUseCase(
     private val fileService: FileService,
     private val rdfSurfaceParserService: RDFSurfaceParserService,
     private val rdfSurfaceModelToN3UseCase : RdfSurfaceModelToN3UseCase,
-    private val canoncicalizeRDFSurfaceLiteralsUseCase: CanoncicalizeRDFSurfaceLiteralsUseCase
+    private val canonicalizeRDFSurfaceLiteralsUseCase: CanonicalizeRDFSurfaceLiteralsUseCase
 ) {
 
     operator fun invoke(
@@ -31,7 +31,7 @@ class RewriteUseCase(
         val parserResult = rdfSurfaceParserService.parseToEnd(rdfSurface, baseIRI, rdfList)
         val result = parserResult.runOnSuccess { successResult ->
             val surface = if (dEntailment) {
-                canoncicalizeRDFSurfaceLiteralsUseCase.invoke(successResult.positiveSurface).getOrElse { err ->
+                canonicalizeRDFSurfaceLiteralsUseCase.invoke(successResult.positiveSurface).getOrElse { err ->
                     emit(infoError(err))
                     return@flow
                 }

@@ -25,7 +25,7 @@ import app.use_cases.commands.subUseCase.TPTPTupleAnswerModelToN3SUseCase
 import app.use_cases.modelToString.FOLModelToFOFFormulaStringUseCase
 import app.use_cases.modelToString.RdfSurfaceModelToN3UseCase
 import app.use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
-import app.use_cases.modelTransformer.CanoncicalizeRDFSurfaceLiteralsUseCase
+import app.use_cases.modelTransformer.CanonicalizeRDFSurfaceLiteralsUseCase
 import app.use_cases.modelTransformer.FOLGeneralTermToRDFTermUseCase
 import app.use_cases.modelTransformer.RDFSurfaceModelToFOLModelUseCase
 import app.use_cases.modelTransformer.RDFSurfaceModelToTPTPAnnotatedFormulaUseCase
@@ -64,7 +64,7 @@ object Application {
             fileService = createFileService(),
             rdfSurfaceParserService = createRDFSurfaceParseService(),
             rdfSurfaceModelToN3UseCase = createRdfSurfaceModelToN3UseCase(),
-            canoncicalizeRDFSurfaceLiteralsUseCase = createCanonicalizeRDFSurfaceLiteralsUseCase()
+            canonicalizeRDFSurfaceLiteralsUseCase = createCanonicalizeRDFSurfaceLiteralsUseCase()
         )
     }
 
@@ -77,7 +77,7 @@ object Application {
             rdfSurfaceModelToTPTPAnnotatedFormulaUseCase = createRdfSurfaceModelToTPTPModelUseCase(),
             getTheoremProverCommandUseCase = createGetTheoremProverCommandUseCase(),
             questionAnsweringOutputToRdfSurfacesCascUseCase = createQuestionAnsweringOutputToRdfSurfacesCascUseCase(),
-            canoncicalizeRDFSurfaceLiteralsUseCase = createCanonicalizeRDFSurfaceLiteralsUseCase()
+            canonicalizeRDFSurfaceLiteralsUseCase = createCanonicalizeRDFSurfaceLiteralsUseCase()
 
         )
     }
@@ -93,7 +93,7 @@ object Application {
         return TPTPTupleAnswerModelToN3SUseCase(
             rdfSurfaceModelToN3UseCase = createRdfSurfaceModelToN3UseCase(),
             fOLGeneralTermToRDFTermUseCase = createFolGeneralTermToRdfTermUseCase(),
-            canoncicalizeRDFSurfaceLiteralsUseCase = createCanonicalizeRDFSurfaceLiteralsUseCase()
+            canonicalizeRDFSurfaceLiteralsUseCase = createCanonicalizeRDFSurfaceLiteralsUseCase()
         )
     }
 
@@ -107,7 +107,7 @@ object Application {
             rdfSurfaceParserService = createRDFSurfaceParseService(),
             tPTPAnnotatedFormulaModelToStringUseCase = createTPTPAnnotatedFormulaModelToStringUseCase(),
             rdfSurfaceModelToTPTPAnnotatedFormulaUseCase = createRdfSurfaceModelToTPTPModelUseCase(),
-            canoncicalizeRDFSurfaceLiteralsUseCase = createCanonicalizeRDFSurfaceLiteralsUseCase()
+            canonicalizeRDFSurfaceLiteralsUseCase = createCanonicalizeRDFSurfaceLiteralsUseCase()
         )
     }
 
@@ -139,8 +139,8 @@ object Application {
         return RDFSurfaceModelToTPTPAnnotatedFormulaUseCase(createRdfSurfaceModelToFOLModelUseCase())
     }
 
-    private fun createCanonicalizeRDFSurfaceLiteralsUseCase(): CanoncicalizeRDFSurfaceLiteralsUseCase {
-        return CanoncicalizeRDFSurfaceLiteralsUseCase(createLiteralService())
+    private fun createCanonicalizeRDFSurfaceLiteralsUseCase(): CanonicalizeRDFSurfaceLiteralsUseCase {
+        return CanonicalizeRDFSurfaceLiteralsUseCase(createLiteralService())
     }
 
     private fun createRdfSurfaceModelToFOLModelUseCase(): RDFSurfaceModelToFOLModelUseCase {
@@ -202,7 +202,7 @@ object Application {
     }
 
     private fun createCliTextStylerService(): TextStylerService {
-        return AjaltMordantTextStylerServiceImpl()
+        return MordantTextStylerServiceImpl()
     }
 
     private fun createLiteralService(): XSDLiteralService {

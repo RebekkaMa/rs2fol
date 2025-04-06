@@ -3,7 +3,7 @@ package app.use_cases.commands
 import app.interfaces.services.FileService
 import app.interfaces.services.RDFSurfaceParserService
 import app.use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
-import app.use_cases.modelTransformer.CanoncicalizeRDFSurfaceLiteralsUseCase
+import app.use_cases.modelTransformer.CanonicalizeRDFSurfaceLiteralsUseCase
 import app.use_cases.modelTransformer.FormulaRole
 import app.use_cases.modelTransformer.RDFSurfaceModelToTPTPAnnotatedFormulaUseCase
 import app.use_cases.results.commands.TransformResult
@@ -19,7 +19,7 @@ class TransformUseCase(
     private val rdfSurfaceParserService: RDFSurfaceParserService,
     private val tPTPAnnotatedFormulaModelToStringUseCase : TPTPAnnotatedFormulaModelToStringUseCase,
     private val rdfSurfaceModelToTPTPAnnotatedFormulaUseCase: RDFSurfaceModelToTPTPAnnotatedFormulaUseCase,
-    private val canoncicalizeRDFSurfaceLiteralsUseCase: CanoncicalizeRDFSurfaceLiteralsUseCase
+    private val canonicalizeRDFSurfaceLiteralsUseCase: CanonicalizeRDFSurfaceLiteralsUseCase
 ) {
 
     operator fun invoke(
@@ -37,7 +37,7 @@ class TransformUseCase(
         val axiomFormula = parseResult
             .runOnSuccess { successResult ->
                 val surface = if (dEntailment) {
-                    canoncicalizeRDFSurfaceLiteralsUseCase.invoke(successResult.positiveSurface).getOrElse {  err ->
+                    canonicalizeRDFSurfaceLiteralsUseCase.invoke(successResult.positiveSurface).getOrElse { err ->
                         emit(infoError(err))
                         return@flow
                     }
@@ -58,7 +58,7 @@ class TransformUseCase(
             consequenceParseResult
                 .runOnSuccess { successResult ->
                     val surface = if (dEntailment) {
-                        canoncicalizeRDFSurfaceLiteralsUseCase.invoke(successResult.positiveSurface).getOrElse {  err ->
+                        canonicalizeRDFSurfaceLiteralsUseCase.invoke(successResult.positiveSurface).getOrElse { err ->
                             emit(infoError(err))
                             return@flow
                         }

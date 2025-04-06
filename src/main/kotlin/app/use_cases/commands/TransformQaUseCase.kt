@@ -6,7 +6,7 @@ import app.interfaces.services.TheoremProverRunnerService
 import app.use_cases.commands.subUseCase.GetTheoremProverCommandUseCase
 import app.use_cases.commands.subUseCase.QuestionAnsweringOutputToRDFSurfacesCascUseCase
 import app.use_cases.modelToString.TPTPAnnotatedFormulaModelToStringUseCase
-import app.use_cases.modelTransformer.CanoncicalizeRDFSurfaceLiteralsUseCase
+import app.use_cases.modelTransformer.CanonicalizeRDFSurfaceLiteralsUseCase
 import app.use_cases.modelTransformer.RDFSurfaceModelToTPTPAnnotatedFormulaUseCase
 import app.use_cases.results.commands.TransformQaResult
 import app.use_cases.results.subUseCaseResults.QuestionAnsweringOutputToRDFSurfacesCascResult
@@ -27,7 +27,7 @@ class TransformQaUseCase(
     private val rdfSurfaceModelToTPTPAnnotatedFormulaUseCase: RDFSurfaceModelToTPTPAnnotatedFormulaUseCase,
     private val getTheoremProverCommandUseCase: GetTheoremProverCommandUseCase,
     private val questionAnsweringOutputToRdfSurfacesCascUseCase: QuestionAnsweringOutputToRDFSurfacesCascUseCase,
-    private val canoncicalizeRDFSurfaceLiteralsUseCase: CanoncicalizeRDFSurfaceLiteralsUseCase,
+    private val canonicalizeRDFSurfaceLiteralsUseCase: CanonicalizeRDFSurfaceLiteralsUseCase,
 ) {
 
     operator fun invoke(
@@ -48,7 +48,7 @@ class TransformQaUseCase(
         val folFormula = parseResult
             .runOnSuccess { successResult ->
                 val surface = if (dEntailment) {
-                    canoncicalizeRDFSurfaceLiteralsUseCase.invoke(successResult.positiveSurface).getOrElse { err ->
+                    canonicalizeRDFSurfaceLiteralsUseCase.invoke(successResult.positiveSurface).getOrElse { err ->
                         send(infoError(err))
                         return@channelFlow
                     }

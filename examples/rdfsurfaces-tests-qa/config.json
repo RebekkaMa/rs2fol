@@ -1,0 +1,180 @@
+{
+  "programs": {
+    "vampire": {
+      "exe": "/home/rebekka/Programs/vampire/vampire49/vampire",
+      "options": [
+        {
+          "optionId": 0,
+          "flags": [
+            "-t",
+            "${timeLimit}s"
+          ]
+        },
+        {
+          "optionId": 1,
+          "flags": [
+            "-sa",
+            "discount",
+            "-awr",
+            "2",
+            "-s",
+            "1",
+            "-add",
+            "large",
+            "-afr",
+            "on",
+            "-afp",
+            "1000",
+            "-afq",
+            "2.0",
+            "-anc",
+            "none",
+            "-gsp",
+            "on",
+            "-lcm",
+            "predicate",
+            "-nm",
+            "64",
+            "-newcnf",
+            "on",
+            "-nwc",
+            "5",
+            "-sac",
+            "on",
+            "-urr",
+            "ec_only",
+            "-updr",
+            "off",
+            "-t",
+            "${timeLimit}s"
+          ]
+        },
+        {
+          "optionId": 2,
+          "flags": [
+            "--mode",
+            "casc",
+            "-t",
+            "${timeLimit}s"
+          ]
+        },
+        {
+          "optionId": 3,
+          "flags": [
+            "--mode",
+            "casc",
+            "--cores",
+            "0",
+            "-t",
+            "${timeLimit}s"
+          ]
+        }
+      ]
+    },
+    "vampire-qa": {
+      "exe": "/home/rebekka/Programs/vampire/vampireQA/z3/bin/vampire_rel_qa_6176",
+      "options": [
+        {
+          "optionId": 0,
+          "flags": [
+            "-av",
+            "off",
+            "-qa",
+            "answer_literal",
+            "-t",
+            "${timeLimit}s"
+          ]
+        },
+        {
+          "optionId": 1,
+          "flags": [
+            "-av",
+            "off",
+            "-sa",
+            "discount",
+            "-s",
+            "1",
+            "-add",
+            "large",
+            "-afp",
+            "4000",
+            "-afq",
+            "1.0",
+            "-anc",
+            "none",
+            "-gs",
+            "on",
+            "-gsem",
+            "off",
+            "-inw",
+            "on",
+            "-lcm",
+            "reverse",
+            "-lwlo",
+            "on",
+            "-nm",
+            "64",
+            "-nwc",
+            "1",
+            "-sas",
+            "z3",
+            "-sos",
+            "all",
+            "-sac",
+            "on",
+            "-thi",
+            "all",
+            "-uwa",
+            "all",
+            "-updr",
+            "off",
+            "-uhcvi",
+            "on",
+            "-to",
+            "lpo",
+            "-qa",
+            "answer_literal",
+            "-t",
+            "${timeLimit}s"
+          ]
+        },
+        {
+          "optionId": 2,
+          "flags": [
+            "-av",
+            "off",
+            "-qa",
+            "answer_literal",
+            "-t",
+            "${timeLimit}s",
+            "--mode",
+            "casc"
+          ]
+        }
+      ]
+    },
+    "eprover": {
+      "exe": "/home/linuxbrew/.linuxbrew/Cellar/eprover/3.2/bin/eprover",
+      "options": [
+        {
+          "optionId": 0,
+          "flags": [
+            "--soft-cpu-limit=${timeLimit}"
+          ]
+        }
+      ]
+    },
+    "eprover-qa": {
+      "exe": "/home/linuxbrew/.linuxbrew/Cellar/eprover/3.2/bin/eprover",
+      "options": [
+        {
+          "optionId": 0,
+          "flags": [
+            "--answers=3",
+            "--soft-cpu-limit=${timeLimit}"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,7 +1,7 @@
 package app.use_cases.commands.subUseCase
 
 import app.use_cases.modelToString.RdfSurfaceModelToN3UseCase
-import app.use_cases.modelTransformer.CanoncicalizeRDFSurfaceLiteralsUseCase
+import app.use_cases.modelTransformer.CanonicalizeRDFSurfaceLiteralsUseCase
 import app.use_cases.modelTransformer.FOLGeneralTermToRDFTermUseCase
 import app.use_cases.results.subUseCaseResults.TPTPTupleAnswerModelToN3SResult
 import entities.fol.tptp.AnswerTuple
@@ -11,7 +11,7 @@ import util.commandResult.*
 class TPTPTupleAnswerModelToN3SUseCase(
     private val rdfSurfaceModelToN3UseCase: RdfSurfaceModelToN3UseCase,
     private val fOLGeneralTermToRDFTermUseCase: FOLGeneralTermToRDFTermUseCase,
-    private val canoncicalizeRDFSurfaceLiteralsUseCase: CanoncicalizeRDFSurfaceLiteralsUseCase
+    private val canonicalizeRDFSurfaceLiteralsUseCase: CanonicalizeRDFSurfaceLiteralsUseCase
 ) {
     operator fun invoke(
         answerTuples: List<AnswerTuple>,
@@ -36,7 +36,7 @@ class TPTPTupleAnswerModelToN3SUseCase(
        return qSurface.replaceBlankNodes(rdfTransformedAnswerTuples).fold(
             onSuccess = { surface ->
                 val sur = if (dEntailment) {
-                    canoncicalizeRDFSurfaceLiteralsUseCase.invoke(surface).getOrElse { err -> return error(err) }
+                    canonicalizeRDFSurfaceLiteralsUseCase.invoke(surface).getOrElse { err -> return error(err) }
                 } else surface
                 rdfSurfaceModelToN3UseCase.invoke(
                     defaultPositiveSurface = sur,

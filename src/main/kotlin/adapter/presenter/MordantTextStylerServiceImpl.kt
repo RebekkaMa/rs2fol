@@ -4,7 +4,7 @@ import app.interfaces.services.presenter.TextStylerService
 import com.github.ajalt.mordant.rendering.TextColors
 import com.github.ajalt.mordant.rendering.TextStyle
 
-class AjaltMordantTextStylerServiceImpl : TextStylerService {
+class MordantTextStylerServiceImpl : TextStylerService {
 
     override fun info(message: String) = TextColors.green(message)
 
