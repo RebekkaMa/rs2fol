@@ -2,7 +2,9 @@ package app.use_cases.modelTransformer
 
 import app.interfaces.services.jena.XSDLiteralService
 import entities.rdfsurfaces.*
+import entities.rdfsurfaces.rdf_term.Collection
 import entities.rdfsurfaces.rdf_term.Literal
+import entities.rdfsurfaces.rdf_term.RDFTerm
 import util.commandResult.*
 
 class CanonicalizeRDFSurfaceLiteralsUseCase(private val xsdLiteralService: XSDLiteralService) {
@@ -14,29 +16,13 @@ class CanonicalizeRDFSurfaceLiteralsUseCase(private val xsdLiteralService: XSDLi
     private fun canonicalizeHayesGraphElement(hayesGraphElement: HayesGraphElement): Result<HayesGraphElement, RootError> {
         val canonicalized = when (hayesGraphElement) {
             is RDFTriple -> {
-                val subject = if (hayesGraphElement.rdfSubject is Literal) {
-                    xsdLiteralService.createGeneralizedLiteral(hayesGraphElement.rdfSubject)
-                        .getOrElse { return error(it) }.literal
-                } else {
-                    hayesGraphElement.rdfSubject
-                }
-                val obj = if (hayesGraphElement.rdfPredicate is Literal) {
-                    xsdLiteralService.createGeneralizedLiteral(hayesGraphElement.rdfPredicate)
-                        .getOrElse { return error(it) }.literal
-                } else {
-                    hayesGraphElement.rdfPredicate
-                }
-                val predicate = if (hayesGraphElement.rdfObject is Literal) {
-                    xsdLiteralService.createGeneralizedLiteral(hayesGraphElement.rdfObject)
-                        .getOrElse { return error(it) }.literal
-                } else {
-                    hayesGraphElement.rdfObject
-                }
-
+                val subject = canonicalizeHayesGraphElement(hayesGraphElement.rdfSubject).getOrElse { return error(it) }
+                val predicate = canonicalizeHayesGraphElement(hayesGraphElement.rdfPredicate).getOrElse { return error(it) }
+                val obj = canonicalizeHayesGraphElement(hayesGraphElement.rdfObject).getOrElse { return error(it) }
                 hayesGraphElement.copy(
                     rdfSubject = subject,
-                    rdfPredicate = obj,
-                    rdfObject = predicate
+                    rdfPredicate = predicate,
+                    rdfObject = obj
                 )
             }
 
@@ -57,6 +43,22 @@ class CanonicalizeRDFSurfaceLiteralsUseCase(private val xsdLiteralService: XSDLi
             }
         }
         return success(canonicalized)
+    }
+
+    private fun canonicalizeHayesGraphElement(
+        hayesGraphElement: RDFTerm
+    ): Result<RDFTerm, RootError> {
+        return when (hayesGraphElement) {
+            is Literal -> xsdLiteralService.createGeneralizedLiteral(hayesGraphElement)
+                .map { it.literal }
+            is Collection -> {
+                val newListElements = hayesGraphElement.list.map { element ->
+                    canonicalizeHayesGraphElement(element).getOrElse { return error(it) }
+                }
+                success(Collection(newListElements))
+            }
+            else -> success(hayesGraphElement)
+        }
     }
 }
 

@@ -43,7 +43,7 @@ class Transform : SuspendingCliktCommand() {
 
     private val quiet by option(
         "--quiet", "-q",
-        help = "Display less output"
+        help = "Suppress non-essential output"
     ).flag(default = false)
 
     private val enc by option(
@@ -60,7 +60,7 @@ class Transform : SuspendingCliktCommand() {
     ).flag(default = false)
 
     override fun help(context: Context) =
-        "Transforms an RDF surface given via --input into an TPTP annotated first-order formula of type axiom. If a consequence is provided via --consequence, it will additionally be transformed into a TPTP annotated first-order formula of type conjecture. Additional options control output behavior and entailment handling."
+        "Transforms an RDF surface given via --input into an TPTP annotated first-order formula of type axiom. If a consequence is provided via --consequence, it will additionally be transformed into a TPTP annotated first-order formula of type conjecture."
 
     override suspend fun run() {
 
